@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/api/apiMapper">
+
+	<select id="getAttendInfo" parameterType="hashmap" resultType="hashmap">
+		select * from baattendtb where store ='${store}' and period ='${period}' and subject_cd ='${subject_cd}' and is_lec='Y'
+	</select>
+	
+	<insert id="insAttend" parameterType="hashmap">
+		insert into BAATTENDTB
+			(
+				STORE,				PERIOD,				SUBJECT_CD,
+				p_cust,				c_cust1,			c_cust2,
+				CUST_NO,			DAY_CHK, 			IS_LEC,
+				CREATE_RESI_NO,		CREATE_DATE
+			)
+		VALUES
+			(
+				'${store}',			'${period}', 		'${subject_cd}', 
+				'${p_cust}', 		'${c_cust1}', 		'${c_cust2}',
+				'${cust_no}',		'${dayVal}',		'${isLec}',
+				'${login_seq}',		TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), 
+			)
+	</insert>
+	
+	<select id="getEncdList" parameterType="hashmap" resultType="hashmap">
+	<!-- 
+		select 
+            aa.*,
+            bb.cust_no,
+            bb.use_yn
+        from baencdmtb_mu aa, baencdtb_mu bb where
+            aa.store = bb.store
+            and aa.period = bb.period
+            and aa.enuri_cd = bb.enuri_cd
+            and aa.store = '${store}'
+            and aa.period = '${period}'
+            and bb.use_yn ='N'
+            and bb.cust_no = '${cust_no}'
+            
+            and (aa.main_cd = (select main_cd from bapelttb where store=aa.store and period = aa.period and subject_cd = '${subject_cd}') or aa.main_cd is null)
+            and (aa.sect_cd = (select sect_cd from bapelttb where store=aa.store and period = aa.period and subject_cd = '${subject_cd}') or aa.sect_cd is null)
+            
+            and (aa.subject_cd = '${subject_cd}' or aa.subject_cd is null)
+            and substr(TO_CHAR(SYSDATE,'yyyymmddhh24miss'), 0, 8 ) <![CDATA[>=]]> replace(aa.discount_period_start,'-','')
+            and substr(TO_CHAR(SYSDATE,'yyyymmddhh24miss'), 0, 8 ) <![CDATA[<=]]> replace(aa.discount_period_end,'-','') -->
+            
+		select
+		    aa.*
+		from baencdmtb_mu aa where
+		    aa.store='${store}'
+		    and aa.period='${period}'
+		    and aa.limited_cnt <![CDATA[>]]> (select count(*) from baencdtb_mu where store =aa.store and period =aa.period and enuri_cd = aa.enuri_cd and cust_no='${cust_no}' and use_yn='Y')
+		    AND ( aa.give_fg='T'
+		            or (aa.give_fg='G' 
+		            
+		                and (aa.cust_fg = ( SELECT nvl2(MIN(PERIOD),'2','1')  AS COUNT             
+		                                      FROM BAPERETB         
+		                                     WHERE
+		                                        STORE        = aa.store
+		                                       AND CUST_NO    = '${cust_no}'
+		                                       AND PERIOD   <![CDATA[<]]>  (select get_web_period(aa.store) period from dual)) or aa.cust_fg is null)
+		                                       
+		                     and (aa.grade like '%'||(select nvl(max(b.mbr_gdc),'119') from ams_bz_sect_mbr_grade b 
+		                                        where b.cus_no = (select cus_no from bacusttb where cust_no = '${cust_no}'))||'%' or aa.grade is null)     
+		                                        
+		                     and (	(  select count(*) from baperetb where 
+		                                regis_cancel_fg <![CDATA[<>]]> '3'
+		                                and RECPT_NO <![CDATA[<>]]> '*' 
+		                                and store= aa.store
+		                                and cust_no ='${cust_no}'
+		                                and period = aa.period
+		                                )  <![CDATA[>=]]> aa.lect_cnt
+		                            or aa.lect_cnt is null)  
+		                     and (BA_CUST_CONTINUE_CNT('${cust_no}',aa.store,aa.period,aa.semester_cnt) <![CDATA[>=]]> aa.semester_cnt or aa.semester_cnt is null)))
+		    and substr(TO_CHAR(SYSDATE,'yyyymmddhh24miss'), 0, 8 ) <![CDATA[>=]]> replace(aa.discount_period_start,'-','')
+		    and substr(TO_CHAR(SYSDATE,'yyyymmddhh24miss'), 0, 8 ) <![CDATA[<=]]> replace(aa.discount_period_end,'-','')
+		    
+		    <if test="!subject_cd.equals('')">
+		    	and (decode(instr(aa.subject_fg,(select subject_fg from bapelttb where hq=00 and store=aa.store and period = aa.period and subject_cd = '${subject_cd}'),1,1),0, 1, 0) = 0 or aa.subject_fg is null)
+		    	and (aa.main_cd = (select main_cd from bapelttb where hq=00 and store=aa.store and period = aa.period and subject_cd = '${subject_cd}') or aa.main_cd is null)
+		    	and (aa.sect_cd = (select sect_cd from bapelttb where hq=00 and store=aa.store and period = aa.period and subject_cd = '${subject_cd}') or aa.sect_cd is null)
+		    	and (aa.subject_cd = '${subject_cd}' or aa.subject_cd is null)
+		    </if>
+	</select>
+
+	<select id="getPeltMid" parameterType="hashmap" resultType="hashmap">
+		select
+			(select bmd from ams_cus where cus_no = bapelttb.cus_no) as bmd,
+			bapelttb.*
+		from bapelttb where 
+			store = '${store}' 
+			and period = '${period}' 
+			and subject_cd = '${subject_cd}'
+	</select>
+	
+	<select id="getHoliday" parameterType="hashmap" resultType="hashmap">
+		select * from baperitb where STORE = '${store}' and PERIOD = '${period}' 
+	</select>
+	
+</mapper>

@@ -1,0 +1,62 @@
+/*@import url("fontawesome.min.css");*/
+@import url("mu_layout.css");
+@import url("all.min.css");
+@import url("basic/user.css");
+@import url("basic/ip.css");
+@import url("basic/code.css");
+@import url("basic/peri.css");
+@import url("member/member.css");
+@import url("lecture/lect.css");
+@import url("contract/contract.css");
+@import url("responsive.css");
+
+.notShow 
+{
+	display:none;
+}
+.inputTitle 
+{
+	float:left;
+}
+.notEmpty 
+{
+/* 	display:block; */
+}
+.table_tit div
+{
+	width:9%;
+	float:left;
+	padding:1px;
+}
+.table_tit
+{
+	display: inline-block;
+    width: 75%;
+}
+
+.table_list div
+{
+	width:9%;
+	float:left;
+	padding:1px;
+}
+.table_list
+{
+	display: inline-block;
+    width: 75%;
+}
+
+.waitForLoad
+{
+	position:fixed;
+	left:0;
+	top:0;
+	width:100%;
+	heifht:100%;
+	z-index:9999999999;
+	background : rgba(255,255,255,0.6);
+	display:flex;
+	align-items:center;
+	justify-content : center;
+	
+}

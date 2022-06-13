@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/member/waitMapper">
+	<select id="getWaitCount" parameterType="hashmap" resultType="hashmap">
+		select  bapelttb.subject_cd from bawaittb, bapelttb
+		where 
+		bawaittb.store = bapelttb.store
+		and
+		bawaittb.period = bapelttb.period
+		and
+		bawaittb.subject_cd = bapelttb.subject_cd
+    	<if test="!store.equals('')">
+	   		and bapelttb.store = '${store}'
+	   	</if>
+	   	<if test="!period.equals('')">
+	   		and bapelttb.period = '${period}'
+	   	</if>
+	  	<if test="!search_name.equals('')">
+			<if test="search_type eq 'subject_nm'.toString()">
+				and bapelttb.subject_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'subject_cd'.toString()">
+				and bapelttb.subject_cd like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'cust_nm'.toString()">
+				and bawaittb.cust_no in (select cust_no from bacusttb where kor_nm like '%'||'${search_name}'||'%')
+			</if>
+		</if>
+		<if test="!main_cd.equals('')">
+	   		and bapelttb.main_cd = '${main_cd}'
+	   	</if>
+	   	<if test="!sect_cd.equals('')">
+	   		and bapelttb.sect_cd = '${sect_cd}'
+	   	</if>
+	   	<if test="!search_start.equals('') and !search_end.equals('')">
+			and (bapelttb.start_ymd between '${search_start}' and '${search_end}')
+		</if>
+	   	group by bapelttb.store, bapelttb.period, bapelttb.subject_cd
+	</select>
+	<select id="getWait" parameterType="hashmap" resultType="hashmap">
+<!-- 		select -->
+<!-- 		x.start_ymd,  -->
+<!-- 		x.subject_fg_nm, -->
+<!-- 		 x.main_nm,  -->
+<!-- 		 x.sect_nm,  -->
+<!-- 		 x.wait_cnt,  -->
+<!-- 		 x.possible_no,  -->
+<!-- 		 x.subject_cd,  -->
+<!-- 		 x.web_lecturer_nm,  -->
+<!-- 		 x.subject_nm,  -->
+<!-- 		 x.capacity_no,  -->
+<!-- 		 x.regis_no,  -->
+<!-- 		 x.web_regis_no,  -->
+<!-- 		 x.regis_fee,  -->
+<!-- 		 x.day_flag,  -->
+<!-- 		 x.lect_hour,  -->
+<!-- 		 x.store,  -->
+<!-- 		 x.period,  -->
+<!-- 		 x.subject_cd -->
+<!-- 		from (  -->
+<!-- 		    select rownum as rnum, A.* -->
+<!-- 		    from (  -->
+<!-- 		    	select -->
+<!-- 		    	bapelttb.start_ymd, -->
+
+<!-- 	            bapelttb.web_lecturer_nm, bapelttb.subject_nm, bapelttb.capacity_no, bapelttb.regis_no, bapelttb.web_regis_no, bapelttb.regis_fee, bapelttb.day_flag, bapelttb.lect_hour, -->
+<!-- 	            bapelttb.store, bapelttb.period, bapelttb.subject_cd -->
+<!-- 	            from bawaittb, bapelttb -->
+<!-- 				where  -->
+<!-- 				bawaittb.store = bapelttb.store -->
+<!-- 				and -->
+<!-- 				bawaittb.period = bapelttb.period -->
+<!-- 				and -->
+<!-- 				bawaittb.subject_cd = bapelttb.subject_cd -->
+<!-- 		    	<if test="!store.equals('')"> -->
+<!-- 			   		and bapelttb.store = '${store}' -->
+<!-- 			   	</if> -->
+<!-- 			   	<if test="!period.equals('')"> -->
+<!-- 			   		and bapelttb.period = '${period}' -->
+<!-- 			   	</if> -->
+<!-- 			  	<if test="!search_name.equals('')"> -->
+<!-- 					<if test="search_type eq 'subject_nm'.toString()"> -->
+<!-- 						and bapelttb.subject_nm like '%'||'${search_name}'||'%' -->
+<!-- 					</if> -->
+<!-- 					<if test="search_type eq 'subject_cd'.toString()"> -->
+<!-- 						and bapelttb.subject_cd like '%'||'${search_name}'||'%' -->
+<!-- 					</if> -->
+<!-- 					<if test="search_type eq 'cust_nm'.toString()"> -->
+<!-- 						and bawaittb.cust_no in (select cust_no from bacusttb where kor_nm like '%'||'${search_name}'||'%') -->
+<!-- 					</if> -->
+<!-- 				</if> -->
+<!-- 				<if test="!main_cd.equals('')"> -->
+<!-- 			   		and bapelttb.main_cd = '${main_cd}' -->
+<!-- 			   	</if> -->
+<!-- 			   	<if test="!sect_cd.equals('')"> -->
+<!-- 			   		and bapelttb.sect_cd = '${sect_cd}' -->
+<!-- 			   	</if> -->
+<!-- 			   	<if test="!order_by.equals('') and !sort_type.equals('')"> -->
+<!-- 			   		order by ${sort_type} ${order_by} -->
+<!-- 			   	</if> -->
+		    
+<!-- 		group by  -->
+<!-- 		x.start_ymd, -->
+<!-- 		x.subject_fg_nm, -->
+<!-- 		 x.main_nm, -->
+<!-- 		  x.sect_nm,  -->
+<!-- 		  x.wait_cnt,  -->
+<!-- 		  x.possible_no,  -->
+<!-- 		  x.subject_cd,  -->
+<!-- 		  x.web_lecturer_nm,  -->
+<!-- 		  x.subject_nm,  -->
+<!-- 		  x.capacity_no,  -->
+<!-- 		  x.regis_no,  -->
+<!-- 		  x.web_regis_no,  -->
+<!-- 		  x.regis_fee,  -->
+<!-- 		  x.day_flag,  -->
+<!-- 		  x.lect_hour,  -->
+<!-- 		  x.store,  -->
+<!-- 		  x.period,  -->
+<!-- 		  x.subject_cd -->
+		  
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		SELECT
+    x.start_ymd,
+    x.subject_cd,
+    x.web_lecturer_nm,
+    x.subject_nm,
+    x.capacity_no,
+    x.regis_no,
+    x.web_regis_no,
+    x.regis_fee,
+    x.day_flag,
+    x.lect_hour,
+    x.store,
+    x.period,
+    x.subject_cd,
+    x.end_yn,
+    	            decode(x.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+	            (select short_name from bacodetb where code_fg = '09' and sub_code = x.main_cd) as MAIN_NM,
+	            ba_sect_nm('00', x.store, x.main_cd, x.sect_cd) as sect_nm,
+	            x.wait_cnt,
+	            x.possible_no,
+	            x.tot_regis_no,
+	            x.is_start
+FROM
+    (
+        SELECT
+            ROWNUM AS rnum,
+            a.*
+        FROM
+            (
+                SELECT
+                    bapelttb.start_ymd,
+                    bapelttb.main_cd,
+                    bapelttb.sect_cd,
+                    bapelttb.web_lecturer_nm,
+                    bapelttb.subject_nm,
+                    bapelttb.capacity_no,
+                    bapelttb.regis_no,
+                    bapelttb.web_regis_no,
+                    bapelttb.regis_fee,
+                    bapelttb.day_flag,
+                    bapelttb.lect_hour,
+                    bapelttb.store,
+                    bapelttb.period,
+                    bapelttb.subject_cd,
+                    bapelttb.subject_fg,
+                    bapelttb.end_yn,
+                    ba_get_wait_cnt(bapelttb.store, bapelttb.period, bapelttb.subject_cd) as wait_cnt,
+                    bapelttb.CAPACITY_NO - (NVL(bapelttb.WEB_REGIS_NO,0) + NVL(bapelttb.REGIS_NO,0)) POSSIBLE_NO,
+                    bapelttb.regis_no+bapelttb.web_regis_no as tot_regis_no,
+                    CASE WHEN TO_CHAR(SYSDATE, 'YYYYMMDD') > bapelttb.start_ymd THEN 'Y'          -- 강제반납시 미반납된 증정상품권  현금영수증 대상금액 100% 처리
+                       ELSE 'N'
+                    END AS IS_START
+                FROM
+                    bawaittb,
+                    bapelttb
+               where 
+				bawaittb.store = bapelttb.store
+				and
+				bawaittb.period = bapelttb.period
+				and
+				bawaittb.subject_cd = bapelttb.subject_cd
+		    	<if test="!store.equals('')">
+			   		and bapelttb.store = '${store}'
+			   	</if>
+			   	<if test="!period.equals('')">
+			   		and bapelttb.period = '${period}'
+			   	</if>
+			  	<if test="!search_name.equals('')">
+					<if test="search_type eq 'subject_nm'.toString()">
+						and bapelttb.subject_nm like '%'||'${search_name}'||'%'
+					</if>
+					<if test="search_type eq 'subject_cd'.toString()">
+						and bapelttb.subject_cd like '%'||'${search_name}'||'%'
+					</if>
+					<if test="search_type eq 'cust_nm'.toString()">
+						and bawaittb.cust_no in (select cust_no from bacusttb where kor_nm like '%'||'${search_name}'||'%')
+					</if>
+				</if>
+				<if test="!main_cd.equals('')">
+			   		and bapelttb.main_cd = '${main_cd}'
+			   	</if>
+			   	<if test="!sect_cd.equals('')">
+			   		and bapelttb.sect_cd = '${sect_cd}'
+			   	</if>
+			   	<if test="!search_start.equals('') and !search_end.equals('')">
+					and (bapelttb.start_ymd between '${search_start}' and '${search_end}')
+				</if>
+			   	
+       
+GROUP BY
+    bapelttb.start_ymd,
+   bapelttb.main_cd,
+   bapelttb.sect_cd,
+    bapelttb.subject_cd,
+    bapelttb.web_lecturer_nm,
+    bapelttb.subject_nm,
+    bapelttb.capacity_no,
+    bapelttb.regis_no,
+    bapelttb.web_regis_no,
+    bapelttb.regis_fee,
+    bapelttb.day_flag,
+    bapelttb.lect_hour,
+    bapelttb.store,
+    bapelttb.period,
+    bapelttb.subject_cd,
+    bapelttb.subject_fg,
+    bapelttb.end_yn
+    <if test="!order_by.equals('') and !sort_type.equals('')">
+			   		order by ${sort_type} ${order_by}
+			   	</if>
+         ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+	<select id="getWaiter" parameterType="hashmap" resultType="hashmap">
+		select 
+		(select name from bamanagertb where seq_no = trim(bawaittb.create_resi_no)) as NAME,   
+		(select cus_no from bacusttb where cust_no = bawaittb.cust_no) as CUS_NO,
+        (select kor_nm from bacusttb where cust_no = bawaittb.cust_no) as kor_nm,
+		(select birth_ymd from bacusttb where cust_no = bawaittb.cust_no) as BIRTH_YMD,
+		(select ptl_id from bacusttb where cust_no = bawaittb.cust_no) as PTL_ID,
+		(select trim(h_phone_no_1)||'-'||h_phone_no_2||'-'||h_phone_no_3 from bacusttb where cust_no = bawaittb.cust_no) as phone_no,
+		(select count(*) from baperetb where cust_no = bawaittb.cust_no) as IS_NEW,
+		bawaittb.*
+		from bawaittb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+		order by delete_fg, create_date
+	</select>
+	<update id="waitCancle" parameterType="hashmap">
+		update bawaittb
+		set
+		delete_fg = '3', 
+		cancel_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		store = '${store}'
+		and 
+		period = '${period}'
+		and 
+		subject_cd = '${subject_cd}' 
+		and 
+		cust_no = '${cust_no}'
+		
+	</update>
+	<update id="insComment" parameterType="hashmap">
+		update bawaittb
+		set
+		comments = '${comment}'
+		where
+		store = '${store}'
+		and 
+		period = '${period}'
+		and 
+		subject_cd = '${subject_cd}' 
+		and 
+		cust_no = '${cust_no}'
+		
+	</update>
+</mapper>

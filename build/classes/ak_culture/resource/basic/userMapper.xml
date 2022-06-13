@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/userMapper">
+   <select id="getUser" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+		    	select
+					(select COUNT(*) from BAMANAGERTB where SEQ_NO = a.RESI_NO) as IS_APPROVE,
+					(select SUBMIT_DATE from BAMANAGERTB where SEQ_NO = a.RESI_NO) as SUBMIT_DATE,
+					(select STATUS from BAMANAGERTB where SEQ_NO = a.RESI_NO) as STATUS,
+					(select AUTH_NAME from BAMANAGERTB where SEQ_NO = a.RESI_NO) as AUTH_NAME,
+					RESI_NO as SEQ_NO, PASSWORD as PW, USER_ID as ID, USER_NM as NAME, HQ as COMPANY, STORE, 
+					nvl((SELECT SCT_NM
+                          FROM AX2SCTTB@akris
+                         WHERE SCT_CD = a.SCT_CD), '시스템') AS TIM,
+					BIZNO, HP_NO as PHONE, EMAIL,
+					(select short_name from bacodetb where CODE_FG = '02' and sub_code = a.store) as store_nm,
+					a.JOB
+				from ax2usrtb@akris a where 1 = 1
+				and RESI_NO is not null
+<!-- 				AND ( LENGTH(a.USER_ID) = 13 OR 1 = (SELECT 1 FROM AKHRSYS.HRPM012VW@AKHRAC WHERE NO_SAWON = a.USER_ID) )    -->
+<!-- 				and ROWID in (select MAX(ROWID) from ax2usrtb@akris group by RESI_NO) -->
+		    	<if test="!search_name.equals('')">
+			    	<choose>
+			    	<when test="!search_type.equals('')">
+			    		and ${search_type} like CONCAT(CONCAT('%', #{search_name}), '%')
+			    	</when>
+			    	<otherwise>
+			    		and USER_ID like CONCAT(CONCAT('%', #{search_name}), '%')
+			    	</otherwise>
+			    	</choose>
+		    	</if>
+		 		<if test="!search_status.equals('')">
+				 	<choose>
+				 	<when test="search_status.equals('null')">
+				 		and (select STATUS from BAMANAGERTB where SEQ_NO = a.RESI_NO) is null
+				 	</when><otherwise>
+				 		and (select STATUS from BAMANAGERTB where SEQ_NO = a.RESI_NO) like CONCAT(CONCAT('%', #{search_status}), '%')
+			    	</otherwise>
+			    	</choose>
+			 	</if>
+		    	<if test="store_data">
+		    		and STORE in
+		    		<foreach collection="store_data" item="arr" index="index" open="(" close=")" separator=",">
+		    			#{arr}
+		    		</foreach>
+		    	</if>
+		    	<if test="auth_data">
+		    		and (select AUTH_NAME from BAMANAGERTB where SEQ_NO = a.RESI_NO) in
+		    		<foreach collection="auth_data" item="arr" index="index" open="(" close=")" separator=",">
+		    			#{arr}
+		    		</foreach>
+		    	</if>
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}
+	    ) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select> 
+   <select id="getUser_one" parameterType="hashmap" resultType="hashmap">
+		select
+		TO_CHAR(TO_DATE(SUBMIT_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as SUBMIT_DATE, 
+		TO_CHAR(TO_DATE(LAST_LOGIN, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as LAST_LOGIN, 
+		SEQ_NO, ID, PW, LAST_PW, FAIL_PW, STATUS,NAME, TIM,RANK, PHONE, EMAIL, LAST_LOGIN, LAST_UPDATE, COMPANY, STATUS, BIZNO, STORE, LEADER, AUTH_NAME, AUTH_CUSTOM, REP_STORE
+		from BAMANAGERTB where SEQ_NO = #{seq_no} 
+	</select>
+   <select id="getUserCount" parameterType="hashmap" resultType="hashmap">
+		select
+			count(*) as CNT
+		from ax2usrtb@akris a where 1 = 1
+		and RESI_NO is not null
+<!-- 		and ROWID in (select MAX(ROWID) from ax2usrtb@akris group by RESI_NO) -->
+    	<if test="!search_name.equals('')">
+	    	<choose>
+	    	<when test="!search_type.equals('')">
+	    		and ${search_type} like CONCAT(CONCAT('%', #{search_name}), '%')
+	    	</when>
+	    	<otherwise>
+	    		and USER_ID like CONCAT(CONCAT('%', #{search_name}), '%')
+	    	</otherwise>
+	    	</choose>
+    	</if>
+ 		<if test="!search_status.equals('')">
+		 	<choose>
+		 	<when test="search_status.equals('null')">
+		 		and (select STATUS from BAMANAGERTB where SEQ_NO = a.RESI_NO) is null
+		 	</when><otherwise>
+		 		and (select STATUS from BAMANAGERTB where SEQ_NO = a.RESI_NO) like CONCAT(CONCAT('%', #{search_status}), '%')
+	    	</otherwise>
+	    	</choose>
+	 	</if>
+    	<if test="store_data">
+    		and STORE in
+    		<foreach collection="store_data" item="arr" index="index" open="(" close=")" separator=",">
+    			#{arr}
+    		</foreach>
+    	</if>
+    	<if test="auth_data">
+    		and (select AUTH_NAME from BAMANAGERTB where SEQ_NO = a.RESI_NO) in
+    		<foreach collection="auth_data" item="arr" index="index" open="(" close=")" separator=",">
+    			#{arr}
+    		</foreach>
+    	</if>
+	</select>
+   <select id="getManagerSeq" resultType="hashmap">
+		select BAMANAGERTB_SEQ.NEXTVAL as SEQ_NO from dual
+	</select>
+	<select id="chk_insUser" parameterType="string" resultType="int">
+		select count(*) from BAMANAGERTB where SEQ_NO = #{seq_no}
+	</select>
+   <insert id="insUser" parameterType="hashmap">
+    	insert into BAMANAGERTB
+    	(SEQ_NO, ID, PW, LAST_PW, FAIL_PW, STATUS, NAME, TIM, PHONE, EMAIL, COMPANY, SUBMIT_DATE, STORE, BIZNO)
+    	values
+    	(#{join_seq_no}, #{join_id}, #{join_pw}, #{join_pw}, 0, #{join_status}, #{join_name}, #{join_tim}, #{join_phone}, #{join_email}, '00', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), #{join_store}, #{join_bizno})
+	</insert>
+	<select id="loginCheck" resultType="hashmap">
+		select bamanagertb.*, 	
+            nvl((select auth_uri from bamgrauthtb where seq_no = bamanagertb.seq_no and auth_key like 'R%' and rownum = 1), '/basic/user/list') as first_uri,
+			(select short_name from bacodetb where CODE_FG = '02' and sub_code = bamanagertb.rep_store) as rep_store_nm,
+                  nvl((SELECT SCT_NM
+                          FROM AX2SCTTB@akris
+                         WHERE SCT_CD = (select sct_cd from ax2usrtb@akris where user_id = bamanagertb.seq_no)), '시스템') AS SCT_NM
+                 
+                 from bamanagertb  where ID = #{login_id}
+                 <if test="!login_pw.equals('')">
+                  and PW = #{login_pw}
+                  </if>
+	</select>
+	<select id="getNoneAuthList" resultType="hashmap">
+		select * from bamgrauthtb where seq_no = '${seq_no}' and auth_key is null
+	</select>
+	<update id="upLastLogin" parameterType="hashmap">
+		update BAMANAGERTB
+		set
+		LAST_LOGIN = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		SEQ_NO = #{seq_no}
+	</update>
+	<update id="upUser" parameterType="hashmap">
+		update BAMANAGERTB
+		set
+		STATUS = #{status},
+		LEADER = #{leader},
+		AUTH_NAME = #{auth_name},
+		REP_STORE = #{rep_store},
+		AUTH_CUSTOM = 'N'
+		where
+		SEQ_NO = #{seq_no}
+	</update>
+   <insert id="insAuth" parameterType="hashmap">
+   		insert into BAAUTHTB
+    	(SEQ_NO, SUBMIT_DATE)
+    	values
+    	(#{SEQ_NO}, TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<select id="getLevel" parameterType="hashmap" resultType="hashmap">
+		select * from BAMGRAUTHTB_MU where NAME = #{level_name} order by NAME asc
+	</select>
+	<select id="getLevel_cate" resultType="hashmap">
+		select NAME, (select count(*) from bamanagertb where auth_name = bamgrauthtb_mu.name) as cnt from BAMGRAUTHTB_MU where NAME != '기본값' group by NAME order by name asc
+	</select>
+	<insert id="insLevel" parameterType="hashmap">
+		insert into BAMGRAUTHTB_MU
+		(NAME, AUTH_URI, AUTH_KEY)
+		values
+		(#{level_name}, '', '')
+	</insert>
+	<update id="upLevel" parameterType="hashmap">
+		update BAMGRAUTHTB_MU
+		set
+		NAME = #{up_level_name}
+		where name = #{level_name}
+	</update>
+	<update id="upLevel_toUser" parameterType="hashmap">
+		update BAMANAGERTB
+		set
+		AUTH_NAME = #{up_level_name}
+		where AUTH_NAME = #{level_name}
+	</update>
+	<select id="level_chk" parameterType="hashmap" resultType="int">
+		select count(*) from BAMGRAUTHTB_MU where NAME = #{level_name} 
+		<if test="!auth_uri.equals('')">
+			and AUTH_URI = #{auth_uri}
+		</if>
+	</select>
+	<insert id="level_addAuth" parameterType="hashmap">
+		insert into BAMGRAUTHTB_MU
+		(NAME, AUTH_URI, AUTH_KEY)
+		values
+		(#{level_name}, #{auth_uri}, #{auth_key})
+	</insert>
+	<update id="level_editAuth" parameterType="hashmap">
+		update BAMGRAUTHTB_MU
+		set
+		AUTH_KEY = #{auth_key}
+		where NAME = #{level_name} and AUTH_URI = #{auth_uri} 
+	</update>
+	<update id="level_editUser" parameterType="hashmap">
+		update BAMGRAUTHTB X
+		set
+		AUTH_KEY = #{auth_key}
+		where (select AUTH_NAME from BAMANAGERTB where SEQ_NO = X.SEQ_NO and AUTH_NAME = #{level_name} and AUTH_CUSTOM != 'Y') = #{level_name} and AUTH_URI = #{auth_uri} 
+	</update>
+	<delete id="level_delAuth">
+		delete from BAMGRAUTHTB_MU where NAME = #{level_name}
+	</delete>
+	<select id="getBizno" parameterType="hashmap" resultType="hashmap">
+		select * from BAMANAGERTB where BIZNO = #{bizno}
+	</select>
+	<update id="edit_appro" parameterType="hashmap">
+		update BAMANAGERTB
+		set
+		STATUS = #{modify_status}
+		where
+		SEQ_NO = #{modify_seq_no}
+	</update>
+	<select id="getAuthName" parameterType="hashmap" resultType="hashmap">
+		select seq_no from BAMANAGERTB 
+			where AUTH_NAME = #{auth_name}
+			and AUTH_CUSTOM = 'N'
+	</select>
+	<update id="auth_custom" parameterType="hashmap">
+		update BAMANAGERTB
+		set
+		AUTH_CUSTOM = 'Y'
+		where SEQ_NO = #{seq_no}
+	</update>
+</mapper>

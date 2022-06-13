@@ -1,0 +1,98 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+<script>
+	var dp = jQuery.noConflict();
+</script>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
+<script>
+$(function(){
+	dp.datepicker.setDefaults({
+		/*
+		showOn: "both",		//버튼생성, "button": 버튼으로만 선택할수있게
+		buttonImage: "",	//버튼이미지경로
+		buttonImageOnly: false,	//true: 버튼기본속성 제거(직접 써보시길)
+		*/
+		showButtonPanel: true,	//오늘 날짜, 닫기 버튼표시
+		currentText: "오늘 날짜",	//오늘 날짜 텍스트
+		closeText: "닫기",	//닫기 텍스트
+		nextText: "다음 달",	//다음 달 버튼 title
+		prevText: "이전 달",	//이전 달 버튼 title
+		changeYear: true,	//년도를 select식으로 변경할 수 있게
+		changeMonth: true,	//월을 select식으로 변경할 수 있게
+		//한글화
+        monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        dayNames: ['일', '월', '화', '수', '목', '금', '토'],
+        dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+        dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+        dateFormat: "yy-mm"
+	});
+	//datepicker END
+});
+$(function(){
+	$(".date-i").removeClass("hasMonthpicker");
+	$(".date-i").each(function(){
+		var $this = dp(this);
+		$this.datepicker()
+	});
+	$(".start-i").each(function(){
+		var $this = dp(this);
+		$this.val(lastMonth());
+	});
+});
+function dateInit()
+{
+	$(".date-i").removeClass("hasMonthpicker");
+	$(".date-i").each(function(){
+		var $this = dp(this);
+		$this.datepicker()
+	});
+	$(".start-i").each(function(){
+		var $this = dp(this);
+		$this.val(lastMonth());
+	});
+}
+function lastMonth() {
+  var d = new Date()
+  var monthOfYear = d.getMonth()
+  d.setMonth(monthOfYear - 1)
+  return getDateStr(d)
+}
+function getDateStr(myDate){
+	var month = new String(myDate.getMonth()+1);
+	var day = new String(myDate.getDate());
+	if(month.length == 1){ 
+		  month = "0" + month; 
+		} 
+	if(day.length == 1){ 
+		  day = "0" + day; 
+		} 
+	return (myDate.getFullYear() + '-' + month)
+}
+
+function getNow_month()
+{
+	var date = new Date(); 
+	var year = date.getFullYear(); 
+	var month = new String(date.getMonth()+1); 
+
+	// 한자리수일 경우 0을 채워준다. 
+	if(month.length == 1){ 
+	  month = "0" + month; 
+	} 
+	return year + "-" + month;
+}
+$(function(){
+	$(".ready-i").each(function(){
+		var $this = dp(this);
+		$this.val(getNow_month());
+	});
+});
+function dateInit()
+{
+	$(".ready-i").each(function(){
+		var $this = dp(this);
+		$this.val(getNow_month());
+	});
+}
+</script>

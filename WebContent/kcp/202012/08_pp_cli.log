@@ -1,0 +1,5 @@
+[201208 10:28:02.308][T0000C0AS000cqA0]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[201208 10:28:02.904][T0000C0AS000cqA0]PG_SERVER_CONN__SUCC
+[201208 10:28:02.906][T0000C0AS000cqA0]PG_SERVER_REQ_MSG_SEND__SUCC
+[201208 10:28:03.131][T0000C0AS000cqA0]PG_SERVER_RES_MSG_RECV__SUCC
+[201208 10:28:03.134][T0000C0AS000cqA0]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202012081607390317611, app_no=20858527, ca_order_id=CULT202012081607390317611, tno=20973938470574, pg_txid=1208102803MP01AHKI0H2O0000000009000020858527, card_cd=CCLG, amount=900, coupon_mny=0, canc_time=20201208102803, van_apptime=20201208102803, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T0000C0AS000cqA0, mcht_taxno=1138521083, card_mny=900, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20201208102803, pay_method=PACA, quota=00}

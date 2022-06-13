@@ -1,0 +1,20 @@
+[210119 13:17:14.053][T00000JDHC0OM00m]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[210119 13:17:15.516][T00000JDHC0OM00m]PG_SERVER_CONN__SUCC
+[210119 13:17:15.518][T00000JDHC0OM00m]PG_SERVER_REQ_MSG_SEND__SUCC
+[210119 13:17:17.351][T00000JDHC0OM00m]PG_SERVER_RES_MSG_RECV__SUCC
+[210119 13:17:17.354][T00000JDHC0OM00m]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202101191611029502101, app_no=17122828, ca_order_id=CULT202101191611029502101, tno=21269940541469, pg_txid=0119131716MP01AD9NGH070000000005000017122828, card_cd=CCLG, amount=500, coupon_mny=0, canc_time=20210119131716, van_apptime=20210119131716, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T00000JDHC0OM00m, mcht_taxno=1138521083, card_mny=500, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20210119131716, pay_method=PACA, quota=00}
+[210119 13:26:58.356][T00000JDQv0OMrcf]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[210119 13:26:59.767][T00000JDQv0OMrcf]PG_SERVER_CONN__SUCC
+[210119 13:26:59.769][T00000JDQv0OMrcf]PG_SERVER_REQ_MSG_SEND__SUCC
+[210119 13:27:01.900][T00000JDQv0OMrcf]PG_SERVER_RES_MSG_RECV__SUCC
+[210119 13:27:01.909][T00000JDQv0OMrcf]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202101191611030102736, app_no=17122829, ca_order_id=CULT202101191611030102736, tno=21269940541593, pg_txid=0119132701MP01AF9NTFAM0000000005000017122829, card_cd=CCLG, amount=500, coupon_mny=0, canc_time=20210119132701, van_apptime=20210119132701, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T00000JDQv0OMrcf, mcht_taxno=1138521083, card_mny=500, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20210119132701, pay_method=PACA, quota=00}
+[210119 13:37:18.094][T00000JDbG0miJlK]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[210119 13:37:18.133][T00000JDbG0miJlK]PG_SERVER_CONN__SUCC
+[210119 13:37:18.135][T00000JDbG0miJlK]PG_SERVER_REQ_MSG_SEND__SUCC
+[210119 13:37:19.365][T00000JDbG0miJlK]PG_SERVER_RES_MSG_RECV__SUCC
+[210119 13:37:19.368][T00000JDbG0miJlK]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202101191611030610788, app_no=17122830, ca_order_id=CULT202101191611030610788, tno=21269940541797, pg_txid=0119133718MP01AE9O5WGG0000000005000017122830, card_cd=CCLG, amount=500, coupon_mny=0, canc_time=20210119133718, van_apptime=20210119133718, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T00000JDbG0miJlK, mcht_taxno=1138521083, card_mny=500, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20210119133718, pay_method=PACA, quota=00}
+[210119 13:52:51.804][T00000JDqo000m0M]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[210119 13:52:53.382][T00000JDqo000m0M]PG_SERVER_CONN__SUCC
+[210119 13:52:53.384][T00000JDqo000m0M]PG_SERVER_REQ_MSG_SEND__SUCC
+[210119 13:52:54.312][T00000JDqo000m0M]PG_SERVER_RES_MSG_RECV__SUCC
+[210119 13:52:54.315][T00000JDqo000m0M]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202101191611031914096, app_no=17122835, ca_order_id=CULT202101191611031914096, tno=21269940542389, pg_txid=0119135253MP01AF9OW3TB0000000005000017122835, card_cd=CCLG, amount=500, coupon_mny=0, canc_time=20210119135253, van_apptime=20210119135253, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T00000JDqo000m0M, mcht_taxno=1138521083, card_mny=500, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20210119135253, pay_method=PACA, quota=00}

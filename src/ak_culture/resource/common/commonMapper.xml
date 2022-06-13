@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/commonMapper">
+	<select id="retrievePeriod" parameterType="hashmap"  resultType="string">
+		select period from (select period from baperitb where web_open_ymd <![CDATA[<=]]> TO_CHAR(SYSDATE,'YYYYMMDD') and store = '${store}' order by web_open_ymd desc ) where rownum = 1
+	</select>
+
+	<select id="getRecentPeri" parameterType="hashmap" resultType="hashmap">
+		select
+			X.*
+			from ( 
+			    select rownum as rnum, A.*
+			    from ( 
+		             select * from baperitb where 1=1 
+		             	and period <![CDATA[<=]]> '${period}'
+		              order by period desc
+		        
+		        ) A
+		    where rownum <![CDATA[<=]]> #{semester_cnt}) X
+		where X.rnum  <![CDATA[>]]> 0  
+	</select>
+	
+	<select id="getRecentPeriforTarget" parameterType="hashmap" resultType="hashmap">
+	     select
+			X.*
+			from ( 
+			    select rownum as rnum, A.*
+			    from ( 
+		             select * from baperitb where 1=1
+                        and period <![CDATA[<=]]> (select bb.period from baperitb bb where bb.web_text like concat(${year},'%') and bb.web_text like concat('%','${season}'))
+                     order by period desc
+		        ) A
+		    where rownum <![CDATA[<=]]> #{num}) X
+		where X.rnum  <![CDATA[>]]> 0  
+	</select>
+	
+	<select id="getPeriList" parameterType="hashmap" resultType="hashmap">
+		select 
+		BAPERITB.*,
+		(select short_name from bacodetb where CODE_FG = '02' and sub_code = baperitb.store) as store_nm
+		from BAPERITB where store != '01'
+		<if test="!selBranch.equals('')">
+			and STORE = '${selBranch}'
+    	</if>
+		<if test="!selYear.equals('')">
+			and WEB_TEXT like '${selYear}'||'%'
+    	</if>
+		<if test="!selSeason.equals('')">
+			and WEB_TEXT like '%'||'${selSeason}'||'%'
+    	</if>
+    	order by PERIOD desc
+	</select>
+
+	<select id="getPeriList2" parameterType="hashmap" resultType="hashmap">
+		select HQ, STORE, PERIOD, WEB_TEXT, (SELECT SHORT_NAME FROM BACODETB WHERE SUB_CODE = STORE AND CODE_FG = '02') as SHORT_NAME from BAPERITB where 1=1
+		and STORE = '${selBranch}' and PERIOD = '${selPeri}'
+    	order by PERIOD desc
+	</select>
+   <select id="getBranch" parameterType="hashmap" resultType="hashmap">
+		select * from BACODETB where CODE_FG = '02'
+		<if test="!rep_store.equals('')">
+			and SUB_CODE = '${rep_store}'
+    	</if>
+	</select>
+   <select id="get1Depth" parameterType="hashmap" resultType="hashmap">
+		select * from BACODETB where CODE_FG = '09' and delete_yn != 'Y' order by TO_NUMBER(sub_code)
+	</select>
+	<select id="get1Depth_incDel" parameterType="hashmap" resultType="hashmap">
+		select * from BACODETB where CODE_FG = '09' order by TO_NUMBER(sub_code)
+	</select>
+   <select id="getUser_byPhone" parameterType="hashmap" resultType="hashmap">
+		select * from BACUSTTB where (h_phone_no_1 like CONCAT(CONCAT('%', '${phone}'), '%') or h_phone_no_2 like CONCAT(CONCAT('%', '${phone}'), '%') or h_phone_no_3 like CONCAT(CONCAT('%', '${phone}'), '%')) and rownum <![CDATA[<=]]> 100
+	</select>
+   <select id="getAms_byPhone" parameterType="hashmap" resultType="hashmap">
+		select 
+		(select psno from ams_cus_addr where cus_no = AMS_CUS.cus_no and rownum = 1) as psno,
+		(select pnadd from ams_cus_addr where cus_no = AMS_CUS.cus_no and rownum = 1) as pnadd,
+		(select dts_addr from ams_cus_addr where cus_no = AMS_CUS.cus_no and rownum = 1) as dts_addr,
+		(select card_no from ams_card where cus_no = AMS_CUS.cus_no and rownum = 1) as card_no,
+		(select count(*) as cnt from BALECTURETB where cus_no = AMS_CUS.cus_no) as cnt,
+		AMS_CUS.*
+		from AMS_CUS  
+		where 
+    			mtel_ident_no like CONCAT(CONCAT('%', ${phone}), '%') or 
+    			MMT_EX_NO like CONCAT(CONCAT('%', ${phone}), '%') or 
+    			MTEL_UNIQ_NO like CONCAT(CONCAT('%', ${phone}), '%') or
+    			mtel_ident_no||MMT_EX_NO||MTEL_UNIQ_NO like CONCAT(CONCAT('%', '${phone}'), '%') and rownum <![CDATA[<=]]> 100
+	</select>
+	
+	
+	<select id="getTargetCustList" parameterType="hashmap" resultType="hashmap">
+		select 
+		    distinct((select bb.cus_no from bacusttb bb where bb.cust_no = aa.cust_no)) as cus_no,
+		    (select bb.cust_no from bacusttb bb where bb.cust_no = aa.cust_no) as cust_no,
+		    (select bb.kor_nm from bacusttb bb where bb.cust_no = aa.cust_no) as kor_nm,
+		    nvl(
+		        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+		            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+		          from ams_bz_sect_mbr_grade bb
+		             where bb.cus_no = (select cus_no from bacusttb where cust_no = aa.cust_no)
+		             and bb.bz_sect = '1'
+               		 and to_char(sysdate,'yyyymmdd') between bb.apy_bgng_dt and bb.apy_ed_dt and rownum = 1
+		        ),'Entry'
+		       ) as grade,
+		    (select count(*) from baperetb bb where bb.cust_no = aa.cust_no and aa.regis_cancel_fg='1') as lect_cnt
+		from baperetb aa where 1=1 
+		    and hq=00
+		    and store = ${selBranch}
+		    and (select bb.web_text from baperitb bb where bb.period = aa.period ) like concat(${year},'%')
+		    and (select bb.web_text from baperitb bb where bb.period = aa.period ) like concat('%','${season}')
+		    <if test="!main_cd.equals('')">
+				 and main_cd = ${main_cd}
+    		</if>
+    		
+    		<if test="!sect_cd.equals('')">
+    			and sect_cd = ${sect_cd}
+    		</if>
+	</select>
+	
+	<select id="getUser_byCus_no" parameterType="hashmap" resultType="hashmap">
+		select * from BACUSTTB where  CUST_NO = '${cusno}'
+	</select>
+	
+	<select id="getSecCd" parameterType="hashmap" resultType="hashmap">
+		select * from basecttb where main_cd = '${maincd}' and delete_yn != 'Y'
+		 <if test="!selBranch.equals('')">
+			and (store = '${selBranch}' or store = '99')
+    	</if>
+	</select>
+	<update id="delMainCd" parameterType="hashmap">
+		delete from bacodetb where code_fg = '09' and sub_code = '${maincd}'
+	</update>
+	<select id="getUserByCust" parameterType="hashmap" resultType="hashmap">
+	
+	select
+       nvl(
+            (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+                '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+             from ams_bz_sect_mbr_grade bb
+             
+                where bb.cus_no = (select cus_no from bacusttb where cust_no = aa.cust_no and store = aa.store)
+                and bb.bz_sect = '1'
+                and to_char(sysdate,'yyyymmdd') between bb.apy_bgng_dt and bb.apy_ed_dt and rownum = 1
+             ),'Entry'
+           ) as class,
+          ( SELECT card_no     
+             FROM AMS_CUS a INNER JOIN AMS_CARD b                        
+                ON a.cus_no = b.cus_no                                     
+                LEFT JOIN AMS_MBR c ON a.cus_no = c.cus_no                
+                WHERE a.cus_no = aa.cus_no                                         
+                AND c.INFO_CNJGT_AG_DC = '111' AND b.HI_UPR_BL is null    
+                AND ROWNUM <![CDATA[<=]]> 1
+            ) as card_no,
+       (select sum(net_sale_amt) from batrmstb where cust_no = aa.cust_no and sale_fg=1 and in_type=1) as total_amt,
+       (select count(*) from baperetb bb where bb.regis_cancel_fg='1' and bb.cust_no = aa.cust_no) as lect_cnt,
+       aa.*
+from bacusttb aa left join ams_card on aa.cus_no = ams_card.cus_no where 1=1
+    and aa.cust_no = '${cust_no}'  and rownum = 1
+
+	</select>
+	<select id="getUserByAms" parameterType="hashmap" resultType="hashmap">
+		select ams_cus.*, ams_card.card_no ,
+		(select psno from ams_cus_addr where cus_no = AMS_CUS.cus_no) as psno,
+		(select pnadd from ams_cus_addr where cus_no = AMS_CUS.cus_no) as pnadd,
+		(select dts_addr from ams_cus_addr where cus_no = AMS_CUS.cus_no) as dts_addr
+		from ams_cus
+		left join
+		ams_card
+		on
+		ams_cus.cus_no = ams_card.cus_no
+		where ams_cus.CUS_NO = '${cus_no}' 
+		order by ams_card.chg_dtm desc
+	</select>
+
+	<select id="getLectSearch" parameterType="hashmap" resultType="hashmap">
+		select 
+		bapelttb.*,
+		ba_get_wait_cnt(bapelttb.store, bapelttb.period, bapelttb.subject_cd) as wait_cnt
+		from bapelttb where 1=1
+		and store = '${store}' 
+		and period = '${period}'
+		<if test="!subject_cd.equals('')">
+			and subject_cd = '${subject_cd}'
+		</if>
+		<if test="!searchVal.equals('')">
+			and
+				(
+					subject_nm like CONCAT(CONCAT('%', '${searchVal}'), '%')
+						or
+					subject_cd = '${searchVal}'
+						or
+					web_lecturer_nm1 like CONCAT(CONCAT('%', '${searchVal}'), '%')
+						or
+					web_lecturer_nm like CONCAT(CONCAT('%', '${searchVal}'), '%')
+					
+				) 
+    	</if>
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+		    order by ${sort_type} ${order_by}
+		</if>	
+	</select>
+	<select id="getLects" parameterType="hashmap" resultType="hashmap">
+		select * from bapelttb
+		where
+		bapelttb.subject_cd in (${subject_cd})
+		and store = '${store}'
+		and period = '${period}' 
+	</select>
+	<select id="getUserByMembersCard" parameterType="hashmap" resultType="hashmap">
+		SELECT ROWNUM
+		     , X.*
+		  FROM ( SELECT A.*
+		           FROM ams_card A
+		          ORDER BY A.rg_dtm desc
+		       ) X
+		       where CUS_NO = '${cus_no}'  and rownum = 1
+	</select>
+	<select id="getCardNo" parameterType="hashmap" resultType="hashmap">
+		SELECT CARD_CO AS CARD_FLAG,
+                       CARD_NM AS CARD_NM,
+                       CARD_FG AS CARD_CO_ORIGIN_SEQ,
+                       NVL(SIGN_FG,'N') as SAIN_FG,
+                       CARD_PRI_NM AS CARD_PRI_NM,
+                       CARD_TYPE AS CARD_TYPE
+                  FROM BCSPCATB@akris
+                 WHERE CARD_ID = '${card_no}'
+                   AND DELETE_FG = '0' and rownum = 1
+	</select>
+	<select id="getPosList" parameterType="hashmap" resultType="hashmap">
+		select * from baposmtb where store = '${store}'
+	</select>
+	<select id="getPeltBySect" parameterType="hashmap" resultType="hashmap">
+		select * from bapelttb where store = '${store}' and period = '${period}' and main_cd = '${main_cd}' and sect_cd = '${sect_cd}'
+	</select>
+	<select id="getPeltBySubjectCd" parameterType="hashmap" resultType="hashmap">
+		select * from bapelttb where store = '${store}' and period = '${period}' and subject_cd in(${subject_cd})
+	</select>
+	<select id="getStoreName" parameterType="hashmap" resultType="String">
+		select short_name from bacodetb where code_fg = '02' and sub_code = '${store}'
+	</select>
+	<select id="getCardCount" parameterType="hashmap" resultType="int">
+		SELECT SUM(CNT) AS LI_ROW
+                   FROM
+                        (SELECT COUNT(*) CNT
+                           FROM BCMEMATB@akris
+                          WHERE CARD_NO = '${card_no}'
+                            AND STORE =  '10')
+	</select>
+	<select id="getCardCount822" parameterType="hashmap" resultType="int">
+		SELECT SUM(CNT) AS LI_ROW822
+                   FROM
+                        (SELECT COUNT(*) CNT
+                           FROM BCMEMATB@akris
+                          WHERE CARD_NO = '${card_no}'
+                            AND STORE = '09')
+	</select>
+	<select id="getProcListCount" parameterType="hashmap" resultType="hashmap">
+	   	select 
+		count(*) as CNT
+		from axproctb a, bamanagertb b
+		where 1=1 
+		<if test="!pgm_id.equals('')">
+			and a.PGM_ID = '${pgm_id}'
+    	</if>
+		<if test="!pgm_arg.equals('')">
+			and   a.PGM_ARGUMENT like '${pgm_arg}'||'%'
+    	</if>
+	</select>
+	<select id="getProcList" parameterType="hashmap" resultType="hashmap">
+	select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+		    	select 
+				distinct a.PGM_ID,
+				decode(substr(a.PGM_ARGUMENT,1,4),'0003','AK분당점','0002','AK수원점','0004','AK평택점','0005','원주점') store_nm, 
+				a.PGM_NM, 
+				a.REQ_START_TM, 
+				a.PGM_ARGUMENT, 
+				substr(a.PGM_ARGUMENT, 13, 6) as pos_no,
+				decode(a.STATUS_FG,'R','의뢰','I','실행','Y','정상','E','에러') status, 
+				a.REQ_RESI_NO, 
+				a.JOB_START_TM, 
+				a.JOB_END_TM, 
+				a.OUTPUT_ID, 
+				a.PAGE_CNT, 
+				a.ERROR_CD, 
+				a.ERROR_MSG, 
+				a.JOB_RESI_NO,
+				nvl((select name from bamanagertb where seq_no = trim(a.req_resi_no)), '관리자') as user_nm
+				from axproctb a
+				where a.PGM_ID = '${pgm_id}'
+				and   a.PGM_ARGUMENT like '${pgm_arg}'||'%'
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+	   		order by ${sort_type} ${order_by}
+	   	</if>
+	</select>
+	<select id="getProcList_noPaging" parameterType="hashmap" resultType="hashmap">
+	
+		    	select 
+				distinct a.PGM_ID,
+				decode(substr(a.PGM_ARGUMENT,1,4),'0003','AK분당점','0002','AK수원점','0004','AK평택점','0005','원주점') store_nm, 
+				a.PGM_NM, 
+				a.REQ_START_TM, 
+				a.PGM_ARGUMENT, 
+				substr(a.PGM_ARGUMENT, 13, 6) as pos_no,
+				decode(a.STATUS_FG,'R','의뢰','I','실행','Y','정상','E','에러') status, 
+				a.REQ_RESI_NO, 
+				a.JOB_START_TM, 
+				a.JOB_END_TM, 
+				a.OUTPUT_ID, 
+				a.PAGE_CNT, 
+				a.ERROR_CD, 
+				a.ERROR_MSG, 
+				a.JOB_RESI_NO,
+				nvl((select name from bamanagertb where seq_no = trim(a.req_resi_no)), '관리자') as user_nm
+				from axproctb a
+				where a.PGM_ID = '${pgm_id}'
+				and   a.PGM_ARGUMENT like '${pgm_arg}'||'%'
+		    
+	</select>
+	<select id="getBookmark" parameterType="hashmap" resultType="hashmap">
+		select * from babookmarktb where trim(create_resi_no) = '${login_seq}'
+	</select>
+	<update id="upBookmark" parameterType="hashmap">
+		update babookmarktb set bookmark = '${link}', title = '${tit}' where trim(create_resi_no) = '${login_seq}'
+	</update>
+	<insert id="insBookmark" parameterType="hashmap">
+		insert into babookmarktb (create_resi_no, bookmark, title) values('${login_seq}', '${link}', '${tit}')
+	</insert>
+	<select id="isInPeltByCust" parameterType="hashmap" resultType="hashmap">
+		select count(*) as cnt from baperetb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}' and cust_no = '${cust_no}' and cancel_ymd is null and recpt_no != '*'
+		and trim(child_no) = '${child_no1}'
+	</select>
+	<select id="isPartPayByCust" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+        count(*) as cnt 
+        FROM
+        BATRMSTB A, BATRDETB B
+        WHERE A.HQ = B.HQ
+        AND A.STORE = B.STORE
+        AND A.SALE_YMD = B.SALE_YMD
+        AND A.POS_NO = B.POS_NO
+        AND A.RECPT_NO = B.RECPT_NO
+        AND
+        ( 
+        	(SELECT SALE_YMD FROM BAPERETB WHERE HQ = A.HQ AND STORE = A.STORE AND PERIOD = A.PERIOD AND SALE_YMD = A.SALE_YMD AND POS_NO = A.POS_NO AND RECPT_NO = A.RECPT_NO AND SUBJECT_CD = B.SUBJECT_CD AND ROWNUM = 1) IS NULL
+        	or 
+        	nvl((select mem_fg from bawbtrtb where sale_ymd = a.sale_ymd and store = a.store and period = a.period and subject_cd = b.subject_cd and cust_no = '${cust_no}' and send_recpt_no = a.recpt_no and rownum = 1), 'A') = 'C'
+        )
+        AND A.SALE_FG = '01' AND A.CANCEL_YN != 'Y'
+        AND A.STORE = '${store}' AND A.PERIOD = '${period}' AND B.SUBJECT_CD = '${subject_cd}' AND A.CUST_NO = '${cust_no}'
+	</select>
+	<select id="isFullPeltByCust" parameterType="hashmap" resultType="hashmap">
+		select 
+		(CAPACITY_NO - (NVL(WEB_REGIS_NO,0)) - (NVL(REGIS_NO,0))) as possible_no
+		from bapelttb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</select>
+	<select id="getAxuserByName" parameterType="hashmap" resultType="hashmap">
+	     SELECT a.USER_ID,
+                       a.USER_NM AS USER_NM,
+                       a.SCT_CD,
+                       (SELECT SCT_NM
+                          FROM AX2SCTTB@akris
+                         WHERE SCT_CD = a.SCT_CD) AS SCT_NM,
+                       a.BIZ_GRADE,
+                       a.SEC_GRADE,
+                       a.USER_REG_FG,
+                       a.HQ,
+                       a.STORE
+                  FROM AX2USRTB@akris a
+                 WHERE a.USER_NM like '%'||'${user_nm}'||'%'
+                   AND ( LENGTH(a.USER_ID) = 13 OR 1 = (SELECT 1 FROM AKHRSYS.HRPM012VW@AKHRAC WHERE NO_SAWON = a.USER_ID) )   
+                   AND a.BIZ_STAT = '1'
+                   AND a.USER_STAT = '0'
+                 ORDER BY a.USER_ID
+	</select>
+	<select id="BACust0101_S01" parameterType="hashmap" resultType="hashmap">
+		SELECT *
+         FROM BACUSTTB
+        WHERE HQ = '00'
+          AND TRIM(H_PHONE_NO_1)||TRIM(H_PHONE_NO_2)||TRIM(H_PHONE_NO_3) = '${val}'
+	</select>
+	
+	<select id="BACust0101_S02" parameterType="hashmap" resultType="hashmap">
+		SELECT *
+         FROM BACUSTTB
+        WHERE HQ = '00'
+          AND cust_no='${val}'
+	</select>
+	
+	<select id="get_AMS_info_by_tel" parameterType="hashmap" resultType="hashmap">
+		select 
+		    bb.mem_type,
+		    aa.* 
+		from ams_cus aa, AMS_MBR bb where 
+		    TRIM(aa.mtel_ident_no)||trim(aa.mmt_ex_no)||trim(aa.mtel_uniq_no)='${val}'
+		    and bb.cus_no = aa.cus_no
+		    and bb.mem_type='T'
+	</select>
+	
+	<select id="get_AMS_info_by_cus_no" parameterType="hashmap" resultType="hashmap">
+		select 
+		    bb.mem_type,
+		    aa.* 
+		from ams_cus aa, AMS_MBR bb where 
+		    aa.cus_no = '${val}'
+		    and bb.cus_no = aa.cus_no
+		    and bb.mem_type='T'
+	</select>
+	
+	<insert id="addToculture" parameterType="hashmap">
+		   INSERT INTO BACUSTTB  (  
+                             HQ,               
+                             STORE,            
+                             PERIOD,           
+                             ID,               
+                             CUST_NO,          
+                             KOR_NM,           
+                             ENG_NM,           
+                             SEX_FG,           
+                             DM_DISPH_PLACE_FG, 
+                             MARRY_FG,         
+                             MARRY_YMD,        
+                             RESI_NO,          
+                             PASSWORD,                                     
+                             BIRTH_YMD,        
+                             S_L_FG,                             
+                             POST_NO1,         
+                             POST_NO2,            
+                             ADDR_TX,          
+                             ADDR_TX1,         
+                             ADDR_TX2,                        
+                             PHONE_NO1,                                      
+                             PHONE_NO2,        
+                             PHONE_NO3,        
+                             H_PHONE_NO_1,     
+                             H_PHONE_NO_2,                       
+                             H_PHONE_NO_3,     
+                             EMAIL_ADDR,                         
+                             CONFIRM_YN,       
+                             ACCEPT_YMD,                         
+                             CREATE_RESI_NO,   
+                             CREATE_DATE,                        
+                             EMAIL_YN,         
+                             SMS_YN,                             
+                             LEAVE_YN,         
+                             PTL_ID,           
+                             PTL_PW,             
+                             CUS_NO,                                                                   
+                             CONFIRM_DATE,     
+                             RESI_NO6,         
+                             DI,               
+                             CI,               
+                             CLUB_1,           
+                             H_NEW_ADDR_YN,        
+                             HOM_ADDR_IN_FG,       
+                             SYNC_NEW_YN    )       
+                      SELECT                                                        
+                              '00'                                                   
+                              ,'${store}'                                                       
+                              ,'${period}'                                                       
+                              ,c.PTL_ID                                             
+                              ,'${cus_no}'                                       
+                              ,c.CUS_PN              
+                              ,c.ENG_PN          
+                              ,c.NTR_DC          
+                              ,c.PSMT_RVP_CD  DM_DISPH_PLACE_FG   
+                              ,DECODE(c.WEDD_YN, 'N', '2', 'Y', '1')   
+                              ,c.WEDD_DT         
+                              ,c.RRNO              
+                              ,c.PTL_PW                                         
+                              ,c.BMD                                            
+                              ,c.SLR_DC                                         
+                              ,SUBSTR(a.PSNO,1,3) POST_NO1            
+                              ,SUBSTR(a.PSNO,4,3) POST_NO2            
+                              ,a.PNADD||' '||a.DTS_ADDR   ADDR_TX    
+                              ,a.PNADD ADDR_TX1                    
+                              ,a.DTS_ADDR ADDR_TX2                    
+                              ,a.TEL_ZON_NO PHONE_NO1         
+                              ,a.TEL_EX_NO PHONE_NO2         
+                              ,a.TEL_UNIQ_NO PHONE_NO3     
+                              ,c.MTEL_IDENT_NO H_PHONE_NO_1         
+                              ,c.MMT_EX_NO H_PHONE_NO_2         
+                              ,c.MTEL_UNIQ_NO H_PHONE_NO_3                            
+                              ,c.EMAIL_ADDR                               
+                              ,'Y'                                      
+                              ,TO_CHAR(SYSDATE,'YYYYMMDD')              
+                              ,'CULTURE_WEB'                            
+                              ,TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')        
+                              ,c.EMAIL_RCV_YN             
+                              ,c.SMS_RCVR_YN         
+                              ,'N'                                      
+                              ,c.PTL_ID                                   
+                              ,c.PTL_PW                                 
+                              ,c.CUS_NO                            
+                              ,(SELECT m.ENT_DT                                           
+                                  FROM AMS_MBR m                                      
+                                 WHERE m.CUS_NO = c.CUS_NO) AS BEG_ENT_DT                       
+                              ,substr(c.BMD, 3, 8) as RESI_NO6      
+                              ,c.DI                                
+                              ,c.CI                                
+                              ,NVL((SELECT b.USE_YN                            
+                                      FROM AMS_MBR_CLUB b                 
+                                     WHERE b.CLUB_CD = '01'                  
+                                       AND b.CUS_NO = c.CUS_NO            
+                                  ),'N')                                              
+                              ,a.NEW_ADDR_YN  AS H_NEW_ADDR_YN   
+                              ,a.ADDR_IN_FG                       
+                              ,'Y'                                      
+                          FROM AMS_CUS c                   
+                             , AMS_CUS_ADDR a               
+                         WHERE c.CUS_NO = a.CUS_NO(+)      
+                            AND a.ADDR_DC(+) = '1'              
+                            AND a.ADDR_UPS_YN(+) = 'Y'        
+                            AND a.FNL_ADDR_YN(+) = 'Y'        
+                            AND c.cus_no='${cus_no}'
+	</insert>
+	<insert id="saveManagerLog" parameterType="hashmap">
+		insert into balogstb
+		(create_resi_no, detail, target, create_date)
+		values
+		('${create_resi_no}', '${detail}', '${target}', TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')  )
+	</insert>
+	<select id="getMembersCard" parameterType="hashmap" resultType="string">
+	 SELECT card_no     
+             FROM AMS_CUS a INNER JOIN AMS_CARD b                        
+                ON a.cus_no = b.cus_no                                     
+                LEFT JOIN AMS_MBR c ON a.cus_no = c.cus_no                
+                WHERE a.cus_no = '${cus_no}'                                          
+                AND c.INFO_CNJGT_AG_DC = '111' AND b.HI_UPR_BL is null    
+                AND ROWNUM <![CDATA[<=]]> 1
+
+	</select>
+	<select id="getChangeByLeader" parameterType="hashmap" resultType="hashmap">
+		select
+		(select short_name from bacodetb where CODE_FG = '02' and sub_code = bapechtb.store) as store_nm,
+		(select subject_nm from bapelttb where store = bapechtb.store and period = bapechtb.period and subject_cd = bapechtb.subject_cd) as subject_nm,
+		bapechtb.*
+		from bapechtb where confirm_yn = '1'
+	</select>
+</mapper>

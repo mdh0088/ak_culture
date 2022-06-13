@@ -1,0 +1,2035 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/lecture/lectMapper">
+
+	<select id="getLecrCount" parameterType="hashmap"
+		resultType="hashmap">
+		select count(*) as CNT from BALECRTB where 1=1 and delete_yn = 'N'
+		<if test="!search_name.equals('')">
+			<!-- and id like CONCAT(CONCAT('%', #{search_name}), '%') -->
+		</if>
+	</select>
+
+
+	<select id="getLecr" parameterType="hashmap"
+		resultType="hashmap">
+
+
+		select
+		X.ADDR_TX1, X.ADDR_TX2, X.H_PHONE_NO1, X.H_PHONE_NO2, X.H_PHONE_NO3, X.C_NM,
+		X.DEPT_NM, X.POSI, X.C_POST_NO1, X.C_POST_NO2, X.C_ADDR_TX,
+		X.C_ADDR_TX1, X.C_ADDR_TX2, X.C_PHONE_NO1, X.C_PHONE_NO2,
+		X.C_PHONE_NO3, X.BANK_CD, X.ACCOUNT_NO, X.CORP_FG, X.BIZ_NO, X.BIZ_NM,
+		X.PRESIDENT_NM, X.BIZ_ADDR, X.BIZ_ADDR_TX1, X.BIZ_ADDR_TX2, X.LIFNR,
+		X.P_PHONE_NO1, X.P_PHONE_NO2, X.P_PHONE_NO3, X.EMAIL_ADDR,
+		X.CREATE_RESI_NO, X.CREATE_DATE, X.INDUSTRY_C, X.INDUSTRY_S,
+		X.APPR_NO, X.STATUS_FG, X.H_NEW_ADDR_YN, X.C_NEW_ADDR_YN,
+		X.B_NEW_ADDR_YN, X.SUBJECT_NM, X.HOM_ADDR_IN_FG, X.RSP_CD,
+		X.OFF_ADDR_IN_FG, X.OFF_RSP_CD, X.CAR_NO, X.ACCOUNT_NM,
+		X.BIZ_POST_NO1, X.BIZ_POST_NO2, X.LECTURER_CD, X.LECTURER_KOR_NM,
+		X.LECTURER_ENG_NM, X.LECTURER_W_NM, X.BIRTH_YMD, X.S_L_FG, X.MARRI_YN,
+		X.MARRI_YMD, X.HQ, X.STORE, X.POST_NO1, X.POST_NO2, X.ADDR_TX
+		from (
+		select rownum as rnum, A.PTL_ID, A.ADDR_TX1, A.ADDR_TX2, A.H_PHONE_NO1,
+		A.H_PHONE_NO2, A.H_PHONE_NO3, A.C_NM, A.DEPT_NM, A.POSI, A.C_POST_NO1,
+		A.C_POST_NO2, A.C_ADDR_TX, A.C_ADDR_TX1, A.C_ADDR_TX2, A.C_PHONE_NO1,
+		A.C_PHONE_NO2, A.C_PHONE_NO3, A.BANK_CD, A.ACCOUNT_NO, A.CORP_FG,
+		A.BIZ_NO, A.BIZ_NM, A.PRESIDENT_NM, A.BIZ_ADDR, A.BIZ_ADDR_TX1,
+		A.BIZ_ADDR_TX2, A.LIFNR, A.P_PHONE_NO1, A.P_PHONE_NO2, A.P_PHONE_NO3,
+		A.EMAIL_ADDR, A.CREATE_RESI_NO, A.CREATE_DATE, A.INDUSTRY_C,
+		A.INDUSTRY_S, A.APPR_NO, A.STATUS_FG, A.H_NEW_ADDR_YN,
+		A.C_NEW_ADDR_YN, A.B_NEW_ADDR_YN, A.SUBJECT_NM, A.HOM_ADDR_IN_FG,
+		A.RSP_CD, A.OFF_ADDR_IN_FG, A.OFF_RSP_CD, A.CAR_NO, A.ACCOUNT_NM,
+		A.BIZ_POST_NO1, A.BIZ_POST_NO2, A.LECTURER_CD, A.LECTURER_KOR_NM,
+		A.LECTURER_ENG_NM, A.LECTURER_W_NM, A.BIRTH_YMD, A.S_L_FG, A.MARRI_YN,
+		A.MARRI_YMD, A.HQ, A.STORE, A.POST_NO1, A.POST_NO2, A.ADDR_TX
+		from (
+		select
+		BACUSTTB.CUS_NO, BACUSTTB.PTL_ID,
+		BALECRTB.ADDR_TX1, BALECRTB.ADDR_TX2, BALECRTB.H_PHONE_NO1, BALECRTB.H_PHONE_NO2,
+		BALECRTB.H_PHONE_NO3, BALECRTB.C_NM, BALECRTB.DEPT_NM, BALECRTB.POSI,
+		BALECRTB.C_POST_NO1, BALECRTB.C_POST_NO2, BALECRTB.C_ADDR_TX,
+		BALECRTB.C_ADDR_TX1, BALECRTB.C_ADDR_TX2, BALECRTB.C_PHONE_NO1,
+		BALECRTB.C_PHONE_NO2, BALECRTB.C_PHONE_NO3, BALECRTB.BANK_CD,
+		BALECRTB.ACCOUNT_NO, BALECRTB.CORP_FG, BALECRTB.BIZ_NO,
+		BALECRTB.BIZ_NM, BALECRTB.PRESIDENT_NM, BALECRTB.BIZ_ADDR,
+		BALECRTB.BIZ_ADDR_TX1, BALECRTB.BIZ_ADDR_TX2, BALECRTB.LIFNR,
+		BALECRTB.P_PHONE_NO1, BALECRTB.P_PHONE_NO2, BALECRTB.P_PHONE_NO3,
+		BALECRTB.EMAIL_ADDR, BALECRTB.CREATE_RESI_NO, BALECRTB.CREATE_DATE,
+		BALECRTB.INDUSTRY_C, BALECRTB.INDUSTRY_S, BALECRTB.APPR_NO,
+		BALECRTB.STATUS_FG, BALECRTB.H_NEW_ADDR_YN, BALECRTB.C_NEW_ADDR_YN,
+		BALECRTB.B_NEW_ADDR_YN, BALECRTB.SUBJECT_NM, BALECRTB.HOM_ADDR_IN_FG,
+		BALECRTB.RSP_CD, BALECRTB.OFF_ADDR_IN_FG, BALECRTB.OFF_RSP_CD,
+		BALECRTB.CAR_NO, BALECRTB.ACCOUNT_NM, BALECRTB.BIZ_POST_NO1,
+		BALECRTB.BIZ_POST_NO2, BALECRTB.LECTURER_CD, BALECRTB.LECTURER_KOR_NM,
+		BALECRTB.LECTURER_ENG_NM, BALECRTB.LECTURER_W_NM, BALECRTB.BIRTH_YMD,
+		BALECRTB.S_L_FG, BALECRTB.MARRI_YN, BALECRTB.MARRI_YMD, BALECRTB.HQ,
+		BALECRTB.STORE, BALECRTB.POST_NO1, BALECRTB.POST_NO2, BALECRTB.ADDR_TX
+		from BACUSTTB
+		right join
+		BALECRTB
+		on BACUSTTB.CUST_NO = BALECRTB.LECTURER_CD
+		where 1=1
+		<if test="!search_name.equals('')">
+			<!-- and id like CONCAT(CONCAT('%', #{search_name}), '%') -->
+		</if>
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+			order by ${sort_type} ${order_by}
+		</if>
+		) A
+		where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+
+	</select>
+	<select id="getReadyPelt" parameterType="hashmap" resultType="int">
+		select count(*) from bapelttb a, bapelttb b
+		where
+		a.store = b.store
+		and a.subject_cd = b.subject_cd
+		and a.store = '${store}'
+		and b.store = '${store}'
+		and a.period = '${period}'
+		and b.period = '${prev_period}'
+		
+	</select>
+	<select id="getLect" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*,
+		ba_get_wait_cnt(X.store, X.period, X.subject_cd) as wait_cnt,
+		DECODE(X.SUBJECT_FG, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG,
+		(select short_name from bacodetb where code_fg = '09' and sub_code = X.main_cd) as MAIN_NM,
+		ba_sect_nm('00', X.store, X.main_cd, X.sect_cd) as sect_nm,
+		(select short_name from bacodetb where code_fg = '02' and sub_code = X.store)
+		as STORE_NAME,
+		
+		case when end_yn = 'Y' then '폐강'
+             when end_yn = 'O' then '개강'
+             when (CAPACITY_NO - (NVL(WEB_REGIS_NO,0)) - (NVL(REGIS_NO,0))) <![CDATA[<=]]> 0 then '마감'
+        
+		
+		
+		from
+		(
+		select
+		rownum as rnum,
+		A.*
+		from
+		(
+		select * from bapelttb
+		<if test="!search_name.equals('')">
+			<!-- and id like CONCAT(CONCAT('%', #{search_name}), '%') -->
+		</if>
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+			order by ${sort_type} ${order_by}
+		</if>
+		) A
+		where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+	</select>
+
+	<select id="getMain_cd" parameterType="hashmap"
+		resultType="hashmap">
+		select * from bacodetb where code_fg = '09'
+	</select>
+	<select id="selLectCate" parameterType="hashmap"
+		resultType="hashmap">
+		select * from bacodetb where short_name = #{insShortName} and code_fg = '09'
+	</select>
+	<select id="selLastCode" parameterType="hashmap"
+		resultType="hashmap">
+		select * from bacodetb where code_fg = '09' order by TO_NUMBER(sub_code)
+		desc
+	</select>
+	<select id="getlectcode" parameterType="hashmap" resultType="String">
+		select max(subject_cd)+1 as a from bapelttb
+	</select>
+	<select id="getLecrList" parameterType="hashmap"
+		resultType="hashmap">
+
+		SELECT
+		BALECTURETB.lecturer_cd,
+		decode(balecrtb.corp_fg, '1', '법인', '2', '개인') AS corp_fg,
+		ams_cus.*,
+		balecrtb.*
+		FROM
+		balecrtb, ams_cus, BALECTURETB
+
+		WHERE
+		BALECTURETB.lecturer_cd = balecrtb.lecturer_cd
+		and BALECTURETB.cus_no = ams_cus.cus_no
+		and ams_cus.cus_pn like CONCAT(CONCAT('%', '${lecr_name}'), '%')
+		and ams_cus.MTEL_UNIQ_NO like CONCAT(CONCAT('%', '${lecr_phone}'), '%')
+	</select>
+	<select id="selSectName" parameterType="hashmap"
+		resultType="hashmap">
+		select * from basecttb where sect_nm = #{sect_nm}
+	</select>
+	<select id="selLastSect" parameterType="hashmap"
+		resultType="hashmap">
+		select * from basecttb where main_cd = '${main_cd}'
+		order by sect_cd desc
+	</select>
+<!-- 	<insert id="insLect" parameterType="hashmap"> -->
+<!-- 		insert into BALECTTB -->
+<!-- 		(HQ, STORE, SUBJECT_CD, SUBJECT_NM, MAIN_CD, SECT_CD, LECT_CD, DELETE_YN, -->
+<!-- 		CREATE_RESI_NO, CREATE_DATE) -->
+<!-- 		VALUES -->
+<!-- 		('00', '${store}', '${subject_cd}', '${subject_nm}', '${main_cd}', -->
+<!-- 		'${sect_cd}', '${lect_cd}', 'N', '${login_seq}', TO_CHAR(SYSDATE, -->
+<!-- 		'YYYYMMDDHH24MISS')) -->
+<!-- 	</insert> -->
+
+	<insert id="insContract" parameterType="hashmap">
+		insert into BACONTRACTTB
+		(
+		STORE, PERIOD,
+		CUS_NO, SUBJECT_CD,
+		CREATE_DATE, CREATE_RESI_NO
+		)
+		VALUES
+		( '${store}', '${period}',
+		'${cus_no}', '${subject_cd}',
+		TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), '${login_seq}'
+		)
+	</insert>
+
+	<insert id="insAttend" parameterType="hashmap">
+		insert into BAATTENDTB
+		(STORE,PERIOD,SUBJECT_CD,CREATE_DATE,CREATE_RESI_NO,IS_LEC,CUST_NO,DAY_CHK,CHILD_NO)
+		VALUES
+		('${store}','${period}', '${subject_cd}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		'${login_seq}','${isLec}','${cust_no}' ,'${dayChk}','${child_no}')
+	</insert>
+
+
+
+	<update id="uptAttend" parameterType="hashmap">
+		update BAATTENDTB set
+		day1 = '${DAY1}',
+		day2 = '${DAY2}',
+		day3 =
+		'${DAY3}',
+		day4 = '${DAY4}',
+		day5 = '${DAY5}',
+		day6 = '${DAY6}',
+		day7 =
+		'${DAY7}',
+		day8 = '${DAY8}',
+		day9 = '${DAY9}',
+		day10 = '${DAY10}',
+		day11 =
+		'${DAY11}',
+		day12 = '${DAY12}'
+
+		where
+		subject_cd = '${subject_cd}'
+		and store = '${store}'
+		and period =
+		'${period}'
+		<if test="target neq 'Y'.toString()">
+			and cust_no=${cust_no}
+		</if>
+
+		<if test="target eq 'Y'.toString()">
+			and is_lec='Y'
+		</if>
+
+	</update>
+
+
+	<update id="uptAttendDayChk" parameterType="hashmap">
+		update BAATTENDTB set
+			day_chk='${dayChk}'
+		where
+			subject_cd = '${subject_cd}'
+			and store = '${store}'
+			and period = '${period}'
+			and is_lec='Y'
+
+	</update>
+	
+	<update id="uptAttendDayChk_X" parameterType="hashmap">
+		update BAATTENDTB set
+			day_chk='${dayChk}'
+		where
+			subject_cd = '${subject_cd}'
+			and store = '${store}'
+			and period = '${period}'
+			and is_lec='N'
+
+	</update>
+
+<!-- 	<update id="upLect" parameterType="hashmap"> -->
+<!-- 		update BALECTTB -->
+<!-- 		set -->
+<!-- 		subject_cd = '${subject_cd}', -->
+<!-- 		subject_nm = '${subject_nm}', -->
+<!-- 		main_cd = '${main_cd}', -->
+<!-- 		sect_cd = '${sect_cd}', -->
+<!-- 		lect_cd = '${lect_cd}', -->
+<!-- 		update_resi_no = '${login_seq}', -->
+<!-- 		update_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') -->
+<!-- 		where -->
+<!-- 		subject_cd = '${prev_subject_cd}' and store = '${store}' -->
+<!-- 	</update> -->
+	<insert id="insPelt" parameterType="hashmap">
+	
+		insert into BAPELTTB
+		(
+			HQ, 				STORE, 				PERIOD, 			SUBJECT_CD,
+			MAIN_CD, 			SECT_CD, 			DAY_FLAG, 			LECT_HOUR,
+			WEB_CANCEL_YMD, 	LECT_CNT, 			CLASSROOM, 			LECTURER_CD, 	
+			LECTURER_CD1,		START_YMD, 			END_YMD, 			CAPACITY_NO, 	
+			REGIS_NO, 			SUBJECT_FG, 		REGIS_FEE,			FIX_PAY_YN, 		
+			FIX_AMT, 			FIX_RATE, 			PAY_METHOD, 		FOOD_YN, 		
+			FOOD_AMT,			WEB_LECTURER_NM, 	WEB_LECTURER_NM1, 	MONTH_NO, 		
+			MONTH_NO1, 			SUBJECT_NM,			CANCLED_LIST, 		CREATE_RESI_NO, 	
+			CUS_NO, 			CUS_NO1, 			CREATE_DATE, 		CORP_FG,
+			IS_TWO, 			REGIS_FEE_CNT, 		FOOD_AMT_CNT, 		PAY_DAY,
+			LECTMGMT_NO,        THUMBNAIL_IMG, 		DETAIL_IMG,         END_YN
+			
+		)
+			VALUES
+		(
+			'00', 				'${store}', 			'${period}', 							'${subject_cd}', 
+			'${main_cd}', 		'${sect_cd}',			'${day_flag}',	 						'${lect_hour}',
+			'${web_cancle_ymd}','${lect_cnt}',			'${classroom}', 						'${lecturer_cd}', 
+			'${lecturer_cd1}', 	'${start_ymd}',			'${end_ymd}', 							'${capacity_no}',
+			'0', 				'${subject_fg}', 		'${regis_fee}',							'${fix_pay_yn}', 
+			'${fix_amt}', 		'${fix_rate}', 			'41', 									'${food_yn}',
+			'${food_amt}', 		'${web_lecturer_nm}', 	'${web_lecturer_nm1}',					'${month_no}', 
+			'${month_no1}', 	'${subject_nm}', 		'${cancled_list}',						'${login_seq}', 
+			'${cus_no}', 		'${cus_no1}',			TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), 	'${corp_fg}',
+			'${is_two}', 		'${regis_fee_cnt}',		'${food_amt_cnt}', 						'${pay_day}',
+			'${lectmgmt_no}',   '${thumbnail_img}',     '${detail_img}',                        '${end_yn}'
+		)
+	</insert>
+	
+	
+	<update id="upPeltImg" parameterType="hashmap">
+		update
+		bapelttb
+		set
+		thumbnail_img = '${thumbnail}',
+		detail_img = '${detail}'
+		where
+		store = '${store}' and period = '${period}' and subject_cd =
+		'${subject_cd}'
+
+	</update>
+	<insert id="upPelt" parameterType="hashmap">
+		update BAPELTTB
+		set
+		subject_cd = '${subject_cd}',
+		main_cd = '${main_cd}',
+		sect_cd = '${sect_cd}',
+		day_flag = '${day_flag}',
+		lect_hour = '${lect_hour}',
+		web_cancel_ymd = '${web_cancle_ymd}',
+		lect_cnt = '${lect_cnt}',
+		classroom = '${classroom}',
+		lecturer_cd = '${lecturer_cd}',
+		lecturer_cd1 = '${lecturer_cd1}',
+		start_ymd = '${start_ymd}',
+		end_ymd = '${end_ymd}',
+		capacity_no = '${capacity_no}',
+		subject_fg = '${subject_fg}',
+		regis_fee = '${regis_fee}',
+		fix_pay_yn = '${fix_pay_yn}',
+		fix_amt = '${fix_amt}',
+		fix_rate = '${fix_rate}',
+		pay_day = '${pay_day}',
+		food_yn = '${food_yn}',
+		food_amt = '${food_amt}',
+		web_lecturer_nm = '${web_lecturer_nm}',
+		web_lecturer_nm1 = '${web_lecturer_nm1}',
+		month_no = '${month_no}',
+		month_no1 = '${month_no1}',
+		subject_nm = '${subject_nm}',
+		cancled_list = '${cancled_list}',
+		update_resi_no = '${login_seq}',
+		cus_no = '${cus_no}',
+		cus_no1 = '${cus_no1}',
+		update_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		corp_fg = '${corp_fg}',
+		is_two = '${is_two}',
+		regis_fee_cnt = '${regis_fee_cnt}',
+		food_amt_cnt = '${food_amt_cnt}'
+		where
+		subject_cd = '${prev_subject_cd}' and store = '${store}' and period =
+		'${period}'
+	</insert>
+	<insert id="insBigCode" parameterType="hashmap">
+		insert into BACODETB
+		(CODE_FG, SUB_CODE, SHORT_NAME, LONG_NAME, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('09', '${insCode}', '${insShortName}', '${insLongName}', '${login_seq}',
+		TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<update id="upSectPerformance" parameterType="hashmap">
+		update basecttb
+		set
+		PERFORMANCE = '${performance}'
+		where 1=1
+<!-- 		<if test="!store.equals('')"> -->
+<!-- 			and store = '${store}' -->
+<!-- 		</if> -->
+		and main_cd = '${main_cd}' and sect_cd = '${sect_cd}'
+	</update>
+	<update id="upSectPerformance_del" parameterType="hashmap">
+		update basecttb
+		set
+		DELETE_YN = 'Y'
+		where 1=1
+<!-- 		<if test="!store.equals('')"> -->
+<!-- 			and store = '${store}' -->
+<!-- 		</if> -->
+		and main_cd = '${main_cd}' and sect_cd = '${sect_cd}'
+	</update>
+	<insert id="insMiddleCode" parameterType="hashmap">
+		insert into BASECTTB
+		(HQ, STORE, MAIN_CD, SECT_CD, SECT_NM, CONTENTS, DELETE_YN,
+		CREATE_RESI_NO, CREATE_DATE, PERFORMANCE)
+		VALUES
+		('00', '${store}', '${main_cd}', '${sect_cd}', '${sect_nm}', '${contents}',
+		'N', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		'${performance}')
+	</insert>
+	<insert id="insRoom" parameterType="hashmap">
+		insert into BAROOMTB
+		(SEQ_NO, HQ, STORE, ROOM_NM, CONTENTS, LOCATION, CAPACITY_NO, AREA_SIZE,
+		USAGE, DELETE_YN, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		(#{SEQ_NO}, '00', '${store}', '${room_nm}', '${contents}', '${location}',
+		'${capacity_no}', '${area_size}', '${usage}', '${delete_yn}',
+		'${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<update id="editRoom" parameterType="hashmap">
+		update baroomtb
+		set
+		store = '${store}',
+		room_nm = '${room_nm}',
+		contents = '${contents}',
+		location = '${location}',
+		capacity_no = '${capacity_no}',
+		area_size = '${area_size}',
+		usage = '${usage}',
+		update_resi_no = '${login_seq}',
+		update_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		seq_no = '${seq}'
+	</update>
+	<delete id="delRoom" parameterType="hashmap">
+		delete from baroomtb where seq_no = '${seq_no}'
+	</delete>
+	<select id="getRoomCapacity" parameterType="hashmap"
+		resultType="int">
+		select capacity_no from baroomtb where seq_no = '${seq_no}'
+	</select>
+	<select id="getRoomCount" parameterType="hashmap"
+		resultType="hashmap">
+		select count(*) as CNT from BAROOMTB where 1=1
+		<if test="!store.equals('')">
+			and BAROOMTB.store = '${store}'
+		</if>
+
+		<if test="!del_yn.equals('')">
+			and BAROOMTB.delete_yn ='${del_yn}'
+		</if>
+	</select>
+	<select id="getRoom" parameterType="hashmap"
+		resultType="hashmap">
+		select
+		X.*
+		from (
+		select rownum as rnum, A.*
+		from (
+
+		select BAROOMTB.*, (select short_name from bacodetb where code_fg = '02' and
+		sub_code = BAROOMTB.store) as goStore from BAROOMTB where 1=1
+		<if test="!store.equals('')">
+			and BAROOMTB.store = '${store}'
+		</if>
+
+		<if test="!del_yn.equals('')">
+			and BAROOMTB.delete_yn ='${del_yn}'
+		</if>
+
+		) A
+		where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+			order by ${sort_type} ${order_by}
+		</if>
+	</select>
+	<select id="getRoomSeq" resultType="int">
+		select NVL(MAX(to_number(seq_no)),0)+1 as seq_no from BAROOMTB
+	</select>
+	<select id="getRoomView" parameterType="hashmap"
+		resultType="hashmap">
+		select
+		(select short_name from bacodetb where CODE_FG = '02' and sub_code =
+		baroomtb.store) as store_nm,
+		baroomtb.*
+		from baroomtb where seq_no = '${seq}'
+	</select>
+	<select id="getRoomByStore" resultType="hashmap">
+		select * from baroomtb where store = '${store}'
+		<if test="!delete_yn.equals('')">
+			and delete_yn = '${delete_yn}'
+		</if>
+	</select>
+	<update id="upRoomChange" parameterType="hashmap">
+		update BAROOMTB
+		set
+		delete_yn = '${delete_yn}'
+		where
+		seq_no = '${seq_no}'
+	</update>
+	<update id="upCateChange" parameterType="hashmap">
+		update bacodetb
+		set
+		delete_yn = '${delete_yn}'
+		where
+		code_fg = '09' and sub_code = '${maincd}'
+	</update>
+	<select id="getLectListCount" parameterType="hashmap"
+		resultType="hashmap">
+		select count(*) as CNT
+		from BAPELTTB, BAWLECTB
+		where
+		BAPELTTB.STORE = BAWLECTB.STORE(+)
+		AND BAPELTTB.PERIOD = BAWLECTB.PERIOD(+)
+		AND BAPELTTB.SUBJECT_CD = BAWLECTB.SUBJECT_CD(+)
+		<if test="!act.equals('')">
+			and BAPELTTB.subject_nm like '(중도)%'
+		</if>
+
+		<if test="act.equals('')">
+			and BAPELTTB.subject_nm not like '(중도)%'
+		</if>
+
+		<if test="!store.equals('')">
+			and BAPELTTB.store = '${store}'
+		</if>
+
+		<if test="!period.equals('')">
+			and BAPELTTB.period = '${period}'
+		</if>
+
+		<if test="!search_name.equals('')">
+			<if test="search_type eq 'subject_nm'.toString()">
+				and BAPELTTB.subject_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'subject_cd'.toString()">
+				and BAPELTTB.subject_cd like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'lecturer_nm'.toString()">
+				and BAWLECTB.LECTURER_NM like '%'||'${search_name}'||'%'
+			</if>
+		</if>
+
+
+		<if test="pelt_status eq 'end'.toString()">
+			and BAPELTTB.end_yn = 'Y'
+		</if>
+		<if test="pelt_status eq 'notEnd'.toString()">
+			and BAPELTTB.end_yn != 'Y'
+		</if>
+
+		<if test="!subject_fg.equals('')">
+			and BAPELTTB.subject_fg = '${subject_fg}'
+		</if>
+
+		<if test="!search_start.equals('')">
+			and BAPELTTB.start_ymd <![CDATA[>=]]> TO_DATE('${search_start}', 'YYYY-MM-DD')
+		</if>
+		<if test="!search_end.equals('')">
+			and BAPELTTB.start_ymd <![CDATA[<=]]> TO_DATE('${search_end}', 'YYYY-MM-DD')
+		</if>
+
+		<if test="!lect_cnt_start.equals('')">
+			and BAPELTTB.lect_cnt <![CDATA[>=]]> ${lect_cnt_start} 
+		</if>
+		
+		<if test="!lect_cnt_end.equals('')">
+			and BAPELTTB.lect_cnt <![CDATA[<=]]> ${lect_cnt_end}
+		</if>
+
+		<if test="!lect_nm.equals('')">
+			and BAWLECTB.LECTURER_NM like '%${lect_nm}%'
+		</if>
+
+		<if test="!main_cd.equals('')">
+			and BAPELTTB.main_cd = ${main_cd}
+		</if>
+
+		<if test="!sect_cd.equals('')">
+			and BAPELTTB.sect_cd = ${sect_cd}
+		</if>
+
+		<if test="!day_flag.equals('0000000')">
+			and ( 
+                1=2
+                 or (substr(BAPELTTB.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+                 or (substr(BAPELTTB.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+                 or (substr(BAPELTTB.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+                 or (substr(BAPELTTB.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+                 or (substr(BAPELTTB.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+                 or (substr(BAPELTTB.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+                 or (substr(BAPELTTB.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+             )
+		</if>
+	</select>
+	<select id="getLectList" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+		select rownum as rnum, A.*
+		from (
+		
+		select
+			bapelttb.*,
+			bawlectb.lecturer_nm,
+			(select short_name from bacodetb where code_fg = '09' and sub_code = bapelttb.main_cd) as MAIN_NM,
+			(select short_name from bacodetb where CODE_FG = '02' and sub_code = bapelttb.store) as store_nm,
+			decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+			ba_sect_nm('00', bapelttb.store, bapelttb.main_cd, bapelttb.sect_cd) as sect_nm,
+			(select name from bamanagertb where seq_no = trim(bapelttb.CREATE_RESI_NO)) as CREATE_RESI_NM,
+			case when BAPELTTB.end_yn = 'Y' then '폐강'
+             when BAPELTTB.end_yn = 'O' then '개강'
+             when (BAPELTTB.CAPACITY_NO - (NVL(BAPELTTB.WEB_REGIS_NO,0)) - (NVL(BAPELTTB.REGIS_NO,0))) <![CDATA[<=]]> 0 then '마감'
+           	 	 else '' end as ISPLAY
+		from BAPELTTB, BAWLECTB
+		where
+		BAPELTTB.STORE = BAWLECTB.STORE(+)
+		AND BAPELTTB.PERIOD = BAWLECTB.PERIOD(+)
+		AND BAPELTTB.SUBJECT_CD = BAWLECTB.SUBJECT_CD(+)
+		<if test="!act.equals('')">
+			and BAPELTTB.subject_nm like '(중도)%'
+		</if>
+
+		<if test="act.equals('')">
+			and BAPELTTB.subject_nm not like '(중도)%'
+		</if>
+
+		<if test="!store.equals('')">
+			and BAPELTTB.store = '${store}'
+		</if>
+
+		<if test="!period.equals('')">
+			and BAPELTTB.period = '${period}'
+		</if>
+
+		<if test="!search_name.equals('')">
+			<if test="search_type eq 'subject_nm'.toString()">
+				and BAPELTTB.subject_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'subject_cd'.toString()">
+				and BAPELTTB.subject_cd like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'lecturer_nm'.toString()">
+				and BAWLECTB.LECTURER_NM like '%'||'${search_name}'||'%'
+			</if>
+		</if>
+
+
+		<if test="pelt_status eq 'end'.toString()">
+			and BAPELTTB.end_yn = 'Y'
+		</if>
+		<if test="pelt_status eq 'notEnd'.toString()">
+			and BAPELTTB.end_yn != 'Y'
+		</if>
+
+		<if test="!subject_fg.equals('')">
+			and BAPELTTB.subject_fg = '${subject_fg}'
+		</if>
+
+		<if test="!search_start.equals('')">
+			and BAPELTTB.start_ymd <![CDATA[>=]]> TO_DATE('${search_start}', 'YYYY-MM-DD')
+		</if>
+		<if test="!search_end.equals('')">
+			and BAPELTTB.start_ymd <![CDATA[<=]]> TO_DATE('${search_end}', 'YYYY-MM-DD')
+		</if>
+
+		<if test="!lect_cnt_start.equals('')">
+			and BAPELTTB.lect_cnt <![CDATA[>=]]> ${lect_cnt_start} 
+		</if>
+		
+		<if test="!lect_cnt_end.equals('')">
+			and BAPELTTB.lect_cnt <![CDATA[<=]]> ${lect_cnt_end}
+		</if>
+
+		<if test="!lect_nm.equals('')">
+			and BAWLECTB.LECTURER_NM like '%${lect_nm}%'
+		</if>
+
+		<if test="!main_cd.equals('')">
+			and BAPELTTB.main_cd = ${main_cd}
+		</if>
+
+		<if test="!sect_cd.equals('')">
+			and BAPELTTB.sect_cd = ${sect_cd}
+		</if>
+
+		<if test="!day_flag.equals('0000000')">
+			and ( 
+                1=2
+                 or (substr(BAPELTTB.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+                 or (substr(BAPELTTB.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+                 or (substr(BAPELTTB.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+                 or (substr(BAPELTTB.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+                 or (substr(BAPELTTB.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+                 or (substr(BAPELTTB.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+                 or (substr(BAPELTTB.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+             )
+		</if>
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+			order by ${sort_type} ${order_by}, CREATE_DATE DESC
+		</if>
+		) A
+		where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+	</select>
+	
+	
+	<select id="getAttendLectListCount" parameterType="hashmap" resultType="hashmap">
+	
+		    
+		    select
+		        count(*) as cnt
+		    from baattendtb aa, bapelttb bb where 
+		        aa.store='${store}'
+		        and aa.period='${period}'
+		        and bb.store = aa.store
+		        and bb.period =aa.period
+		        and bb.subject_cd = aa.subject_cd
+		        and bb.end_yn!='Y'
+		        and aa.is_lec='Y'
+		        and TO_CHAR(SYSDATE, 'YYYYMMDD') <![CDATA[<=]]> end_ymd
+		        <if test="!search_name.equals('')">
+		            <if test="search_type eq 'subject_nm'.toString()">
+		                and bb.subject_nm like '%'||'${search_name}'||'%'
+		            </if>
+		            <if test="search_type eq 'subject_cd'.toString()">
+		                and bb.subject_cd like '%'||'${search_name}'||'%'
+		            </if>
+		        </if>
+		        
+		        <if test="!main_cd.equals('')">
+		            and bb.main_cd = ${main_cd}
+		        </if>
+		    
+		        <if test="!sect_cd.equals('')">
+		            and bb.sect_cd = ${sect_cd}
+		        </if>
+		        
+		        <if test="!lect_nm.equals('')">
+		            and bb.web_lecturer_nm like '%${lect_nm}%'
+		        </if>
+		        
+		        <if test="!lect_cnt_start.equals('')">
+		            and bb.lect_cnt <![CDATA[>=]]> ${lect_cnt_start}
+		        </if>
+		        
+		        <if test="!lect_cnt_end.equals('')">
+		            and bb.lect_cnt <![CDATA[<=]]> ${lect_cnt_end}
+		        </if>
+		        
+		        <if test="!day_flag.equals('0000000') and !day_flag.equals('')">
+		                and ( 
+		                    1=2
+		                     or (substr(bb.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+		                     or (substr(bb.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+		                     or (substr(bb.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+		                     or (substr(bb.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+		                     or (substr(bb.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+		                     or (substr(bb.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+		                     or (substr(bb.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+		                 )
+		        </if>
+		
+
+	</select>
+	
+	
+	<select id="getAttendLectList" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+		select rownum as rnum, A.*
+		from (
+		    <!-- 
+		    select
+		        bb.*,
+		        (select short_name from bacodetb where code_fg = '09' and sub_code = bb.main_cd) as MAIN_NM,
+		        (select short_name from bacodetb where CODE_FG = '02' and sub_code = bb.store) as store_nm,
+		        decode(bb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+		        (select sect_nm from basecttb where store = '03' and main_cd = bb.main_cd and sect_cd = bb.sect_cd) as SECT_NM,
+		        (select name from bamanagertb where seq_no = trim(bb.CREATE_RESI_NO)) as CREATE_RESI_NM
+		    from baattendtb aa, bapelttb bb where
+		     	 aa.store='${store}'
+		        and aa.period='${period}'
+		        and bb.store = aa.store
+		        and bb.period =aa.period
+		        and bb.subject_cd = aa.subject_cd
+		      -->
+		       select
+				    bb.*,
+				    (select short_name from bacodetb where code_fg = '09' and sub_code = bb.main_cd) as MAIN_NM,
+				    (select short_name from bacodetb where CODE_FG = '02' and sub_code = bb.store) as store_nm,
+				    decode(bb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+				    ba_sect_nm('00', bb.store, bb.main_cd, bb.sect_cd) as sect_nm,
+				    (select name from bamanagertb where seq_no = trim(bb.CREATE_RESI_NO)) as CREATE_RESI_NM,
+				    (to_number(bb.REGIS_NO) + to_number(bb.WEB_REGIS_NO)) as tot_resi_no
+				from baattendtb aa, bapelttb bb where
+				     aa.store='${store}'
+			        and aa.period='${period}'
+			        and bb.store = aa.store
+			        and bb.period =aa.period
+			        and bb.subject_cd = aa.subject_cd
+			        and bb.end_yn!='Y'
+			        and aa.is_lec='Y'
+					and TO_CHAR(SYSDATE, 'YYYYMMDD') <![CDATA[<=]]> end_ymd
+    
+		      
+		        <if test="!search_name.equals('')">
+		            <if test="search_type eq 'subject_nm'.toString()">
+		                and bb.subject_nm like '%'||'${search_name}'||'%'
+		            </if>
+		            <if test="search_type eq 'subject_cd'.toString()">
+		                and bb.subject_cd like '%'||'${search_name}'||'%'
+		            </if>
+		        </if>
+		        
+		        <if test="!main_cd.equals('')">
+		            and bb.main_cd = ${main_cd}
+		        </if>
+		    
+		        <if test="!sect_cd.equals('')">
+		            and bb.sect_cd = ${sect_cd}
+		        </if>
+		        
+		        <if test="!lect_nm.equals('')">
+		            and bb.web_lecturer_nm like '%${lect_nm}%'
+		        </if>
+		        
+		        <if test="!lect_cnt_start.equals('')">
+		            and bb.lect_cnt <![CDATA[>=]]> ${lect_cnt_start}
+		        </if>
+		        
+		        
+		        <if test="!lect_cnt_end.equals('')">
+		            and bb.lect_cnt <![CDATA[<=]]> ${lect_cnt_end}
+		        </if>
+		        
+		        <if test="!subject_fg.equals('')">
+		            and bb.subject_fg = '${subject_fg}'
+		        </if>
+		        
+		        <if test="!day_flag.equals('0000000')">
+		                and ( 
+		                    1=2
+		                     or (substr(bb.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+		                     or (substr(bb.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+		                     or (substr(bb.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+		                     or (substr(bb.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+		                     or (substr(bb.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+		                     or (substr(bb.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+		                     or (substr(bb.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+		                 )
+		        </if>
+		        <if test="!order_by.equals('') and !sort_type.equals('')">
+		            order by ${sort_type} ${order_by}, bb.CREATE_DATE DESC
+		        </if>
+		    
+
+		           ) A
+		     where rownum <![CDATA[<=]]>
+		    #{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+	</select>
+	
+	
+	
+	<select id="getPeltMid" parameterType="hashmap" resultType="hashmap">
+		select
+		(select bmd from ams_cus where cus_no = bapelttb.cus_no) as bmd,
+		bapelttb.*
+		from bapelttb
+		where store = '${store}' and period = '${period}' and subject_cd =
+		'${subject_cd}'
+	</select>
+	<select id="getPeltOne" parameterType="hashmap" resultType="hashmap">
+		select
+		(select bmd from ams_cus where cus_no = bapelttb.cus_no) as bmd,
+		(select short_name from bacodetb where code_fg = '09' and sub_code =
+		bapelttb.main_cd) as MAIN_NM,
+		ba_sect_nm('00', bapelttb.store, bapelttb.main_cd, bapelttb.sect_cd) as sect_nm,
+		(select room_nm from baroomtb where seq_no = bapelttb.classroom) as room_nm,
+		(select short_name from bacodetb where code_fg = '02' and sub_code =
+		bapelttb.store) as STORE_NAME,
+		nvl((select round((length(replace(etc, '회차 : ', '|')) -
+		length(replace(replace(etc, '회차 : ', '|'), '|', ''))) /
+		bapelttb.lect_cnt * 100) from bawlectb where store = bapelttb.store
+		and period = bapelttb.period and subject_cd = bapelttb.subject_cd), '0') as
+		plan_cnt,
+		bapelttb.*
+		from bapelttb
+		where bapelttb.store = '${store}' and bapelttb.period = '${period}' and
+		bapelttb.subject_cd = '${subject_cd}' 
+	</select>
+	<update id="upPeltEnd" parameterType="hashmap">
+		update bapelttb
+		set
+		end_yn = '${act}'
+		where
+		store = '${store}' and period = '${period}' and subject_cd =
+		'${subject_cd}'
+	</update>
+	<select id="getPeltDetail" parameterType="hashmap"
+		resultType="hashmap">
+		select
+		X.*
+		from (
+			select rownum as rnum, A.*
+				from (
+					select
+						a.*,
+						decode(substr(a.pos_no, - 2), '13', 'PC', '14', 'MOBILE','DESK') AS accept_type,
+						(select cus_no from bacusttb where cust_no = a.cust_no) as cus_no,
+						(select ptl_id from bacusttb where cust_no = a.cust_no) as ptl_id,
+						(select kor_nm from bacusttb where cust_no = a.cust_no) as kor_nm,
+						(select sex_fg from bacusttb where cust_no = a.cust_no) as sex_fg,
+						(select birth_ymd from bacusttb where cust_no = a.cust_no) as birth_ymd,
+						(select count(*) from baperetb where cust_no = a.cust_no) as
+						is_cust_new,
+						(select count(*) from baperetb where cust_no = a.cust_no and store =
+						'${store}' and subject_cd = '${subject_cd}') as is_lect_new,
+						(select web_accept_fg from batrmstb where store = a.store and sale_ymd =
+						a.sale_ymd and recpt_no = a.recpt_no and pos_no = a.pos_no) as
+						web_accept_fg,
+						(select card_amt from batrmstb where store = a.store and sale_ymd =
+						a.sale_ymd and recpt_no = a.recpt_no and pos_no = a.pos_no) as
+						card_amt,
+						(select cash_amt from batrmstb where store = a.store and sale_ymd =
+						a.sale_ymd and recpt_no = a.recpt_no and pos_no = a.pos_no) as
+						cash_amt
+					from baperetb a where 1=1
+						and store = '${store}' 
+						and period = '${period}' 
+						and subject_cd = '${subject_cd}'
+						and regis_cancel_fg != '*'
+						and recpt_no <![CDATA[<>]]> '*'
+						<if test="!search_name.equals('')">
+							and id like CONCAT(CONCAT('%', #{search_name}), '%')
+						</if>
+						<if test="!order_by.equals('') and !sort_type.equals('')">
+							order by ${sort_type} ${order_by}
+						</if>
+			) A
+			where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+	</select>
+	<select id="getPeltDetailCount" parameterType="hashmap"
+		resultType="hashmap">
+		select count(*) as CNT from baperetb where 1=1 and store = '${store}'
+		and period = '${period}' and subject_cd = '${subject_cd}'
+		<if test="!search_name.equals('')">
+			and id like CONCAT(CONCAT('%', #{search_name}), '%')
+		</if>
+	</select>
+	<select id="getPrevPeri" parameterType="hashmap"
+		resultType="hashmap">
+		select * from baperitb where store = '${store}' order by period desc
+	</select>
+	<select id="getPrevPelt" parameterType="hashmap"
+		resultType="hashmap">
+		select * from bapelttb where store = '${store}' and period = '${period}' and subject_nm not like '(중도)%' 
+	</select>
+	
+	
+	<insert id="insPlan" parameterType="hashmap">
+		insert into bawlectb
+		(HQ, STORE, PERIOD, SUBJECT_CD, subject_nm, lecturer_nm, lecturer_career,
+		lecture_content, etc, update_resi_no, update_date)
+		VALUES
+		('00', '${store}', '${period}', '${subject_cd}', '${subject_nm}',
+		'${lecturer_nm}', '${lecturer_career}', '${lecture_content}',
+		'${etc}', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<update id="upPlan" parameterType="hashmap">
+
+		update bawlectb
+		set
+		subject_nm = '${subject_nm}',
+		lecturer_nm = '${lecturer_nm}',
+		lecturer_career = '${lecturer_career}',
+		lecture_content = '${lecture_content}',
+		etc = '${etc}',
+		update_resi_no = '${login_seq}',
+		update_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		<!-- image_pic = '${filename}' -->
+		where
+		store = '${store}' and period = '${period}' and subject_cd =
+		'${subject_cd}'
+	</update>
+	<select id="getPlanDetail" parameterType="hashmap"
+		resultType="hashmap">
+		select * from bawlectb where store = '${store}' and period = '${period}' and
+		subject_cd = '${subject_cd}'
+	</select>
+	<select id="getPeltCount2" parameterType="hashmap" resultType="hashmap">
+		select count(*) as CNT 
+		from BAPELTTB, BAWLECTB
+		where
+		BAPELTTB.STORE = BAWLECTB.STORE(+)
+		AND BAPELTTB.PERIOD = BAWLECTB.PERIOD(+)
+		AND BAPELTTB.SUBJECT_CD = BAWLECTB.SUBJECT_CD(+)
+		<if test="!store.equals('')">
+			and BAPELTTB.store = '${store}'
+			<if test="!period.equals('')">
+				and BAPELTTB.period = '${period}'
+			</if>
+		</if>
+		<if test="!search_name.equals('')">
+			and
+			(
+			BAPELTTB.subject_nm like '%'||'${search_name}'||'%'
+			or
+			BAPELTTB.subject_cd like '%'||'${search_name}'||'%'
+			or
+			BAWLECTB.LECTURER_NM like '%'||'${search_name}'||'%'
+			)
+		</if>
+		<if test="pelt_status eq 'finish'.toString()">
+			and (BAPELTTB.CAPACITY_NO - (NVL(BAPELTTB.WEB_REGIS_NO,0)) - (NVL(BAPELTTB.REGIS_NO,0))) <![CDATA[<=]]> 0
+		</if>
+		<if test="pelt_status eq 'end'.toString()">
+			and BAPELTTB.end_yn = 'Y'
+		</if>
+		<if test="pelt_status eq 'notEnd'.toString()">
+			and BAPELTTB.end_yn != 'Y'
+		</if>
+		<if test="!subject_fg.equals('')">
+			and BAPELTTB.subject_fg = '${subject_fg}'
+		</if>
+		<if test="!search_start.equals('') and !search_end.equals('')">
+			and (BAPELTTB.start_ymd between '${search_start}' and '${search_end}')
+		</if>
+		<if test="!main_cd.equals('')">
+			and BAPELTTB.main_cd = ${main_cd}
+		</if>
+
+		<if test="!sect_cd.equals('')">
+			and BAPELTTB.sect_cd = ${sect_cd}
+		</if>
+		<if test="!day_flag.equals('0000000')">
+			and ( 
+                1=2
+                 or (substr(BAPELTTB.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+                 or (substr(BAPELTTB.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+                 or (substr(BAPELTTB.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+                 or (substr(BAPELTTB.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+                 or (substr(BAPELTTB.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+                 or (substr(BAPELTTB.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+                 or (substr(BAPELTTB.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+             )
+		</if>
+<!-- 		<if test="mon eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 1, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="tue eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 2, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="wed eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 3, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="thu eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 4, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="fri eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 5, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sat eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 6, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sun eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 7, 1) = '1' -->
+<!-- 		</if> -->
+	</select>
+	<select id="getPeltCount" parameterType="hashmap"
+		resultType="hashmap">
+		select count(*) as CNT from BAPELTTB, BAWLECTB
+		where
+		BAPELTTB.STORE = BAWLECTB.STORE(+)
+		AND BAPELTTB.PERIOD = BAWLECTB.PERIOD(+)
+		AND BAPELTTB.SUBJECT_CD = BAWLECTB.SUBJECT_CD(+)
+		<if test="!store.equals('')">
+			and BAPELTTB.store = '${store}'
+		</if>
+		<if test="!period.equals('')">
+			and BAPELTTB.period = '${period}'
+		</if>
+		<if test="!search_name.equals('')">
+			and
+			(
+			BAPELTTB.subject_nm like '%'||'${search_name}'||'%'
+			or
+			BAPELTTB.subject_cd like '%'||'${search_name}'||'%'
+			or
+			BAWLECTB.LECTURER_NM like '%'||'${search_name}'||'%'
+			)
+		</if>
+		<if test="pelt_status eq 'finish'.toString()">
+			and (BAPELTTB.CAPACITY_NO - (NVL(BAPELTTB.WEB_REGIS_NO,0)) - (NVL(BAPELTTB.REGIS_NO,0))) <![CDATA[<=]]> 0
+		</if>
+		<if test="pelt_status eq 'end'.toString()">
+			and BAPELTTB.end_yn = 'Y'
+		</if>
+		<if test="pelt_status eq 'notEnd'.toString()">
+			and BAPELTTB.end_yn != 'Y'
+		</if>
+		<if test="!subject_fg.equals('')">
+			and BAPELTTB.subject_fg = '${subject_fg}'
+		</if>
+		<if test="!search_start.equals('') and !search_end.equals('')">
+			and (BAPELTTB.start_ymd between '${search_start}' and '${search_end}')
+		</if>
+		<if test="!main_cd.equals('')">
+			and BAPELTTB.main_cd = ${main_cd}
+		</if>
+
+		<if test="!sect_cd.equals('')">
+			and BAPELTTB.sect_cd = ${sect_cd}
+		</if>
+		<if test="!day_flag.equals('0000000')">
+			and ( 
+                1=2
+                 or (substr(BAPELTTB.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+                 or (substr(BAPELTTB.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+                 or (substr(BAPELTTB.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+                 or (substr(BAPELTTB.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+                 or (substr(BAPELTTB.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+                 or (substr(BAPELTTB.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+                 or (substr(BAPELTTB.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+             )
+		</if>
+		<if test="is_finish eq 'Y'.toString()">
+			and nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0) = 100
+		</if>
+		<if test="is_finish eq 'N'.toString()">
+			and nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0) != 100
+		</if>
+<!-- 		<if test="mon eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 1, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="tue eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 2, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="wed eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 3, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="thu eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 4, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="fri eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 5, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sat eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 6, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sun eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 7, 1) = '1' -->
+<!-- 		</if> -->
+	</select>
+	<select id="getPeltPer" parameterType="hashmap" resultType="int">
+		select
+		nvl(sum(nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0)), 0)
+		from bapelttb, bawlectb
+		where 1=1
+		and bawlectb.subject_cd = bapelttb.subject_cd
+		<if test="!store.equals('')">
+			and bapelttb.store = '${store}'
+			and bawlectb.store = '${store}'
+		</if>
+		<if test="!period.equals('')">
+			and bapelttb.period = '${period}'
+			and bawlectb.period = '${period}'
+		</if>
+		<if test="!search_name.equals('')">
+			and
+			(
+			bapelttb.subject_nm like '%'||'${search_name}'||'%'
+			or
+			bapelttb.subject_cd like '%'||'${search_name}'||'%'
+			or
+			bapelttb.web_lecturer_nm like '%'||'${search_name}'||'%'
+			)
+		</if>
+		<if test="pelt_status eq 'finish'.toString()">
+			and (bapelttb.CAPACITY_NO - (NVL(bapelttb.WEB_REGIS_NO,0)) - (NVL(bapelttb.REGIS_NO,0))) <![CDATA[<=]]> 0
+		</if>
+		<if test="pelt_status eq 'end'.toString()">
+			and bapelttb.end_yn = 'Y'
+		</if>
+		<if test="pelt_status eq 'notEnd'.toString()">
+			and bapelttb.end_yn != 'Y'
+		</if>
+		<if test="!subject_fg.equals('')">
+			and bapelttb.subject_fg = '${subject_fg}'
+		</if>
+		<if test="!search_start.equals('') and !search_end.equals('')">
+			and (bapelttb.start_ymd between '${search_start}' and '${search_end}')
+		</if>
+		<if test="!main_cd.equals('')">
+			and bapelttb.main_cd = ${main_cd}
+		</if>
+
+		<if test="!sect_cd.equals('')">
+			and bapelttb.sect_cd = ${sect_cd}
+		</if>
+		<if test="!day_flag.equals('0000000')">
+			and ( 
+                1=2
+                 or (substr(bapelttb.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+                 or (substr(bapelttb.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+                 or (substr(bapelttb.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+                 or (substr(bapelttb.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+                 or (substr(bapelttb.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+                 or (substr(bapelttb.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+                 or (substr(bapelttb.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+             )
+		</if>
+		<if test="is_finish eq 'Y'.toString()">
+			and nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0) = 100
+		</if>
+		<if test="is_finish eq 'N'.toString()">
+			and nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0) != 100
+		</if>
+<!-- 		<if test="mon eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 1, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="tue eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 2, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="wed eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 3, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="thu eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 4, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="fri eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 5, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sat eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 6, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sun eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 7, 1) = '1' -->
+<!-- 		</if> -->
+	</select>
+	<select id="getPelt" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+		select rownum as rnum, A.*
+		from (
+		select
+		decode(bapelttb.store, '02', '수원점', '03', '분당점', '04', '평택점', '05', '원주점') as store_nm,
+		ba_main_nm(bapelttb.main_cd) main_nm,
+		ba_sect_nm('00', bapelttb.store, bapelttb.main_cd, bapelttb.sect_cd) as sect_nm,
+		ba_get_wait_cnt(bapelttb.store, bapelttb.period, bapelttb.subject_cd) as wait_cnt,
+		case when BAPELTTB.end_yn = 'Y' then '폐강'
+             when BAPELTTB.end_yn = 'O' then '개강'
+             when (BAPELTTB.CAPACITY_NO - (NVL(BAPELTTB.WEB_REGIS_NO,0)) - (NVL(BAPELTTB.REGIS_NO,0))) <![CDATA[<=]]> 0 then '마감'
+             else '' end as ISPLAY, 
+		decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+		nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0) as plan_cnt,
+		(NVL(BAPELTTB.REGIS_NO,0) + NVL(BAPELTTB.WEB_REGIS_NO,0)) as tot_regis_no,
+		(select mtel_ident_no||mmt_ex_no||mtel_uniq_no from ams_cus where cus_no = bapelttb.cus_no) as phone_no,
+		bawlectb.lecturer_nm,
+		bapelttb.*
+		from BAPELTTB, BAWLECTB
+		where
+		BAPELTTB.STORE = BAWLECTB.STORE(+)
+		AND BAPELTTB.PERIOD = BAWLECTB.PERIOD(+)
+		AND BAPELTTB.SUBJECT_CD = BAWLECTB.SUBJECT_CD(+)
+		<if test="!store.equals('')">
+			and BAPELTTB.store = '${store}'
+		</if>
+		<if test="!period.equals('')">
+			and BAPELTTB.period = '${period}'
+		</if>
+		<if test="!search_name.equals('')">
+			and
+			(
+			BAPELTTB.subject_nm like '%'||'${search_name}'||'%'
+			or
+			BAPELTTB.subject_cd like '%'||'${search_name}'||'%'
+			or
+			BAWLECTB.LECTURER_NM like '%'||'${search_name}'||'%'
+			)
+		</if>
+		<if test="pelt_status eq 'play'.toString()">
+			and BAPELTTB.start_ymd <![CDATA[>]]> TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</if>
+		<if test="pelt_status eq 'finish'.toString()">
+			and (BAPELTTB.CAPACITY_NO - (NVL(BAPELTTB.WEB_REGIS_NO,0)) - (NVL(BAPELTTB.REGIS_NO,0))) <![CDATA[<=]]> 0
+		</if>
+		<if test="pelt_status eq 'end'.toString()">
+			and BAPELTTB.end_yn = 'Y'
+		</if>
+		<if test="pelt_status eq 'notEnd'.toString()">
+			and BAPELTTB.end_yn != 'Y'
+		</if>
+		<if test="!subject_fg.equals('')">
+			and BAPELTTB.subject_fg = '${subject_fg}'
+		</if>
+		<if test="!search_start.equals('') and !search_end.equals('')">
+			and (BAPELTTB.start_ymd between '${search_start}' and '${search_end}')
+			<!--  and (start_ymd between TO_DATE('${search_start}', 'YYYY-MM-DD') and
+			TO_DATE('${search_end}', 'YYYY-MM-DD'))-->
+		</if>
+		<if test="!main_cd.equals('')">
+			and BAPELTTB.main_cd = ${main_cd}
+		</if>
+
+		<if test="!sect_cd.equals('')">
+			and BAPELTTB.sect_cd = ${sect_cd}
+		</if>
+		<if test="!day_flag.equals('0000000')">
+			and ( 
+                1=2
+                 or (substr(BAPELTTB.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+                 or (substr(BAPELTTB.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+                 or (substr(BAPELTTB.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+                 or (substr(BAPELTTB.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+                 or (substr(BAPELTTB.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+                 or (substr(BAPELTTB.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+                 or (substr(BAPELTTB.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+             )
+		</if>
+		<if test="is_finish eq 'Y'.toString()">
+			and nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0) = 100
+		</if>
+		<if test="is_finish eq 'N'.toString()">
+			and nvl(round((length(replace(bawlectb.etc, '회차 : ', '|')) - length(replace(replace(bawlectb.etc, '회차 : ', '|'), '|', ''))) / bapelttb.lect_cnt * 100), 0) != 100
+		</if>
+<!-- 		<if test="mon eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 1, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="tue eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 2, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="wed eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 3, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="thu eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 4, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="fri eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 5, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sat eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 6, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sun eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 7, 1) = '1' -->
+<!-- 		</if> -->
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+			<if test="sort_type.equals('isplay')">
+				order by ${sort_type} ${order_by}, subject_cd ${order_by}
+			</if>
+			<if test="!sort_type.equals('isplay')">
+				order by ${sort_type} ${order_by}
+			</if>
+		</if>
+		) A
+		where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+
+	</select>
+	<select id="getPelt2" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+		select rownum as rnum, A.*
+		from (
+		select
+		decode(bapelttb.store, '02', '수원점', '03', '분당점', '04', '평택점', '05', '원주점') as store_nm,
+		ba_main_nm(bapelttb.main_cd) main_nm,
+		ba_sect_nm('00', bapelttb.store, bapelttb.main_cd, bapelttb.sect_cd) as sect_nm,
+		ba_get_wait_cnt(bapelttb.store, bapelttb.period, bapelttb.subject_cd) as wait_cnt,
+		case when BAPELTTB.end_yn = 'Y' then '폐강'
+             when BAPELTTB.end_yn = 'O' then '개강'
+             when (BAPELTTB.CAPACITY_NO - (NVL(BAPELTTB.WEB_REGIS_NO,0)) - (NVL(BAPELTTB.REGIS_NO,0))) <![CDATA[<=]]> 0 then '마감'
+             else '' end as ISPLAY, 
+		decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+		(NVL(BAPELTTB.REGIS_NO,0) + NVL(BAPELTTB.WEB_REGIS_NO,0)) as tot_regis_no,
+		(select mtel_ident_no||mmt_ex_no||mtel_uniq_no from ams_cus where cus_no = bapelttb.cus_no) as phone_no,
+		bawlectb.lecturer_nm,
+		bapelttb.*
+		from BAPELTTB, BAWLECTB
+		where
+		BAPELTTB.STORE = BAWLECTB.STORE(+)
+		AND BAPELTTB.PERIOD = BAWLECTB.PERIOD(+)
+		AND BAPELTTB.SUBJECT_CD = BAWLECTB.SUBJECT_CD(+)
+		<if test="!store.equals('')">
+			and BAPELTTB.store = '${store}'
+			<if test="!period.equals('')">
+				and BAPELTTB.period = '${period}'
+			</if>
+		</if>
+		<if test="!search_name.equals('')">
+			and
+			(
+			BAPELTTB.subject_nm like '%'||'${search_name}'||'%'
+			or
+			BAPELTTB.subject_cd like '%'||'${search_name}'||'%'
+			or
+			BAWLECTB.LECTURER_NM like '%'||'${search_name}'||'%'
+			)
+		</if>
+		<if test="pelt_status eq 'play'.toString()">
+			and BAPELTTB.start_ymd <![CDATA[>]]> TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</if>
+		<if test="pelt_status eq 'finish'.toString()">
+			and (BAPELTTB.CAPACITY_NO - (NVL(BAPELTTB.WEB_REGIS_NO,0)) - (NVL(BAPELTTB.REGIS_NO,0))) <![CDATA[<=]]> 0
+		</if>
+		<if test="pelt_status eq 'end'.toString()">
+			and BAPELTTB.end_yn = 'Y'
+		</if>
+		<if test="pelt_status eq 'notEnd'.toString()">
+			and BAPELTTB.end_yn != 'Y'
+		</if>
+		<if test="!subject_fg.equals('')">
+			and BAPELTTB.subject_fg = '${subject_fg}'
+		</if>
+		<if test="!search_start.equals('') and !search_end.equals('')">
+			and (BAPELTTB.start_ymd between '${search_start}' and '${search_end}')
+			<!--  and (start_ymd between TO_DATE('${search_start}', 'YYYY-MM-DD') and
+			TO_DATE('${search_end}', 'YYYY-MM-DD'))-->
+		</if>
+		<if test="!main_cd.equals('')">
+			and BAPELTTB.main_cd = ${main_cd}
+		</if>
+
+		<if test="!sect_cd.equals('')">
+			and BAPELTTB.sect_cd = ${sect_cd}
+		</if>
+		<if test="!day_flag.equals('0000000')">
+			and ( 
+                1=2
+                 or (substr(BAPELTTB.day_flag,'1','1')=1 and substr('${day_flag}','1','1')=1)
+                 or (substr(BAPELTTB.day_flag,'2','1')=1 and substr('${day_flag}','2','1')=1)
+                 or (substr(BAPELTTB.day_flag,'3','1')=1 and substr('${day_flag}','3','1')=1)
+                 or (substr(BAPELTTB.day_flag,'4','1')=1 and substr('${day_flag}','4','1')=1)
+                 or (substr(BAPELTTB.day_flag,'5','1')=1 and substr('${day_flag}','5','1')=1)
+                 or (substr(BAPELTTB.day_flag,'6','1')=1 and substr('${day_flag}','6','1')=1)
+                 or (substr(BAPELTTB.day_flag,'7','1')=1 and substr('${day_flag}','7','1')=1)	
+             )
+		</if>
+<!-- 		<if test="mon eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 1, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="tue eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 2, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="wed eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 3, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="thu eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 4, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="fri eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 5, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sat eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 6, 1) = '1' -->
+<!-- 		</if> -->
+<!-- 		<if test="sun eq 'Y'.toString()"> -->
+<!-- 			and substr(day_flag, 7, 1) = '1' -->
+<!-- 		</if> -->
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+			<if test="sort_type.equals('isplay')">
+				order by ${sort_type} ${order_by}, subject_cd ${order_by}
+			</if>
+			<if test="!sort_type.equals('isplay')">
+				order by ${sort_type} ${order_by}
+			</if>
+		</if>
+		) A
+		where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+
+	</select>
+
+	<select id="getEndPelt" parameterType="hashmap"
+		resultType="hashmap">
+		select
+		X.*
+		from (
+		select rownum as rnum, A.*
+		from (
+		select
+		(select short_name from bacodetb where code_fg=02 and sub_code =
+		bapelttb.store) as store_nm,
+		(select short_name from bacodetb where code_fg=09 and sub_code =
+		bapelttb.main_cd) as main_nm,
+		ba_sect_nm('00', bapelttb.store, bapelttb.main_cd, bapelttb.sect_cd) as sect_nm,
+		decode(bapelttb.subject_fg,'1','정규','2','단기','3','특강') as
+		end_subject_fg,
+		subject_nm as end_subject_nm,
+		(case when (CAPACITY_NO - (NVL(WEB_REGIS_NO,0)) - (NVL(REGIS_NO,0))) <![CDATA[<=]]> 0 then '마감' else '모집중'
+		end) as end_state,
+		bapelttb.*
+		from bapelttb where 1=1
+		and end_yn = 'Y'
+
+
+		<if test="!store.equals('')">
+			and store = '${store}'
+		</if>
+		<if test="!period.equals('')">
+			and period = '${period}'
+		</if>
+		<if test="!search_name.equals('')">
+			<if test="search_type eq 'subject_nm'.toString()">
+				and subject_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'subject_cd'.toString()">
+				and subject_cd like '%'||'${search_name}'||'%'
+			</if>
+		</if>
+		<if test="pelt_status eq 'play'.toString()">
+			and start_ymd <![CDATA[>]]>
+			TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</if>
+		<if test="pelt_status eq 'finish'.toString()">
+			and start_ymd <![CDATA[<=]]>
+			TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</if>
+		<if test="pelt_status eq 'end'.toString()">
+			and end_yn = 'Y'
+		</if>
+		<if test="!subject_fg.equals('')">
+			and subject_fg = '${subject_fg}'
+		</if>
+
+
+
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+			order by ${sort_type} ${order_by}
+		</if>
+		) A
+		where rownum <![CDATA[<=]]>
+		#{e_rownum}) X
+		where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+	</select>
+
+	<select id="getEndPeltCount" parameterType="hashmap"
+		resultType="hashmap">
+		select count(*) as CNT from bapelttb where 1=1
+		and end_yn = 'Y'
+		<if test="!store.equals('')">
+			and store = '${store}'
+		</if>
+		<if test="!period.equals('')">
+			and period = '${period}'
+		</if>
+		<if test="!search_name.equals('')">
+			<if test="search_type eq 'subject_nm'.toString()">
+				and subject_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'subject_cd'.toString()">
+				and subject_cd like '%'||'${search_name}'||'%'
+			</if>
+		</if>
+		<if test="pelt_status eq 'play'.toString()">
+			and start_ymd <![CDATA[>]]>
+			TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</if>
+		<if test="pelt_status eq 'finish'.toString()">
+			and start_ymd <![CDATA[<=]]>
+			TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</if>
+		<if test="pelt_status eq 'end'.toString()">
+			and end_yn = 'Y'
+		</if>
+		<if test="!subject_fg.equals('')">
+			and subject_fg = '${subject_fg}'
+		</if>
+	</select>
+
+	<delete id="contractDel" parameterType="hashmap">
+		delete from bacontracttb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</delete>
+	<delete id="lectDel" parameterType="hashmap">
+		delete from bapelttb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</delete>
+	<delete id="delAttend" parameterType="hashmap">
+		delete from baattendtb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</delete>
+
+	<select id="getAttend" parameterType="hashmap" resultType="hashmap">
+		select
+			p.web_lecturer_nm,
+			p.subject_nm,
+			p.start_ymd,
+			p.end_ymd,
+			p.lect_hour,
+			(select short_name from bacodetb where CODE_FG = '02' and sub_code = p.store)
+			as store_nm,
+			(select short_name from bacodetb where code_fg = '09' and sub_code =
+			p.main_cd) as main_nm,
+			ba_sect_nm('00', p.store, p.main_cd, p.sect_cd) as sect_nm,
+			a.*
+		from baattendtb a,bapelttb p where 1=1
+			and a.store='${store}'
+			and a.period='${period}'
+			and a.subject_cd ='${subject_cd}'
+			and a.is_lec='Y'
+			and p.store = a.store
+			and p.period = a.period
+			and trim(p.subject_cd) = trim(a.subject_cd)
+	</select>
+	
+	<select id="getNewAttendeeCnt" parameterType="hashmap" resultType="hashmap">
+		select 
+	       count(*) as cnt
+	    from baperetb aa where
+	       aa.hq=00
+	       and aa.store='${store}'
+	       and aa.period='${period}'
+	       and aa.subject_cd='${subject_cd}'
+	       and aa.recpt_no <![CDATA[<>]]> '*'
+	       and aa.regis_cancel_fg!=2
+	       and aa.cust_no not in (select cust_no from baattendtb where store=aa.store and period=aa.period and subject_cd=aa.subject_cd and is_lec='N' and cust_no =aa.cust_no and child_no=aa.child_no)
+	       and nvl((select mem_fg from bawbtrtb where sale_ymd = aa.sale_ymd and hq=aa.hq and store =aa.store and period = aa.period and subject_cd = aa.subject_cd and cust_no =aa.cust_no and send_recpt_no = aa.recpt_no and rownum = 1),'0') != 'C'
+	</select>
+	
+	
+	<insert id="addNewAttendee" parameterType="hashmap">
+		insert into baattendtb
+		(
+		    store,period,subject_cd,cust_no,day_chk,content,create_resi_no,create_date,is_lec,child_no
+		)
+		
+		select store,
+		        period,
+		        subject_cd,
+		        cust_no,
+		       case when day_cnt = 1 then 'X|'
+		               when day_cnt = 2 then 'X|X|'
+		               when day_cnt = 3 then 'X|X|X|'
+		               when day_cnt = 4 then 'X|X|X|X|'
+		               when day_cnt = 5 then 'X|X|X|X|X|'
+		               when day_cnt = 6 then 'X|X|X|X|X|X|'
+		               when day_cnt = 7 then 'X|X|X|X|X|X|X|'
+		               when day_cnt = 8 then 'X|X|X|X|X|X|X|X|'
+		               when day_cnt = 9 then 'X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 10 then 'X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 11 then 'X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 12 then 'X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 13 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 14 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 15 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 16 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 17 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 18 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 19 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 20 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 21 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 22 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 23 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 24 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 25 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 26 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 27 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 28 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 29 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 30 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 31 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 32 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 33 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 34 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 35 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|'
+		               when day_cnt = 36 then 'X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|' end DAY_CHK,
+		          content,
+		          create_resi_no,
+		          create_date,
+		          'N' as is_lec,
+		          CHILD_NO
+		from (
+		           select t3.STORE,
+		           t3.PERIOD,
+		           t3.SUBJECT_CD,
+		           CUST_NO,
+		           length(day_chk)-length(replace(day_chk,'|','')) day_cnt,
+		           DAY_CHK,
+		           IS_LEC,
+		           CONTENT,
+		           CREATE_RESI_NO,
+		           CREATE_DATE,
+		           t3.CHILD_NO
+		           from (
+		                       select t1.hq,
+		                                t1.store,
+		                                t1.period,
+		                                subject_cd,
+		                                cust_NO,
+		                                child_no
+		                       from BAPERETB t1
+		                       where t1.hq=00
+		                       and t1.store='${store}'
+		                       and t1.period='${period}'
+		                       and t1.subject_cd='${subject_cd}'
+		                       and REGIS_CANCEL_FG != '2'
+		                       and t1.recpt_no <![CDATA[<>]]> '*'
+		                       and t1.cust_no not in (select cust_no from baattendtb where store=t1.store and period=t1.period and subject_cd=t1.subject_cd and is_lec='N' and cust_no= t1.cust_no and child_no=t1.child_no)
+		                       and nvl((select mem_fg from bawbtrtb where sale_ymd = t1.sale_ymd and hq=t1.hq and store =t1.store and period = t1.period and subject_cd = t1.subject_cd and cust_no =t1.cust_no and send_recpt_no = t1.recpt_no and rownum = 1),'0') != 'C'
+		                       
+		               ) t3,
+		               (  
+		                 select store,
+		                          period,
+		                          subject_cd,
+		                          day_chk,
+		                          is_lec,
+		                          content,
+		                          create_resi_no,
+		                          create_date
+		                 from baattendtb
+		                 where is_lec = 'Y'      
+		               )  t4    
+		           where T3.STORE = t4.store
+		           and t3.period = t4.period
+		           and t3.subject_cd = t4.subject_cd
+		           group by t3.STORE, t3.PERIOD,t3.SUBJECT_CD,
+		           CUST_NO, day_chk, DAY_CHK, IS_LEC, CONTENT, CREATE_RESI_NO,CREATE_DATE,CHILD_NO
+		)
+		order by subject_cd desc, cust_no
+	</insert>
+	
+	
+	<select id="getSeason" parameterType="hashmap" resultType="hashmap">
+		select 
+			*
+		from BAPERITB where 1=1
+			and store = '${store}'
+			and period = '${period}'
+    	
+	</select>
+
+	<select id="getAttendList" parameterType="hashmap" resultType="hashmap">
+		select
+			X.*
+			from (
+				select rownum as rnum, A.*
+					from (
+					
+						select 
+						        tt2.store,
+						        tt1.car_no,
+						        tt2.period,
+						        tt2.subject_cd,
+						        tt1.cust_no,
+						        tt1.parent_nm,
+						        decode(substr(tt1.kids_nm,1,1),',',replace(tt1.kids_nm,',',''),tt1.kids_nm) as kids_nm,
+						        tt1.ptl_id,
+						        tt1.phone_no,
+						        tt1.create_date,          
+						        tt1.cust_fg,
+						        nvl(day_chk,'출석부 없음') day_chk
+						from (
+						         select cust_no,
+						                kor_nm  as parent_nm,
+						             	case when main_cd = '3' then replace(child_nam1||child_nam2||'#','/#',null)                       
+				                        when main_cd = '4' and child_nam1 is not null then replace(child_nam1||child_nam2||'#','/#',null) else              
+				                       replace(child_nam1||child_nam2,'/',null) end as kids_nm,
+							           ptl_id,
+							           phone_no,
+							           create_date,
+							           cust_fg,
+							           store,
+							           period,
+							           subject_cd,
+							           main_cd,
+							           child_no,
+							           car_no
+						  from (       
+						          select 
+						                 t3.car_no,
+						                 t2.cust_no,
+						                   kor_nm,                
+						                   create_date,
+						                   ptl_id,
+						                   t2.store,
+						                   t2.period,
+						                   subject_cd,
+						                   main_cd,
+						                   child_no,
+						                   trim(h_phone_no_1)||'-'||trim(h_phone_no_2)||'-'||trim(h_phone_no_3) as phone_no,                
+						                  (select  child_nm||'/' from bakidstb t5 where t5.cust_no = t3.cust_no and t5.child_no = t2.child_no) as child_nam1,                 
+                  							 (select nvl2(child_nm,','||child_nm,'')||'/' from bakidstb t5 where t5.cust_no = t3.cust_no and t5.child_no = t2.child_no1 ) as child_nam2,              
+						                   decode((select MIN(PERIOD) AS COUNT
+						                                  from BAPEREtb where store= t2.store and cust_no = t2.cust_no
+						                                   and period <![CDATA[<]]>  t2.period GROUP BY CUST_NO),'','신규','기존') as cust_fg
+						          from (                
+						                   select t1.cust_no,
+					                               store,
+					                               period,
+					                               subject_cd,
+					                               main_cd,     
+					                               child_no,
+					                               child_no1
+						                      from (                             
+						                               select
+							                               cust_no,
+					                                        store,
+					                                        period,
+					                                        subject_cd,
+					                                        main_cd,
+					                                        trim(child_no) child_no,
+					                                        trim(child_no1) child_no1      
+						                                from baperetb
+						                               where hq= '00'
+						                                and store = '${store}'
+						                                 and recpt_NO <![CDATA[<>]]> '*'
+						                                and period = '${period}'
+						                                and subject_cd = '${subject_cd}'
+						                        
+						                                and regis_cancel_fg in ('1','3')   
+						                                and nvl((select mem_fg from bawbtrtb where sale_ymd = baperetb.sale_ymd and hq=baperetb.hq and store =baperetb.store and period = baperetb.period and subject_cd = baperetb.subject_cd and cust_no =baperetb.cust_no and send_recpt_no = baperetb.recpt_no and rownum = 1),'0') != 'C'
+						                                                                                           
+						                                                                                                                       
+						                              ) t1        
+						                      group by t1.cust_no, store, period, subject_cd, main_cd,child_no,child_no1
+						              ) t2, bacusttb t3
+						          where t2.cust_no = t3.cust_no
+						          --and t2.store = t3.store                    
+						          )  
+						      ) tt1, baattendtb tt2
+						where tt1.store = tt2.store(+)               
+						and tt1.period = tt2.period(+)               
+						and tt1.subject_cd = tt2.subject_cd(+)              
+						and tt1.cust_no = tt2.cust_no(+)
+						and tt1.child_no = trim(tt2.child_no(+))
+
+							
+						<if test="!order_by.equals('') and !sort_type.equals('')">
+							order by ${sort_type} ${order_by}
+						</if>
+						<if test="order_by.equals('') and sort_type.equals('')">
+							order by parent_nm
+						</if>
+						
+					) A
+					
+					where rownum <![CDATA[<=]]>
+				#{e_rownum}) X
+			where X.rnum <![CDATA[>]]>
+		#{s_rownum}
+		
+
+	</select>
+
+	<select id="getAttendListCount" parameterType="hashmap"
+		resultType="hashmap">
+			select 
+						       count(*) as cnt
+						from (
+						         select cust_no,
+						                kor_nm  as parent_nm,
+						             	case when main_cd = '3' then replace(child_nam1||child_nam2||'#','/#',null)                       
+				                        when main_cd = '4' and child_nam1 is not null then replace(child_nam1||child_nam2||'#','/#',null) else              
+				                       replace(child_nam1||child_nam2,'/',null) end as kids_nm,
+							           ptl_id,
+							           phone_no,
+							           create_date,
+							           cust_fg,
+							           store,
+							           period,
+							           subject_cd,
+							           main_cd,
+							           child_no,
+							           car_no
+						  from (       
+						          select 
+						                 t3.car_no,
+						                 t2.cust_no,
+						                   kor_nm,                
+						                   create_date,
+						                   ptl_id,
+						                   t2.store,
+						                   t2.period,
+						                   subject_cd,
+						                   main_cd,
+						                   child_no,
+						                   trim(h_phone_no_1)||'-'||trim(h_phone_no_2)||'-'||trim(h_phone_no_3) as phone_no,                
+						                  (select  child_nm||'/' from bakidstb t5 where t5.cust_no = t3.cust_no and t5.child_no = t2.child_no) as child_nam1,                 
+                  							 (select nvl2(child_nm,','||child_nm,'')||'/' from bakidstb t5 where t5.cust_no = t3.cust_no and t5.child_no = t2.child_no1 ) as child_nam2,              
+						                   decode((select MIN(PERIOD) AS COUNT
+						                                  from BAPEREtb where store= t2.store and cust_no = t2.cust_no
+						                                   and period <![CDATA[<]]>  t2.period GROUP BY CUST_NO),'','신규','기존') as cust_fg
+						          from (                
+						                   select t1.cust_no,
+					                               store,
+					                               period,
+					                               subject_cd,
+					                               main_cd,     
+					                               child_no,
+					                               child_no1
+						                      from (                             
+						                               select
+							                               cust_no,
+					                                        store,
+					                                        period,
+					                                        subject_cd,
+					                                        main_cd,
+					                                        trim(child_no) child_no,
+					                                        trim(child_no1) child_no1      
+						                                from baperetb
+						                               where hq= '00'
+						                                and store = '${store}'
+						                                 and recpt_NO <![CDATA[<>]]> '*'
+						                                and period = '${period}'
+						                                and subject_cd = '${subject_cd}'
+						                        
+						                                and regis_cancel_fg in ('1','3')   
+						                                and nvl((select mem_fg from bawbtrtb where sale_ymd = baperetb.sale_ymd and hq=baperetb.hq and store =baperetb.store and period = baperetb.period and subject_cd = baperetb.subject_cd and cust_no =baperetb.cust_no and send_recpt_no = baperetb.recpt_no and rownum = 1),'0') != 'C'
+						                                                                                           
+						                                                                                                                       
+						                              ) t1        
+						                      group by t1.cust_no, store, period, subject_cd, main_cd,child_no,child_no1
+						              ) t2, bacusttb t3
+						          where t2.cust_no = t3.cust_no
+						          --and t2.store = t3.store                    
+						          )  
+						      ) tt1, baattendtb tt2
+						where tt1.store = tt2.store(+)               
+						and tt1.period = tt2.period(+)               
+						and tt1.subject_cd = tt2.subject_cd(+)              
+						and tt1.cust_no = tt2.cust_no(+)
+						and tt1.child_no = trim(tt2.child_no(+))
+
+	</select>
+	<select id="getScheduleByPeri" parameterType="hashmap"
+		resultType="hashmap">
+		select * from baperitb where period = '${period}' and store = '${store}'
+
+	</select>
+	<select id="getPeltBySchedule" parameterType="hashmap"
+		resultType="hashmap">
+		select
+		decode(substr(day_flag,1,1), '1', 'Y', 'N') as is_mon,
+		decode(substr(day_flag,2,1), '1', 'Y', 'N') as is_tue,
+		decode(substr(day_flag,3,1), '1', 'Y', 'N') as is_wed,
+		decode(substr(day_flag,4,1), '1', 'Y', 'N') as is_thu,
+		decode(substr(day_flag,5,1), '1', 'Y', 'N') as is_fri,
+		decode(substr(day_flag,6,1), '1', 'Y', 'N') as is_sat,
+		decode(substr(day_flag,7,1), '1', 'Y', 'N') as is_sun,
+		lect_hour, subject_nm, CANCLED_LIST
+		from bapelttb where store = '${store}' and period = '${period}' and
+		classroom = '${seq}' order by lect_hour
+	</select>
+	<select id="searchUseRoom" parameterType="hashmap"
+		resultType="int">
+		select count(*) as cnt from bapelttb where classroom = '${seq_no}'
+	</select>
+	
+	<select id="lectMidChk" parameterType="hashmap" resultType="int">
+		select count(*) as cnt from bapelttb where 
+			store='${store}' 
+			and period='${period}' 
+			and subject_cd='${subject_cd}' 
+			and subject_nm not like '(중도)%'
+	</select>
+	
+	<select id="ContractDuplChk" parameterType="hashmap" resultType="int">
+		select count(*) as cnt from bacontracttb where 
+			store='${store}' 
+			and period='${period}' 
+			and subject_cd='${subject_cd}' 
+			and cus_no ='${cus_no}' 
+	</select>
+	<select id="getSchedule_test" parameterType="hashmap" resultType="hashmap">
+		select * from bapelttb@cmcfdb where store = '${store}' and period = '${period}'
+	</select>
+	<select id="getSchedule" parameterType="hashmap" resultType="hashmap">
+		select * from bapelttb where store = '${store}' and period = '${period}'
+	</select>
+	<update id="upPeltSchedule_test" parameterType="hashmap">
+		update bapelttb@cmcfdb set end_ymd = '${end_ymd}' where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<update id="upPeltSchedule" parameterType="hashmap">
+		update bapelttb set end_ymd = '${end_ymd}' where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<select id="getConnectInfo" parameterType="hashmap" resultType="hashmap">
+	    select 
+	    lecturer_cd, lecturer_cd1, 
+	    decode((select corp_fg from balecrtb where lecturer_cd = bapelttb.lecturer_cd), '1', 'bajrcotb', '2', 'bajrprtb') as corp_tb
+	    from bapelttb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</select>
+	<select id="getJrCnt" parameterType="hashmap" resultType="int">
+		select count(*) as cnt from ${corp_tb} where store = '${store}' and subject_cd = '${subject_cd}' and lecturer_cd = '${lecturer_cd}'
+		<if test="!period.equals('')">
+			and period = '${period}'
+		</if>
+	</select>
+	
+	<select id="getPrevInfo" parameterType="hashmap" resultType="hashmap">
+	    select * from bapelttb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</select>
+	
+	<select id="getPereCnt" parameterType="hashmap" resultType="int">
+	    select count(*) from baperetb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</select>
+	<insert id="insWlecPrev" parameterType="hashmap">
+		insert into bawlectb
+            select hq, store, subject_cd, subject_nm, lecturer_nm, lecturer_career, lecture_content, lecturer_comment, etc, image_pic, to_char(sysdate,'yyyymmddhh24miss'), 'system', file_no, '${period}' 
+            from bawlectb a 
+            where store = '${store}' and period = '${prev_period}' and (select count(*) from bawlectb where store = '${store}' and period = '${period}' and subject_cd = a.subject_cd) = 0
+            
+	</insert>
+	<insert id="insWlecPrev_one" parameterType="hashmap">
+		insert into bawlectb
+            select hq, store, subject_cd, subject_nm, lecturer_nm, lecturer_career, lecture_content, lecturer_comment, etc, image_pic, to_char(sysdate,'yyyymmddhh24miss'), 'system', file_no, '${period}' 
+            from bawlectb a 
+            where store = '${store}' and period = '${prev_period}' and subject_cd = '${subject_cd}' and (select count(*) from bawlectb where store = '${store}' and period = '${period}' and subject_cd = a.subject_cd) = 0
+            
+	</insert>
+	
+	
+	<select id="getAttendCustList" parameterType="hashmap" resultType="hashmap">
+	    select * from baattendtb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}' and is_lec='N'
+	</select>
+	
+	<update id="upPlanSubjectNm" parameterType="hashmap">
+		update bawlectb set
+		subject_nm = '${subject_nm}'
+		
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+
+	</update>
+</mapper>

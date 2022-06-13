@@ -1,0 +1,8 @@
+body{
+	width:100%;	
+}
+@media only screen and (max-width:765px) {
+	#inter_layer{
+		/*margin-left:19%;*/
+	}
+}

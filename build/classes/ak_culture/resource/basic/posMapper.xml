@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/posMapper">
+	<select id="posDup" parameterType="hashmap" resultType="int">
+		select count(*) from BAPOSMTB where 1 = 1 and HQ = #{write_hq} and STORE = #{write_store} and POS_NO = #{write_pos_no}
+	</select>
+   <select id="getPos" parameterType="hashmap" resultType="hashmap">
+		select
+		TO_CHAR(TO_DATE(CREATE_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as CREATE_DATE, 
+		TO_CHAR(TO_DATE(SALE_YMD, 'YYYYMMDD'), 'YYYY-MM-DD') as SALE_YMD,
+		DECODE(OPEN_YN, 'Y', 'O', 'N', 'X') as OPEN_YN, 
+		DECODE(SALE_END_YN, 'Y', 'O', 'N', 'X') as SALE_END_YN, 
+		DECODE(AD_END_YN, 'Y', 'O', 'N', 'X') as AD_END_YN, 
+		DECODE(DELETE_YN, 'Y', 'O', 'N', 'X') as DELETE_YN, 
+		DECODE(SEND_YN, 'Y', 'O', 'N', 'X') as SEND_YN,
+		DECODE(POS_TYPE, 'D', 'DESK', 'W', 'WEB', 'M', 'MOBILE') as POS_TYPE,
+		HQ, STORE, POS_NO, CREATE_RESI_NO, (select SHORT_NAME from BACODETB where SUB_CODE = STORE and CODE_FG = '02') as SHORT_NAME
+		from ( 
+		    select rownum as rnum, HQ, STORE, POS_NO, SALE_YMD, OPEN_YN, SALE_END_YN, AD_END_YN, DELETE_YN, SEND_YN, CREATE_RESI_NO, CREATE_DATE, POS_TYPE, (select SHORT_NAME from BACODETB where SUB_CODE = STORE and CODE_FG = '02') as SHORT_NAME
+		    from ( 
+		    	select * from BAPOSMTB where 1=1
+		    	<if test="!search_name.equals('')">
+		    		and POS_NO like CONCAT(CONCAT('%', #{search_name}), '%')
+		    	</if>
+		    	<if test="!search_store.equals('')">
+		    		and STORE = #{search_store}
+		    	</if>
+		    	<choose>
+			    	<when test="!order_by.equals('') and !sort_type.equals('')">
+			    		order by ${sort_type} ${order_by}
+			    	</when>
+			    	<otherwise>
+			    		order by CREATE_DATE desc
+			    	</otherwise>
+		    	</choose>
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+   <select id="getPosCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as CNT from BAPOSMTB where 1=1
+    	<if test="!search_name.equals('')">
+    		and POS_NO like CONCAT(CONCAT('%', #{search_name}), '%')
+    	</if>
+    	<if test="!search_store.equals('')">
+    		and store = '${search_store}'
+    	</if>
+	</select>
+	<select id="getPos_one" parameterType="hashmap" resultType="hashmap">
+		select
+		TO_CHAR(TO_DATE(CREATE_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as CREATE_DATE, 
+		DECODE(OPEN_YN, 'Y', 'O', 'N', 'X') as OPEN_YN, 
+		DECODE(SALE_END_YN, 'Y', 'O', 'N', 'X') as SALE_END_YN, 
+		DECODE(AD_END_YN, 'Y', 'O', 'N', 'X') as AD_END_YN, 
+		DECODE(DELETE_YN, 'Y', 'O', 'N', 'X') as DELETE_YN, 
+		DECODE(SEND_YN, 'Y', 'O', 'N', 'X') as SEND_YN,
+		DECODE(POS_TYPE, 'D', 'DESK', 'W', 'WEB', 'M', 'MOBILE') as POS_TYPE,
+		HQ, STORE, POS_NO, SALE_YMD, OPEN_YN, SALE_END_YN, AD_END_YN, DELETE_YN, SEND_YN, CREATE_RESI_NO, POS_TYPE, (select SHORT_NAME from BACODETB where SUB_CODE = STORE and CODE_FG = '02') as SHORT_NAME
+		from BAPOSMTB where 1 = 1 and HQ = #{get_hq} and STORE = #{get_store} and POS_NO = #{get_pos_no}
+	</select>
+   <insert id="insPos" parameterType="hashmap">
+    	insert into BAPOSMTB
+    	(HQ, STORE, POS_NO, SALE_YMD, OPEN_YN, SALE_END_YN, AD_END_YN, DELETE_YN, SEND_YN, CREATE_RESI_NO, CREATE_DATE, POS_TYPE)
+    	values
+    	(#{write_hq}, #{write_store}, #{write_pos_no}, TO_CHAR(SYSDATE, 'YYYYMMDD'), #{write_open_yn}, #{write_sale_end_yn}, #{write_ad_end_yn}, #{write_delete_yn}, #{write_send_yn}, #{write_create_resi_no}, TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), #{write_pos_type})
+	</insert>
+	<select id="useChk" parameterType="hashmap" resultType="int">
+		select count(*) from BAIPMSTB where HQ = #{modify_hq} and STORE = #{modify_store} and POS_NO = #{modify_pos_no} and DELETE_YN = 'N'
+	</select>
+	<delete id="delPos" parameterType="hashmap">
+		delete from BAPOSMTB
+		where HQ = #{get_hq} and STORE = #{get_store} and POS_NO = #{get_pos_no}
+	</delete>
+	<update id="upPosStart" parameterType="hashmap">
+		update BAPOSMTB
+		set
+		SALE_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD'), OPEN_YN = 'Y', SALE_END_YN = 'N', AD_END_YN = 'N', SEND_YN = 'N'
+		where
+		store = '${store}' and pos_no = '${pos}'
+	</update>
+	<update id="upPosEnd" parameterType="hashmap">
+		update BAPOSMTB
+		set
+		SALE_END_YN = 'Y'
+		where
+		store = '${store}' and pos_no = '${pos}'
+	</update>
+	<select id="checkPos" parameterType="hashmap" resultType="int">
+      SELECT count(*) as count
+          FROM BAPOSMTB  
+         WHERE HQ            = '00'
+           AND STORE         = '${store}'
+           AND SALE_YMD      = TO_CHAR(SYSDATE,'YYYYMMDD')
+           AND POS_NO        = '${pos}'
+           AND sale_end_yn = 'Y'
+	</select>
+</mapper>

@@ -1,0 +1,25 @@
+[201031 16:57:03.941][T0000AVGv0CC0INj]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[201031 16:57:05.194][T0000AVGv0CC0INj]PG_SERVER_CONN__SUCC
+[201031 16:57:05.195][T0000AVGv0CC0INj]PG_SERVER_REQ_MSG_SEND__SUCC
+[201031 16:57:05.422][T0000AVGv0CC0INj]PG_SERVER_RES_MSG_RECV__SUCC
+[201031 16:57:05.432][T0000AVGv0CC0INj]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202010311604129215304, app_no=66276253, ca_order_id=CULT202010311604129215304, tno=20555937106546, pg_txid=1031165704MP01AF1LFDMH0000000400000066276253, card_cd=CCLG, amount=40000, coupon_mny=0, canc_time=20201031165704, van_apptime=20201031165704, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T0000AVGv0CC0INj, mcht_taxno=1138521083, card_mny=40000, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20201031165704, pay_method=PACA, quota=00}
+[201031 16:59:59.474][T0000AVGxwO0LF0f]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[201031 17:00:00.520][T0000AVGxwO0LF0f]PG_SERVER_CONN__SUCC
+[201031 17:00:00.521][T0000AVGxwO0LF0f]PG_SERVER_REQ_MSG_SEND__SUCC
+[201031 17:00:00.651][T0000AVGxwO0LF0f]PG_SERVER_RES_MSG_RECV__SUCC
+[201031 17:00:00.655][T0000AVGxwO0LF0f]TX_ENDED-{res_en_msg=Cannot process the request; the transaction cannot be cancelled., res_cd=8133, res_msg=����ҵ� �ſ�ī�� �ŷ� ��ҿ�û}
+[201031 17:02:56.822][T0000AVH0tFC0OPq]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[201031 17:02:56.837][T0000AVH0tFC0OPq]PG_SERVER_CONN__SUCC
+[201031 17:02:56.839][T0000AVH0tFC0OPq]PG_SERVER_REQ_MSG_SEND__SUCC
+[201031 17:02:57.068][T0000AVH0tFC0OPq]PG_SERVER_RES_MSG_RECV__SUCC
+[201031 17:02:57.077][T0000AVH0tFC0OPq]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202010311604131311042, app_no=26437013, ca_order_id=CULT202010311604131311042, tno=20555937106935, pg_txid=1031170255MP01AE1MO9VQ0000000400000026437013, card_cd=CCLG, amount=40000, coupon_mny=0, canc_time=20201031170255, van_apptime=20201031170255, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T0000AVH0tFC0OPq, mcht_taxno=1138521083, card_mny=40000, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20201031170255, pay_method=PACA, quota=00}
+[201031 17:07:34.000][T0000AVH0X0PHbea]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[201031 17:07:34.972][T0000AVH0X0PHbea]PG_SERVER_CONN__SUCC
+[201031 17:07:34.973][T0000AVH0X0PHbea]PG_SERVER_REQ_MSG_SEND__SUCC
+[201031 17:07:35.196][T0000AVH0X0PHbea]PG_SERVER_RES_MSG_RECV__SUCC
+[201031 17:07:35.201][T0000AVH0X0PHbea]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202010311604131585223, app_no=01783061, ca_order_id=CULT202010311604131585223, tno=20555937106980, pg_txid=1031170734MP01AJ1MU63P0000000400000001783061, card_cd=CCLG, amount=40000, coupon_mny=0, canc_time=20201031170734, van_apptime=20201031170734, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T0000AVH0X0PHbea, mcht_taxno=1138521083, card_mny=40000, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20201031170734, pay_method=PACA, quota=00}
+[201031 17:11:34.635][T0000AVHBXFC0c0R]TX_START - site_cd=[T0000]+tx_cd=[00200000]+ordr_idxx=[]+log_level=[3]+opt=[0]
+[201031 17:11:35.585][T0000AVHBXFC0c0R]PG_SERVER_CONN__SUCC
+[201031 17:11:35.586][T0000AVHBXFC0c0R]PG_SERVER_REQ_MSG_SEND__SUCC
+[201031 17:11:35.812][T0000AVHBXFC0c0R]PG_SERVER_RES_MSG_RECV__SUCC
+[201031 17:11:35.819][T0000AVHBXFC0c0R]TX_ENDED-{acqu_cd=CCLG, bizx_numb=0013425574, canc_gubn=B, order_no=CULT202010311604131846536, app_no=26234269, ca_order_id=CULT202010311604131846536, tno=20555937107068, pg_txid=1031171134MP01AH1MZSFI0000000400000026234269, card_cd=CCLG, amount=40000, coupon_mny=0, canc_time=20201031171134, van_apptime=20201031171134, card_name=����ī��, res_cd=0000, res_en_msg=processing completed, trace_no=T0000AVHBXFC0c0R, mcht_taxno=1138521083, card_mny=40000, noinf=N, acqu_name=����ī��, escw_yn=N, mall_taxno=1138521083, res_msg=����ó��, van_cd=VNKC, app_time=20201031171134, pay_method=PACA, quota=00}

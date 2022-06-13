@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/parkMapper">
+	<select id="getPark" parameterType="hashmap" resultType="hashmap">
+	
+	
+	
+	
+	select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+		    	select
+		    	(select short_name from bacodetb where CODE_FG = '02' and sub_code = baparktb.store) as store_nm,
+		    	DECODE(PARK_FG, '01', '매출', '02', '취소', '03', '수강', '04', '강사') as PARK_FG_NM,
+		    	DECODE(DELETE_YN, 'Y', '미사용', 'N', '사용') as DELETE_YN_NM,
+		    	(select subject_nm from bapelttb where store = baparktb.store and period = baparktb.period and subject_cd = baparktb.subject_cd) as subject_nm,
+		    	baparktb.*
+		    	from BAPARKTB where 1=1
+		    	<if test="!store.equals('')">
+		    		and store = '${store}'
+		    	</if>
+		    	<if test="!date_start.equals('')">
+			   		and SALE_YMD <![CDATA[>=]]> '${date_start}'
+			   	</if>
+				<if test="!date_end.equals('')">
+			 		and SALE_YMD <![CDATA[<=]]> '${date_end}'
+				</if>
+				<if test="!car_num.equals('')">
+			 		and CAR_NO like '%'||'${car_num}'||'%'
+			 	</if>
+			 	<if test="!mgmt_num.equals('')">
+			 		and MGMT_NO like '%'||'${mgmt_num}'||'%'
+			 	</if>
+			 	<if test="!park_info.equals('')">
+			 		and PARK_FG like '%'||'${park_info}'||'%'
+			 	</if>
+			 	<if test="!del_yn.equals('')">
+			 		and DELETE_YN like '%'||'${del_yn}'||'%'
+				</if>
+				<if test="!order_by.equals('') and !sort_type.equals('')">
+			   		order by ${sort_type} ${order_by}
+			   	</if>
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+		
+	</select>
+   <select id="getParkCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as CNT from BAPARKTB where 1=1
+		
+    	<if test="!store.equals('')">
+    		and store = '${store}'
+    	</if>
+    	<if test="!date_start.equals('')">
+	   		and SALE_YMD <![CDATA[>=]]> '${date_start}'
+	   	</if>
+		<if test="!date_end.equals('')">
+	 		and SALE_YMD <![CDATA[<=]]> '${date_end}'
+		</if>
+		<if test="!car_num.equals('')">
+	 		and CAR_NO like '%'||'${car_num}'||'%'
+	 	</if>
+	 	<if test="!mgmt_num.equals('')">
+	 		and MGMT_NO like '%'||'${mgmt_num}'||'%'
+	 	</if>
+	 	<if test="!park_info.equals('')">
+	 		and PARK_FG like '%'||'${park_info}'||'%'
+	 	</if>
+	 	<if test="!del_yn.equals('')">
+	 		and DELETE_YN like '%'||'${del_yn}'||'%'
+		</if>
+		
+	</select>
+</mapper>

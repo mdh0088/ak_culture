@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/encdMapper">
+	<select id="getEncdCount" parameterType="hashmap" resultType="hashmap">
+		select
+		   count(*) as cnt
+		from baencdtb_mu aa, bacusttb bb, batrmstb cc, baperetb dd where
+		    aa.store = '${store}'
+		    and aa.period ='${period}'
+		    and bb.cust_no = aa.cust_no
+		    and dd.store = aa.store
+		    and dd.period = aa.period
+		    and dd.cust_no = aa.cust_no
+		    and dd.hq =00
+		    and (aa.enuri_cd = dd.enuri_code1 or aa.enuri_cd = dd.enuri_code2)
+		    and cc.hq = dd.hq
+		    and cc.store = dd.store
+		    and cc.period = dd.period
+		    and cc.sale_ymd = dd.sale_ymd
+		    and cc.recpt_no = dd.recpt_no
+		    and cc.pos_no = dd.pos_no
+		    and cc.cust_no = dd.cust_no
+		    <if test="!search_name.equals('')">
+		        <if test="search_con eq 'kor_nm'.toString()">
+		            and bb.kor_nm='${search_name}'
+		        </if>
+		        <if test="search_con eq 'cus_no'.toString()">
+		            and bb.cus_no = '${search_name}'
+		        </if>
+		    </if>
+		    
+		    <if test="!start_day.equals('')">
+		        and cc.sale_ymd <![CDATA[>=]]> replace('${start_day}','-','')  --가입일
+		    </if>
+		    
+		    <if test="!end_day.equals('')">
+		        and cc.sale_ymd <![CDATA[<=]]> replace('${end_day}','-','')  --가입일
+		    </if>
+		    
+		    <if test="!cust_fg.equals('')">
+		        and ( SELECT MIN(PERIOD)  AS COUNT              --회원구분 (신규/정규 null값으로 구분 null이면 신규)
+		              FROM BAPERETB         
+		             WHERE
+		                STORE        =  aa.store   
+		               AND CUST_NO    =  aa.cust_no
+		               AND PERIOD   <![CDATA[<]]> (select get_web_period('${store}') period from dual)
+		               GROUP BY CUST_NO  ) is<if test="cust_fg eq '1'.toString()"> not </if>null
+		    </if>
+		    <if test="!encd_list.equals('')">
+		        and aa.enuri_cd ='${encd_list}'
+		    </if>
+     
+		
+	</select>
+<select id="getEncd" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+               select
+				    bb.cus_no,
+				    bb.cust_no,
+				    bb.kor_nm,
+				     nvl2((
+				     SELECT MIN(PERIOD)  AS COUNT              
+				          FROM BAPERETB         
+				         WHERE
+				            STORE        =  dd.store
+				           AND CUST_NO    =  dd.cust_no
+				           AND PERIOD   <![CDATA[<]]> (select get_web_period(dd.store) period from dual)
+				           GROUP BY CUST_NO 
+				    ),'기존','신규') as cust_fg,
+				    dd.enuri_code1,
+				    dd.enuri_code2,
+				    (select enuri_nm from baencdmtb_mu  where store= dd.store and period=dd.period and  enuri_cd = dd.enuri_code1) as enuri_nm1,
+   					(select enuri_nm from baencdmtb_mu  where store= dd.store and period=dd.period and  enuri_cd = dd.enuri_code2) as enuri_nm2,
+				    cc.regis_fee,
+				    (cc.enuri_amt1+cc.enuri_amt2) as total_enuri_amt,
+				    (cc.net_sale_amt-cc.food_fee) as total_amt,
+				    ROUND(((cc.enuri_amt1+cc.enuri_amt2)/cc.regis_fee*100),2) as enuri_rate,
+				    TO_CHAR(TO_DATE(cc.sale_ymd, 'YYYYMMDDHH'), 'YYYY-MM-DD') as sale_peri,
+				    cc.sale_ymd,
+				    cc.pos_no,
+				    cc.recpt_no,
+				    cc.create_resi_no,
+				    (select subject_nm from bapelttb where store= dd.store and period = dd.period and subject_cd =dd.subject_cd) as subject_nm
+				from baencdtb_mu aa, bacusttb bb, batrmstb cc, baperetb dd where
+				    aa.store = '${store}'
+				    and aa.period = '${period}'
+				    and bb.cust_no = aa.cust_no
+				    and dd.store = aa.store
+				    and dd.period = aa.period
+				    and dd.cust_no = aa.cust_no
+				    and dd.hq =00
+				    and (aa.enuri_cd = dd.enuri_code1 or aa.enuri_cd = dd.enuri_code2)
+				    and cc.hq = dd.hq
+				    and cc.store = dd.store
+				    and cc.period = dd.period
+				    and cc.sale_ymd = dd.sale_ymd
+				    and cc.recpt_no = dd.recpt_no
+				    and cc.pos_no = dd.pos_no
+				    and cc.cust_no = dd.cust_no
+				    <if test="!search_name.equals('')">
+				        <if test="search_con eq 'kor_nm'.toString()">
+				            and bb.kor_nm='${search_name}'
+				        </if>
+				        <if test="search_con eq 'cus_no'.toString()">
+				            and bb.cus_no = '${search_name}'
+				        </if>
+				    </if>
+				    
+				    <if test="!start_day.equals('')">
+				        and cc.sale_ymd <![CDATA[>=]]> replace('${start_day}','-','')  --가입일
+				    </if>
+				    
+				    <if test="!end_day.equals('')">
+				        and cc.sale_ymd <![CDATA[<=]]> replace('${end_day}','-','')  --가입일
+				    </if>
+				    
+				    <if test="!cust_fg.equals('')">
+				        and ( SELECT MIN(PERIOD)  AS COUNT              --회원구분 (신규/정규 null값으로 구분 null이면 신규)
+				              FROM BAPERETB         
+				             WHERE
+				                STORE        =  aa.store   
+				               AND CUST_NO    =  aa.cust_no
+				               AND PERIOD   <![CDATA[<]]> (select get_web_period('${store}') period from dual)
+				               GROUP BY CUST_NO  ) is<if test="cust_fg eq '1'.toString()"> not </if>null
+				    </if>
+				    <if test="!encd_list.equals('')">
+				        and aa.enuri_cd ='${encd_list}'
+				    </if>
+	
+	
+          <if test="!order_by.equals('') and !sort_type.equals('')">
+			    order by ${sort_type} ${order_by}
+		  </if>
+          ) A
+       where rownum <![CDATA[<=]]> #{e_rownum}) X
+   where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+
+
+	<select id="getEncdCode" parameterType="hashmap" resultType="hashmap">
+		select * from BAENCDMTB_MU where 1=1
+				and store = ${store}
+				and period = ${period}				
+				order by to_number(enuri_cd)
+	</select>
+
+	<select id="getEncdListCount" parameterType="hashmap" resultType="hashmap">
+		select  
+			count(*) as cnt
+		from BAENCDMTB_MU aa where 1=1
+	    	and store = ${store}
+	    	and period = ${period}
+	</select>
+	
+	<select id="getEncdList" parameterType="hashmap" resultType="hashmap">
+	<!--select b.short_name,a.enuri_cd,a.enuri_nm,a.discount_period_start,a.discount_period_end,a.ENURI_FG,a.enuri,a.limited_amt,a.limited_cnt,a.use_yn,c.name,
+	TO_CHAR(TO_DATE( a.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date
+	from BAENCDMTB_MU a 
+	left join bacodetb b on a.store = b.sub_code 
+	left join bamanagertb c on a.create_resi_no = c.seq_no 
+	where b.code_fg=02 
+	order by store-->
+	select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+	
+			select  
+				aa.store,
+				aa.period,
+		   	 	 (SELECT bb.short_name FROM BACODETB bb WHERE bb.CODE_FG = '02' and sub_code=aa.store) as store_name,
+		    	aa.enuri_cd,
+		    	aa.enuri_nm,
+		    	aa.discount_period_start,
+		    	aa.discount_period_end,
+		    	decode(aa.enuri_fg,'1','정률','2','정액') as enuri_fg,
+		    	aa.enuri,
+		    	aa.limited_amt,
+		    	aa.limited_cnt,
+		    	(select bb.name from bamanagertb bb where bb.seq_no = aa.create_resi_no) as register,
+		    	TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+		    	(select count(*) as cnt from baencdtb_mu where enuri_cd = aa.enuri_cd and use_yn='Y') as give_cnt
+			from BAENCDMTB_MU aa where 1=1
+				
+		    	and store = ${store}
+		    	and period = ${period}
+		       	
+		        <if test="!order_by.equals('') and !sort_type.equals('')">
+				    order by ${sort_type} ${order_by}
+				</if>
+				<if test="order_by.equals('') and sort_type.equals('')">
+					order by aa.enuri_cd desc
+				</if>
+                 ) A
+       where rownum <![CDATA[<=]]> #{e_rownum}) X
+   where X.rnum <![CDATA[>]]> #{s_rownum}	
+	</select>
+
+	<select id="getEncdInfo" parameterType="hashmap" resultType="hashmap">
+		select 
+		    enuri_fg,
+		    enuri,
+		    limited_amt,
+		    enuri_nm,
+		   (select name from bamanagertb where seq_no = create_resi_no) as create_resi_no,
+		    TO_CHAR(TO_DATE(create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+		    (select name from bamanagertb where seq_no = update_resi_no) as update_resi_no,
+		    TO_CHAR(TO_DATE(update_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as update_date,
+		    limited_cnt,
+		    discount_period_start,
+		    discount_period_end,
+		    lector_fee_yn,
+		    dupl_yn,
+		    discount_period_end,
+		    subject_fg,
+		    main_cd,
+		    sect_cd,
+		    subject_cd,
+		    cust_fg,
+		    lect_cnt,
+		    semester_cnt,
+		    grade,
+		    give_fg
+		from BAENCDMTB_MU where
+		    store=${store}
+		    and period =${period}
+		     <if test="!enuri_cd.equals('')">
+		    	and enuri_cd ='${enuri_cd}'
+		    </if>
+		     <if test="!enuri_nm.equals('')">
+		    	and enuri_nm ='${enuri_nm}'
+		    </if>
+	</select>
+	<!-- 
+	<select id="getEncdCustList" parameterType="hashmap" resultType="hashmap">
+		select distinct a.cust_no,
+				a.kor_nm,
+				a.cus_no,
+	   			(select count(*) from baperetb c where c.cust_no = a.cust_no and c.pay_yn = 'Y' and c.regis_cancel_fg !=2) as cnt
+	       		 from bacusttb a left join baperetb b on a.cust_no = b.cust_no where 1=1
+	        <if test="!selBranch.equals('')">
+	          and b.store='${selBranch}'
+	        </if>
+	        <if test="!main_cd.equals('')">
+	          and b.main_cd='${main_cd}'
+	        </if>
+	        <if test="!sect_cd.equals('')">
+	          and b.sect_cd='${sect_cd}'
+	        </if>  
+	        <if test="!start_day.equals('')">
+	          and b.sale_ymd between ${start_day} and ${end_day}
+	        </if>  
+	        <if test="!lect_cd.equals('')">
+	          and b.subject_cd = ${lect_cd}
+	        </if>
+	</select>
+	 -->
+	
+	<select id="getPeriListForEncd" parameterType="hashmap" resultType="hashmap">
+	select
+	    X.* 
+	      from ( 
+	          select rownum as rnum, A.*
+	          from ( 
+	            select * from baperitb where store =${store} order by period desc
+	          ) A
+	          where rownum <![CDATA[<=]]> ${semester_cnt}) X
+			where X.rnum <![CDATA[>]]> 0
+	</select>
+
+	<insert id="insEncdM" parameterType="hashmap">
+		 insert into BAENCDMTB_MU
+ 		(
+ 			STORE,			ENURI_CD,
+	 		ENURI_FG,		ENURI,			ENURI_NM,				LIMITED_AMT,
+	 		CREATE_RESI_NO,	CREATE_DATE,	LIMITED_CNT,			DISCOUNT_PERIOD_START,
+	 		LECTOR_FEE_YN,	DUPL_YN,		DISCOUNT_PERIOD_END,	PERIOD,
+	 		SUBJECT_FG,		MAIN_CD,		SECT_CD,				SUBJECT_CD,
+	 		GIVE_FG
+ 		)
+		VALUES
+		(
+			'${store}', 			'${enuri_cd}',
+			'${encd_fg}',			'${enuri}',									'${new_encd_nm}', 			'${encd_limit_pay}',								
+			'${create_resi_no}',	TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),		'${encd_limit_cnt}',		'${discount_period_start}',		
+			'${fee_yn}',			'${dupl_yn}',								'${discount_period_end}', 	'${period}',
+			'${lect_type}',			'${lect_main_cd}',							'${lect_sect_cd}',			'${lect_subject_cd}',
+			'${give_fg}'
+		)
+	
+	</insert>
+	
+	<update id="updateEncdM" parameterType="hashmap">
+		update BAENCDMTB_MU set 
+		    subject_fg = '${lect_type}',
+		    main_cd = '${lect_main_cd}',
+		    sect_cd = '${lect_sect_cd}',
+		    subject_cd = '${lect_subject_cd}',
+		    discount_period_start = '${discount_period_start}',
+		    discount_period_end = '${discount_period_end}',
+		    enuri = '${enuri}',
+		    LIMITED_AMT = '${encd_limit_pay}',
+		    LIMITED_CNT = '${encd_limit_cnt}',
+		    dupl_yn = '${dupl_yn}',
+		    LECTOR_FEE_YN = '${fee_yn}',
+		    UPDATE_RESI_NO ='${create_resi_no}',
+		    UPDATE_DATE =TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		    enuri_fg = '${encd_fg}',
+		    give_fg = '${give_fg}'
+		where 
+			store ='${store}' 
+			and period ='${period}'
+			and enuri_cd ='${enuri_cd}' 
+			
+	</update>
+	
+	
+	<update id="uptEncdMForGrade" parameterType="hashmap">
+		update BAENCDMTB_MU set 
+		    subject_fg ='${subject_fg}',
+		    cust_fg ='${cust_fg}',
+		    lect_cnt ='${lect_cnt}',
+		    semester_cnt = '${semester_cnt}',
+		    grade ='${choose_val}'
+		where 
+				store ='${store}' 
+			and period ='${period}'
+			and enuri_cd ='${enuri_cd}' 
+	</update>
+	
+	
+	
+
+
+	<insert id="insEncd" parameterType="hashmap">
+	insert into BAENCDTB_MU
+ 		(
+	 		STORE,				PERIOD,					ENURI_CD,
+	 		CUST_NO,			CREATE_RESI_NO,			CREATE_DATE
+ 		)
+	VALUES
+		(
+			'${store}',			'${period}',			'${enuri_cd}',
+			'${cust_no}',		'${create_resi_no}',	TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+        )
+	</insert>
+
+	<select id="getNewDisCode" parameterType="hashmap" resultType="hashmap">
+		select nvl(max(to_number(enuri_cd))+1,'1') as enuri_cd from BAENCDMTB_MU where store='${store}' and period = '${period}'
+	</select>
+
+	<select id="getCustList" parameterType="hashmap" resultType="hashmap">
+	    select 
+	        nvl(aa.cust_no,'X') as cust_no
+	    from baperetb aa, bapelttb bb where 
+	    	aa.hq = 00
+	        and aa.store='${store}'
+	        and aa.period = '${period}'
+	        and aa.regis_cancel_fg <![CDATA[<>]]> '3'
+	        and aa.recpt_no <![CDATA[<>]]> '*'
+               and bb.hq = aa.hq
+               and bb.store = aa.store
+               and bb.period = aa.period
+	        and bb.subject_cd = aa.subject_cd
+	        <if test="!con1_subject_fg_a.equals('') or !con1_subject_fg_b.equals('') or !con1_subject_fg_c.equals('')">
+		        and (1=2
+		        	 <if test="!con1_subject_fg_a.equals('')">
+		            	or bb.subject_fg = 1
+		            </if>
+		             <if test="!con1_subject_fg_b.equals('')">
+		            	or bb.subject_fg = 2
+		            </if>
+		             <if test="!con1_subject_fg_c.equals('')">
+		            	or bb.subject_fg = 3 
+		            </if>
+		        )
+	        </if>
+	        
+	        <if test="!choose_val.equals('')">
+		        and EXISTS(select nvl(max(b.mbr_gdc),'119') from ams_bz_sect_mbr_grade b --고객등급별 조건
+		            where b.cus_no = (select cus_no from bacusttb where cust_no = aa.cust_no)
+		            and b.mbr_gdc in (${choose_val})
+		            ) 
+	        </if>
+	        
+	        
+	        <if test="!cust_fg.equals('')">
+		      and ( SELECT MIN(PERIOD)  AS COUNT              --회원구분 (신규/정규 null값으로 구분 null이면 신규)
+		                  FROM BAPERETB         
+		                 WHERE
+		                    STORE        =  aa.store   
+		                   AND CUST_NO    =  aa.cust_no
+		                   AND PERIOD   <![CDATA[<]]>  (select get_web_period('${store}') period from dual)
+		                   GROUP BY CUST_NO  ) is<if test="cust_fg eq '2'.toString()"> not </if>null
+	        </if>    
+	        
+	        <if test="!lect_cnt.equals('')">
+		        and (	--수강강좌
+		                select count(*) from baperetb where 
+		                    regis_cancel_fg <![CDATA[<>]]> '3'
+		                and RECPT_NO <![CDATA[<>]]> '*' 
+		                and store=aa.store 
+		                and cust_no =aa.cust_no 
+		                and period = aa.period ) <![CDATA[>=]]> ${lect_cnt}
+		    </if>
+	             
+	             
+	        <if test="!semester_cnt.equals('')"> 
+		        and (  --연속수강
+		                 select count(distinct d.period) as cnt from baperetb d 
+		                     where period in(
+		                                   select period from(                           
+		                                    SELECT store,period,
+		                                    RANK() OVER (ORDER BY period DESC) rank
+		                                    FROM baperitb where store='${store}'
+		                                        and period <![CDATA[<=]]> ${period}) where rank<![CDATA[<=]]> ${semester_cnt}
+		                            ) and d.cust_no = aa.cust_no and d.regis_cancel_fg <![CDATA[<>]]> '3' and d.recpt_no <![CDATA[<>]]> '*' 
+		                    )<![CDATA[>=]]>${semester_cnt}
+	         </if>       
+	        group by aa.cust_no
+	        
+	    --)
+	</select>
+
+
+
+	<select id="encd_dupl_chk" parameterType="hashmap" resultType="hashmap">
+		select count(*) as cnt from baencdtb_mu where
+		    store = ${store}
+		    and period =${period}
+		    and cust_no = ${cust_no}
+		    and enuri_cd = ${enuri_cd}
+	</select>
+
+
+	<select id="getTargetCustList" parameterType="hashmap" resultType="hashmap">
+		select 
+		    distinct((select bb.cus_no from bacusttb bb where
+		     bb.cust_no = aa.cust_no)) as cus_no,
+		    (select bb.cust_no from bacusttb bb where bb.cust_no = aa.cust_no) as cust_no,
+		    (select bb.kor_nm from bacusttb bb where bb.cust_no = aa.cust_no) as kor_nm,
+		    nvl(
+		        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+		            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+		          from ams_bz_sect_mbr_grade bb
+		             where bb.cus_no = (select cus_no from bacusttb where cust_no = aa.cust_no)
+		        ),'Entry'
+		       ) as grade,
+		    (select count(*) from baperetb bb where bb.cust_no = aa.cust_no and bb.regis_cancel_fg='1') as lect_cnt
+		from baperetb aa where 1=1 
+		    and hq=00
+		    and store = ${store}
+		    
+		    <if test="!year.equals('')">
+		    	and (select bb.web_text from baperitb bb where bb.period = aa.period ) like concat(${year},'%')
+		    </if>
+		    
+		    <if test="!season.equals('')">
+		    	and (select bb.web_text from baperitb bb where bb.period = aa.period ) like concat('%','${season}')
+		    </if>
+		    
+		    <if test="!period.equals('')">  <!-- write_proc 부분 -->
+		    	and aa.period = ${period}
+		    </if>
+		    
+		    
+		    <if test="!main_cd.equals('')">
+				 and aa.main_cd = ${main_cd}
+    		</if>
+    		
+    		<if test="!sect_cd.equals('')">
+    			and aa.sect_cd = ${sect_cd}
+    		</if>
+    		
+    		<if test="!subject_cd.equals('')">
+    			and aa.subject_cd = ${subject_cd}
+    		</if>
+    		
+		    <if test="!subject_fg.equals('')">
+		   		and (select bb.subject_fg from bapelttb bb where bb.subject_cd = aa.subject_cd) in (${subject_fg})
+		    </if>
+		    
+		    
+		    <if test="!cust_fg.equals('')">
+	            and decode(
+	                        (select count(*) as cnt from  batrmstb, batrcatb where 1=1
+	                            and batrmstb.store = batrcatb.store 
+	                            and batrmstb.sale_ymd = batrcatb.sale_ymd 
+	                            and batrmstb.pos_no = batrcatb.pos_no and batrmstb.recpt_no = batrcatb.recpt_no
+	                            and batrmstb.cust_no = aa.cust_no
+	                            ),'0','1','2'
+	                    ) ='${cust_fg}'
+		    </if>
+		    
+		    <if test="!lect_cnt.equals('')">
+		    	and (select count(*) from baperetb bb where bb.cust_no = aa.cust_no and bb.regis_cancel_fg='1') >= ${lect_cnt}
+		    </if>
+		    <if test="!semester_cnt eq '0'.toString()">
+	            and (select count(distinct d.period) as cnt from baperetb d
+	                    where period in(${periList}) and d.cust_no = aa.cust_no and d.regis_cancel_fg !=2  and d.pay_yn='Y') >= ${semester_cnt} 
+		    </if>
+		    
+		    
+		    <if test="!cust_list_grade.equals('') or !cust_list.equals('')"> <!-- write_proc 부분 start -->
+		    
+			    <if test="!cust_list_grade.equals('')">
+			        and (select bb.mbr_gdc from ams_bz_sect_mbr_grade bb --고객등급별 조건
+	                    where cus_no = (select cus_no from bacusttb where cust_no = aa.cust_no)) in (${cust_list_grade})
+	            </if>
+	            
+	            <if test="!cust_list.equals('')">
+	           		and aa.cust_no in (${cust_list}) --대상자 지정시 회원 리스트
+	           	</if>
+	           	
+			</if>
+		
+			<if test="!period.equals('') and !enuri_cd.equals('')">
+           		and (select count(*)cnt from BAENCDTB_MU where 1=1
+                        and cust_no = aa.cust_no 
+                        and enuri_cd = '${enuri_cd}' 
+                        and store=${store} 
+                        and period =${period}
+                    ) =0 --지급 받았는지 확인
+			</if>
+		    
+		    <if test="!year.equals('') and !season.equals('')">
+		        and (
+				        select count(*)cnt from BAENCDTB_MU where 1=1
+                        and cust_no = aa.cust_no
+				        and enuri_cd = '${enuri_cd}' 
+				        and store=${store} 
+				        and period = (select bb.period from baperitb bb where bb.web_text like concat(${year},'%') and bb.web_text like concat('%','${season}')) --지급 받았는지 확인
+				    ) =0 --지급 받았는지 확인
+		    </if>
+		    
+			<if test="!give_type.equals('')">
+				<if test="give_type eq '3'.toString()">
+            		order by DBMS_RANDOM.RANDOM --무작위 구분			<!-- write_proc end -->
+            	</if>
+		    </if>
+	</select>
+	
+	<select id="getEncdListByList" parameterType="hashmap" resultType="hashmap">
+         select * from BAENCDMTB_MU aa where 1=1
+              and store = ${store}
+              and period = ${period}
+	</select>
+	<delete id="delEncd" parameterType="hashmap">
+		delete from baencdmtb_mu
+		where enuri_cd = '${enuri_cd}'
+	</delete>
+	
+</mapper>

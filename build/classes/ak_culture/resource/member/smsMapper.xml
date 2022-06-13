@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/member/smsMapper">
+
+
+<select id="getTmCust" parameterType="hashmap" resultType="hashmap">
+select 
+    (select bb.cus_no from bacusttb bb where bb.cust_no = aa.cust_no) as cus_no,
+    (select bb.ptl_id from bacusttb bb where bb.cust_no = aa.cust_no) as ptl_id,
+    (select trim(bb.h_phone_no_1)||'-'||trim(bb.h_phone_no_2)||'-'||trim(bb.h_phone_no_3) as phone_no from bacusttb bb where bb.cust_no = aa.cust_no) as phone_no,
+    (select bb.subject_nm from bapelttb bb where 
+            bb.store = (select cc.store from batmmtb cc where cc.tm_seq = aa.tm_seq)
+            and trim(bb.subject_cd) = (select cc.subject_cd from batmmtb cc where cc.tm_seq = aa.tm_seq)
+     ) as subject_nm,
+    (select bb.kor_nm from bacusttb bb where bb.cust_no = aa.cust_no) as kor_nm
+from batmltb aa where 1=1
+    and tm_seq=${tm_seq}
+</select>
+
+<select id="getTmCustMemo" parameterType="hashmap" resultType="hashmap">
+	select 
+		memo_seq,
+	    tm_seq,
+	    cust_no,
+	    title,
+	    memo,
+	    receiver, 
+	    recall_yn,
+	    (select name from bamanagertb where seq_no = create_resi_no) as manager_nm,
+   		TO_CHAR(TO_DATE(create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date
+	from batm_memotb where 1=1
+		and cust_no = '${cust_no}' 
+		and tm_seq = '${tm_seq}'
+		order by to_number(memo_seq) desc
+</select>
+
+
+
+<select id="getTmSeq" parameterType="hashmap" resultType="hashmap">
+	SELECT count(*)+1 as tm_seq FROM batm_seqtb
+</select>
+
+<select id="messageList" parameterType="hashmap" resultType="hashmap">
+    select  
+	    sms_seq,
+	    TO_CHAR(TO_DATE(create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD HH24:MI') as create_date,
+	    cont_title
+	from basmsmtb where 1=1
+		<if test="!store.equals('')">
+    	    and store = '${store}'
+    	</if>
+        <if test="!send_state.equals('')">
+        	and send_state in (${send_state})
+        </if>
+        
+        order by to_number(sms_seq) desc
+</select>
+
+
+
+<select id="send_kakao"  statementType="CALLABLE" parameterType="hashmap"  resultType="hashmap">
+{
+	call 
+	KAKAO_SEND_LOCAL_SP
+		(        
+          	'${receiver}',
+          	'${sender}',
+			'',
+			'${message}',
+			'',
+			'', <!-- akg,aks,akb,akp,akw -->
+			'1008',
+			'${sender_key}',
+			'${templete_code}',
+			''
+       )
+}
+</select> 
+
+<select id="getSmsCustListCount" parameterType="hashmap" resultType="hashmap">
+	select 
+	    count(*) as cnt
+	from basmsltb aa where 
+	    sms_seq = '${sms_seq}'
+	    and store ='${store}'
+	    and period ='${period}'
+	    
+
+</select>
+
+
+<select id="getSmsCustList" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+					select 
+					    aa.store,
+					    aa.period,
+					    aa.sms_seq,
+					    aa.cust_no,
+					    aa.kor_nm,
+					    (select ptl_id from bacusttb where cust_no = aa.cust_no) as ptl_id,
+					    aa.receiver,
+					    decode(aa.send_type,'1','알림톡','2','SMS','3','LMS','1|2','알림톡|SMS','1|3','알림톡|LMS') as send_type,
+					    aa.title,
+					    aa.message,
+					    (select bb.name from bamanagertb bb where bb.seq_no= aa.create_resi_no) as manager_nm,
+					    (select bb.sms_yn from bacusttb bb where bb.cust_no = aa.cust_no) as sms_yn,
+					    TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date
+					    
+					from basmsltb aa where 
+					    store = '${store}'
+					    and period = '${period}'
+					    and sms_seq = '${sms_seq}'
+	    
+			<if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+        ) A
+    where rownum <![CDATA[<=]]> #{e_rownum}) X
+where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+
+<select id="getContent" parameterType="hashmap" resultType="hashmap">
+		select
+			*
+		from basmsltb where
+			store ='${store}'
+			and period='${period}'
+			and sms_seq ='${sms_seq}'
+			and cust_no ='${cust_no}'
+</select>
+	
+	
+
+<select id="getSmsCount" parameterType="hashmap" resultType="hashmap">
+	select count(*) as cnt from (
+			select 
+			    aa.store,
+			    aa.period,
+			    aa.sms_seq,
+			    replace(replace(replace(replace(aa.send_type,'1','알림톡'),'2','SMS'),'3','LMS'),'|',',') as send_type,
+			    aa.title,
+			    (select name from bamanagertb  where seq_no = aa.create_resi_no ) as manager_nm,
+			    max(TO_CHAR(TO_DATE(aa.reserve_time, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD')) as reserve_time,
+			    (select wm_concat(kor_nm) from basmsltb where store=aa.store and period =aa.period and sms_seq = aa.sms_seq) as kor_nm,
+			    aa.send_result
+			from basmsltb aa where
+			    store='${store}'
+			    <if test="!send_type.equals('')">
+			        and REGEXP_LIKE(aa.send_type,'${send_type}')
+			    </if>
+			    <if test="!start_day.equals('')">
+			        and aa.reserve_time <![CDATA[>=]]> replace('${start_day}','-','')||'000000'
+			    </if>
+			    <if test="!end_day.equals('')">
+			        and aa.reserve_time <![CDATA[<=]]> replace('${end_day}','-','')||'999999'
+			     </if>
+			     
+			     <if test="!send_state.equals('')">
+			   		 and aa.send_state = '${send_state}'
+			     </if>
+			    <if test="!send_type.equals('')">
+			    	 and aa.send_type='${send_type}'
+			     </if> 
+			    <if test="!search_name.equals('')">
+			        <if test="search_type eq 'title'.toString()">
+			            and aa.title ='${search_name}'
+			        </if>
+			        
+			        <if test="search_type eq 'cus_no'.toString()">
+			            and aa.cust_no='${search_name}'
+			        </if>
+			        
+			        <if test="search_type eq 'phone_nm'.toString()">
+			            and aa.receiver = replace('${search_name}','-','')
+			        </if>
+			        
+			        <if test="search_type eq 'kor_nm'.toString()">
+			            and aa.kor_nm='${search_name}'
+			        </if>
+			    </if>
+	
+			group by aa.store,aa.period,aa.sms_seq,aa.send_type, aa.title, aa.create_resi_no,  aa.send_result )
+</select>
+
+
+
+<select id="getSms" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+          
+			select 
+			    aa.store,
+			    aa.period,
+			    aa.sms_seq,
+			    replace(replace(replace(replace(aa.send_type,'1','알림톡'),'2','SMS'),'3','LMS'),'|',',') as send_type,
+			    aa.title,
+			    (select name from bamanagertb  where seq_no = aa.create_resi_no ) as manager_nm,
+			    max(TO_CHAR(TO_DATE(aa.reserve_time, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD')) as reserve_time,
+			    (select wm_concat(kor_nm) from basmsltb where store=aa.store and period =aa.period and sms_seq = aa.sms_seq) as kor_nm,
+			    aa.send_result
+			from basmsltb aa where
+			    store='${store}'
+			    <if test="!send_type.equals('')">
+			        and REGEXP_LIKE(aa.send_type,'${send_type}')
+			    </if>
+			    <if test="!start_day.equals('')">
+			        and aa.reserve_time <![CDATA[>=]]> replace('${start_day}','-','')||'000000'
+			    </if>
+			    <if test="!end_day.equals('')">
+			        and aa.reserve_time <![CDATA[<=]]> replace('${end_day}','-','')||'999999'
+			     </if>
+			     
+			     <if test="!send_state.equals('')">
+			   		 and aa.send_state = '${send_state}'
+			     </if>
+			    <if test="!send_type.equals('')">
+			    	 and aa.send_type='${send_type}'
+			     </if> 
+			    <if test="!search_name.equals('')">
+			        <if test="search_type eq 'title'.toString()">
+			            and aa.title ='${search_name}'
+			        </if>
+			        
+			        <if test="search_type eq 'cus_no'.toString()">
+			            and aa.cust_no='${search_name}'
+			        </if>
+			        
+			        <if test="search_type eq 'phone_nm'.toString()">
+			            and aa.receiver = replace('${search_name}','-','')
+			        </if>
+			        
+			        <if test="search_type eq 'kor_nm'.toString()">
+			            and aa.kor_nm='${search_name}'
+			        </if>
+			    </if>
+	
+			group by aa.store,aa.period,aa.sms_seq,aa.send_type, aa.title, aa.create_resi_no,  aa.send_result
+		    <if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+
+        ) A
+    where rownum <![CDATA[<=]]> #{e_rownum}) X
+where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+<select id="choose_message" parameterType="hashmap" resultType="hashmap">
+	select * from basmsmtb where sms_seq = ${sms_seq}
+</select>
+
+<select id="recentCustList" parameterType="hashmap" resultType="hashmap">
+	select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from (
+                select  
+                    aa.sms_seq,
+                    (select bb.kor_nm from basmsltb bb where bb.sms_seq = aa.sms_seq and rownum=1) as kor_nm,
+                    (select count(*) from basmsltb bb where bb.sms_seq = aa.sms_seq) as cnt
+                from basmsmtb aa
+                    order by to_number(sms_seq) desc
+                ) A
+                
+        where rownum <![CDATA[<=]]> 10) X
+</select>
+
+<select id="choose_custList" parameterType="hashmap" resultType="hashmap">
+	select * from basmsltb where sms_seq = ${sms_seq}
+</select>
+
+
+
+
+<select id="getSmsCustInfo" parameterType="hashmap" resultType="hashmap">
+select 
+    aa.ptl_id,
+    aa.kor_nm,
+    aa.car_no,
+    ( SELECT  nvl(decode((MIN(MBR_GDC) ),'109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum','112',
+                        'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry'),'Entry')
+                                FROM ams_bz_sect_mbr_grade
+                                WHERE CUS_NO = aa.CUS_NO ) as grade,
+    trim(aa.h_phone_no_1) as phone_no1,
+    trim(aa.h_phone_no_2) as phone_no2,
+    trim(aa.h_phone_no_3) as phone_no3
+from bacusttb aa 
+    where aa.cust_no = '${cust_no}' 
+</select>
+
+<select id="getSmsLecrInfo" parameterType="hashmap" resultType="hashmap">
+	select
+           ams_cus.ptl_id,
+           ams_cus.cus_pn as kor_nm,
+           balecture_mu.car_no,
+               ( SELECT  nvl(decode((MIN(MBR_GDC) ),'109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum','112',
+                 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry'),'Entry')
+                 FROM ams_bz_sect_mbr_grade
+                 WHERE CUS_NO = ams_cus.cus_no ) as grade,
+           trim(ams_cus.mtel_ident_no) as phone_no1,
+           trim(ams_cus.mmt_ex_no) as phone_no2,
+           trim(ams_cus.mtel_uniq_no) as phone_no3      
+    from balecture_mu, ams_cus, bapelttb where 
+       balecture_mu.cus_no = ams_cus.cus_no
+    and balecture_mu.cus_no = bapelttb.cus_no
+       
+       and balecture_mu.cus_no='${cust_no}'
+       and bapelttb.store = '${store}'
+       group by ams_cus.ptl_id,ams_cus.cus_pn,ams_cus.mtel_ident_no,ams_cus.mmt_ex_no,ams_cus.mtel_uniq_no,ams_cus.cus_no,
+                balecture_mu.car_no
+</select>
+
+
+
+<insert id="insTm" parameterType="hashmap">
+		<selectKey keyProperty="tm_seq" order="BEFORE" resultType="int">
+			select nvl(max(to_number(tm_seq))+1,1) as seq from batmmtb
+		</selectKey>
+
+        insert into BATMMTB
+ 		(
+ 			STORE,			PERIOD,		TM_SEQ,
+ 			SUBJECT_CD,		PURPOSE,	CREATE_RESI_NO,
+ 			CREATE_DATE
+ 		)
+            VALUES
+		(	
+			'${store}',			'${period}',	'${tm_seq}',
+			'${subject_cd}',	'${act}',		'${create_resi_no}',
+			TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS') 
+		)
+</insert>
+
+<select id="getTmListForCustCount" parameterType="hashmap" resultType="hashmap">
+	select 
+		count(*) as cnt
+	from batmltb aa, batmmtb bb,bacusttb cc where
+		aa.store = '${store}'
+		and aa.period ='${period}'
+        and aa.tm_seq='${tm_seq}'
+        and bb.store = aa.store
+        and bb.period = aa.period
+        and bb.tm_seq = aa.tm_seq
+	    and cc.cust_no = aa.cust_no
+	    and cc.store = bb.store
+</select>
+
+
+<select id="getTmListForLecrCount" parameterType="hashmap" resultType="hashmap">
+select
+   count(*) as cnt
+from batmltb aa, batmmtb bb,ams_cus cc where
+    aa.store = '${store}'
+	and aa.period ='${period}'
+    and aa.tm_seq='${tm_seq}'
+    and bb.store=aa.store
+    and bb.period=aa.period
+    and bb.tm_seq = aa.tm_seq
+    and cc.cus_no = trim(aa.cust_no)
+</select>
+
+
+
+<select id="getTmCustList" parameterType="hashmap" resultType="hashmap">
+	select * from baperetb where store='${store}' and period='${period}' and subject_cd = '${subject_cd}'
+</select>
+
+
+<select id="getTmListForCust" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+          
+                select
+                	RANK() OVER (ORDER BY aa.cust_no DESC) AS num,
+				    cc.cust_no,
+				    cc.cus_no,
+				    cc.ptl_id,
+				    nvl2(cc.h_phone_no_1,trim(cc.h_phone_no_1)||'-','')||
+				    nvl2(cc.h_phone_no_2,trim(cc.h_phone_no_2)||'-','')||
+				    nvl2(cc.h_phone_no_3,trim(cc.h_phone_no_3),'') as phone_no,
+				    cc.kor_nm,
+				    decode(aa.recall_yn,'Y','진행중','N','완료') AS result
+				from batmltb aa, batmmtb bb,bacusttb cc where
+					aa.store = '${store}'
+					and aa.period ='${period}'
+			        and aa.tm_seq='${tm_seq}'
+			        and bb.store = aa.store
+			        and bb.period = aa.period
+			        and bb.tm_seq = aa.tm_seq
+				    and cc.cust_no = aa.cust_no
+				    --and cc.store = bb.store
+
+		    <if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+		    
+		     <if test="order_by.equals('') and sort_type.equals('')">
+		     	order by result desc
+		     </if>
+        ) A
+    where rownum <![CDATA[<=]]> #{e_rownum}) X
+where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+
+<select id="getTmListForLecr" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+          
+               select
+			    RANK() OVER (ORDER BY aa.cust_no DESC) AS num,
+			    cc.cus_no as cust_no,
+			    cc.ptl_id,
+			    nvl2(cc.mtel_ident_no,trim(cc.mtel_ident_no)||'-','')||
+			    nvl2(cc.mmt_ex_no,trim(cc.mmt_ex_no)||'-','')||
+			    nvl2(cc.mtel_uniq_no,trim(cc.mtel_uniq_no),'') as phone_no,
+			    cc.cus_pn as kor_nm,
+			    decode(aa.recall_yn,'Y','진행중','N','완료') AS result
+			from batmltb aa, batmmtb bb,ams_cus cc where
+			    aa.store='${store}'
+			    and aa.period='${period}'
+			    and aa.tm_seq='${tm_seq}'
+			    and bb.store=aa.store
+			    and bb.period=aa.period
+			    and bb.tm_seq = aa.tm_seq
+			    and cc.cus_no = trim(aa.cust_no)
+
+		    <if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+        ) A
+    where rownum <![CDATA[<=]]> #{e_rownum}) X
+where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+
+
+
+
+
+
+	<select id="getTargetCustList" parameterType="hashmap" resultType="hashmap">
+		select 
+		    distinct((select bb.cus_no from bacusttb bb where bb.cust_no = aa.cust_no)) as cus_no,
+		    (select bb.cust_no from bacusttb bb where bb.cust_no = aa.cust_no) as cust_no,
+		    (select bb.kor_nm from bacusttb bb where bb.cust_no = aa.cust_no) as kor_nm,
+		    nvl(
+		        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+		            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+		          from ams_bz_sect_mbr_grade bb
+		             where bb.cus_no = (select cus_no from bacusttb where cust_no = aa.cust_no)
+		        ),'Entry'
+		       ) as grade,
+		    (select count(*) from baperetb bb where bb.cust_no = aa.cust_no and bb.regis_cancel_fg='1') as lect_cnt
+		from baperetb aa where 1=1 
+		    and hq=00
+		    and store = ${store}
+		    
+		    <if test="!year.equals('')">
+		    	and (select bb.web_text from baperitb bb where bb.period = aa.period ) like concat(${year},'%')
+		    </if>
+		    
+		    <if test="!season.equals('')">
+		    	and (select bb.web_text from baperitb bb where bb.period = aa.period ) like concat('%','${season}')
+		    </if>
+		    
+		    <if test="!main_cd.equals('')">
+				 and aa.main_cd = ${main_cd}
+    		</if>
+    		
+    		<if test="!sect_cd.equals('')">
+    			and aa.sect_cd = ${sect_cd}
+    		</if>
+    		
+    		 <if test="!subject_cd.equals('')">
+    			and aa.subject_cd = ${subject_cd}
+    		</if>
+	</select>
+
+
+
+<select id="getTmCount" parameterType="hashmap" resultType="hashmap">
+                select 
+                	aa.store,
+                	aa.period,
+                    aa.tm_seq,
+				    decode(instr(wm_concat(bb.recall_yn),'N',1,1),0,'진행중','완료') as result,
+				    decode(aa.purpose,'1','강좌폐강','2','폐강취소','3','회원연락','4','휴강','5','강사연락','6','기타') as purpose,
+				    aa.title,
+				    aa.subject_cd,
+				    nvl((select b.subject_nm from bapelttb b where b.store = aa.store and b.period = aa.period and trim(b.subject_cd) = aa.subject_cd),'') as subject_nm,
+				    (select name from bamanagertb where seq_no = aa.create_resi_no) as manager_nm,
+				    TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+				    (select to_char(to_date(max(tm_date), 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') from batmltb where tm_seq = aa.tm_seq) AS tm_date,
+				    decode(
+		            aa.is_lec,'Y',(select wm_concat((select cus_pn from ams_cus where cus_no = trim(b.cust_no))) as kor_nm from batmltb b where tm_seq=aa.tm_seq)
+		            ,(select wm_concat((select kor_nm from bacusttb where cust_no = b.cust_no and store='${store}')) as kor_nm from batmltb b where tm_seq=aa.tm_seq)) as target,
+					COUNT(*) OVER(PARTITION BY 1) as cnt
+				from batmmtb aa, batmltb bb where      
+                    aa.store='${store}'
+                    and aa.period='${period}'
+                     and bb.tm_seq = aa.tm_seq
+                    <if test="!purpose.equals('')">
+                        and aa.purpose ='${purpose}'
+                    </if>
+                    
+                    <if test="!result.equals('')">
+                        and decode(instr((select wm_concat(recall_yn) from batmltb where tm_seq = aa.tm_seq),'N',1,1),0,'N','Y') in (${result})  
+                    </if>
+                    
+                    <if test="!start_day.equals('')">
+                        and substr(aa.create_date,1,8) <![CDATA[>=]]> replace('${start_day}','-','')
+                    </if>
+                    
+                    <if test="!end_day.equals('')">
+                        and substr(aa.create_date,1,8) <![CDATA[<=]]> replace('${end_day}','-','')
+                    </if>
+                    
+                    <if test="!search_name.equals('')">
+                    	<if test="searchType.equals('title')">
+                                and aa.title like '%${search_name}%' 
+                        </if>
+                    
+                    	<if test="searchType eq 'sub_nm'.toString()">
+                                and (select SUBJECT_NM from bapelttb a where a.store = aa.store and a.period = aa.period and a.subject_cd = aa.subject_cd) like '%${search_name}%' 
+                        </if>
+                        
+                        <if test="searchType eq 'kor_nm'.toString()">
+                                and (select wm_concat((select kor_nm from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>
+                            
+                        <if test="searchType eq 'ptl_id'.toString()">
+                                and (select wm_concat((select ptl_id from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>            
+                        
+                       <if test="searchType eq 'phone_nm'.toString()">
+                                and (select wm_concat((select trim(h_phone_no_1)||trim(h_phone_no_2)||h_phone_no_3 from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>
+                                    
+                         <if test="searchType eq 'cus_no'.toString()">
+                               and (select wm_concat((select cus_no from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>
+                        
+                 	 </if>   
+                 	 group by aa.store,aa.period, aa.purpose, aa.title, aa.subject_cd, aa.create_resi_no, aa.create_date, aa.tm_seq,aa.is_lec
+</select>
+<select id="getTmList" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from (     
+    
+                select 
+                	aa.store,
+                	aa.period,
+				    aa.tm_seq,
+				    decode(instr(wm_concat(bb.recall_yn),'Y',1,1),0,'완료','진행중') as result,
+				    decode(aa.purpose,'1','강좌폐강','2','폐강취소','3','회원연락','4','휴강','5','강사연락','6','기타') as purpose,
+				    aa.title,
+				    aa.subject_cd,
+				    nvl((select b.subject_nm from bapelttb b where b.store = aa.store and b.period = aa.period and trim(b.subject_cd) = aa.subject_cd),'') as subject_nm,
+				    (select name from bamanagertb where seq_no = aa.create_resi_no) as manager_nm,
+				    TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+				    <!-- TO_CHAR(TO_DATE(bb.tm_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as tm_date, -->
+				    (select to_char(to_date(max(tm_date), 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') from batmltb where tm_seq = aa.tm_seq) AS tm_date,
+				    
+				   decode(
+		            aa.is_lec,'Y',(select wm_concat((select cus_pn from ams_cus where cus_no = trim(b.cust_no))) as kor_nm from batmltb b where tm_seq=aa.tm_seq)
+		            ,(select wm_concat((select kor_nm from bacusttb where cust_no = b.cust_no )) as kor_nm from batmltb b where tm_seq=aa.tm_seq)) as target
+				   <!--   ,(select wm_concat((select kor_nm from bacusttb where cust_no = b.cust_no and store='${store}')) as kor_nm from batmltb b where tm_seq=aa.tm_seq)) as target-->
+				from batmmtb aa, batmltb bb where      
+                    aa.store='${store}'
+                    and aa.period='${period}'
+                     and bb.tm_seq = aa.tm_seq
+                    <if test="!purpose.equals('')">
+                        and aa.purpose ='${purpose}'
+                    </if>
+                    
+                    <if test="!result.equals('')">
+                        and decode(instr((select wm_concat(recall_yn) from batmltb where tm_seq = aa.tm_seq),'Y',1,1),0,'Y','N') in (${result})  
+                    </if>
+                    
+                    <if test="!start_day.equals('')">
+                        and substr(aa.create_date,1,8) <![CDATA[>=]]> replace('${start_day}','-','')
+                    </if>
+                    
+                    <if test="!end_day.equals('')">
+                        and substr(aa.create_date,1,8) <![CDATA[<=]]> replace('${end_day}','-','')
+                    </if>
+                    
+                    <if test="!search_name.equals('')">
+                    	
+                    	<if test="searchType.equals('title')">
+                                and aa.title like '%${search_name}%' 
+                        </if>
+                    
+                    	<if test="searchType eq 'sub_nm'.toString()">
+                                and (select SUBJECT_NM from bapelttb a where a.store = aa.store and a.period = aa.period and a.subject_cd = aa.subject_cd) like '%${search_name}%' 
+                        </if>
+                        
+                        <if test="searchType eq 'kor_nm'.toString()">
+                                and (select wm_concat((select kor_nm from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>
+                            
+                        <if test="searchType eq 'ptl_id'.toString()">
+                                and (select wm_concat((select ptl_id from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>            
+                        
+                       <if test="searchType eq 'phone_nm'.toString()">
+                                and (select wm_concat((select trim(h_phone_no_1)||trim(h_phone_no_2)||h_phone_no_3 from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>
+                                    
+                         <if test="searchType eq 'cus_no'.toString()">
+                               and (select wm_concat((select cus_no from bacusttb where cust_no = b.cust_no and store=03)) from batmltb b where tm_seq=aa.tm_seq) like '%${search_name}%'
+                        </if>
+                  </if>      
+                   group by aa.store,aa.period, aa.purpose, aa.title, aa.subject_cd, aa.create_resi_no, aa.create_date, aa.tm_seq, aa.is_lec
+             <if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+             </if> 
+  
+             
+        ) A
+    where rownum <![CDATA[<=]]> #{e_rownum}) X
+where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+<select id="getTmLecrInfo" parameterType="hashmap" resultType="hashmap">
+	select 
+	    cus_pn as kor_nm,
+	    cus_no,
+	    ptl_id,
+	    trim(mtel_ident_no)||'-'||trim(mmt_ex_no)||'-'||trim(mtel_uniq_no) as phone_no
+	from ams_cus where 1=1
+	    and cus_no = '${cust_no}'
+</select>
+
+<select id="getTmCustInfo" parameterType="hashmap" resultType="hashmap">
+	select 
+	    kor_nm,
+	    cus_no,
+	    ptl_id,
+	    trim(h_phone_no_1)||'-'||trim(h_phone_no_2)||'-'||trim(h_phone_no_3) as phone_no
+	from bacusttb where 1=1
+	    and cust_no = '${cust_no}'
+</select>
+
+
+<insert id="add_tm_memo" parameterType="hashmap">
+		<selectKey keyProperty="memo_seq" order="BEFORE" resultType="int">
+			select nvl(max(to_number(memo_seq))+1,'1') as seq from BATM_MEMOTB where tm_seq ='${tm_seq}' and cust_no='${cust_no}'
+		</selectKey>
+
+        insert into BATM_MEMOTB
+ 		(
+ 			STORE,				PERIOD,
+ 			TM_SEQ,				CUST_NO,		MEMO,
+ 			RECEIVER,			RECALL_YN,		MEMO_SEQ,
+ 			CREATE_RESI_NO,		CREATE_DATE
+ 		)
+            VALUES
+		(
+			'${store}',				'${period}',
+			'${tm_seq}',			'${cust_no}',		'${memo}',
+			'${receiver}',			'${recall_yn}',		'${memo_seq}',
+			'${create_resi_no}',	TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		)
+</insert>
+
+
+<update id="upt_tm_Custinfo" parameterType="hashmap">
+		update BATM_MEMOTB set 
+		    memo ='${memo}',
+		    receiver='${receiver}',
+		    recall_yn='${recall_yn}',
+		    create_resi_no='${create_resi_no}'
+		    <!--create_date=TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')-->
+		where 
+			tm_seq ='${tm_seq}' 
+			and cust_no ='${cust_no}' 
+			and memo_seq ='${memo_seq}'
+			and store = '${store}'
+			and period ='${period}'
+</update>
+
+<select id="getSmsSeq" parameterType="hashmap" resultType="hashmap">
+	select nvl(max(to_number(sms_seq))+1,1) as sms_seq from basmsmtb where store='${store}' and period ='${period}'
+</select>
+
+
+
+<insert id="insSms" parameterType="hashmap">
+
+		<selectKey keyProperty="sms_seq" order="BEFORE" resultType="int">
+			select nvl(max(to_number(sms_seq))+1,1) as seq from basmsmtb
+		</selectKey>
+		
+        insert into BASMSMTB
+ 		(
+ 			SMS_SEQ, 			SEND_TYPE, 			SMS_SENDER, 
+ 			CONT_TYPE,  		CONT_TITLE, 		CREATE_RESI_NO,
+ 			MESSAGE,			STORE,				PERIOD,	
+ 			CREATE_DATE
+ 		)
+        VALUES
+		(
+			'${sms_seq}', 		'${send_type}', 	'${sms_sender}',  
+			'${cont_type}', 	'${cont_title}', 	'${create_resi_no}',
+			'${message_area}',	'${store}',			'${period}',
+			TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		)
+</insert>
+
+	
+<insert id="insSmsList" parameterType="hashmap">
+        insert into BASMSLTB
+ 		(
+ 			HQ,					STORE,				CUST_NO,	
+ 			KOR_NM,				RECEIVER,			SENDER,	
+ 			MESSAGE,			RESERVE_TIME,		CREATE_DATE,
+ 			CREATE_RESI_NO, 	SEND_TYPE,			SEND_STATE,
+ 			SMS_SEQ,			SEND_RESULT,		PERIOD,
+ 			TITLE,				CONT_TYPE
+ 			
+ 		)
+ 		
+        VALUES
+		(
+			'00',														'${store}',												'${cust_no}',
+			(select kor_nm from bacusttb where cust_no ='${cust_no}'), 	'${receiver}',											'${sms_sender}',
+			'${message}',												TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),					TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+			'${create_resi_no}',										'${send_type}',											'${send_state}',			
+			'${sms_seq}',												'${send_result}',										'${period}',
+			'${title}',													'${cont_type}'
+		)
+</insert>
+
+<insert id="writeTm" parameterType="hashmap">
+		<selectKey keyProperty="tm_seq" order="BEFORE" resultType="int">
+			select nvl(max(to_number(tm_seq))+1,1) as seq from batmmtb where store='${store}' and period='${period}'
+		</selectKey>
+
+        insert into BATMMTB
+ 		(
+ 			STORE,		PERIOD,				TM_SEQ,	
+ 			TITLE,		PURPOSE,			SUBJECT_CD,
+ 			IS_LEC,		CREATE_RESI_NO,		CREATE_DATE
+ 		)
+        VALUES
+		(
+			'${store}',		'${period}',			'${tm_seq}',
+			'${title}',		'${purpose}',			'${lect_cd}',
+			'${is_lec}', 	'${create_resi_no}',	TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		)
+</insert>
+
+<insert id="writeTmList" parameterType="hashmap">
+        insert into BATMLTB
+ 		(
+ 			TM_SEQ,			CUST_NO,			STORE,		
+ 			PERIOD,			TM_RESI_NO, 		TM_DATE
+ 		)
+        VALUES
+		(
+			'${tm_seq}',	'${custlist}',			'${store}',
+			'${period}',	'${create_resi_no}',	TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		)
+</insert>
+
+<update id="uptTMLCustInfo" parameterType="hashmap">
+		update BATMLTB set 
+		    recall_yn='${recall_yn}',
+		    tm_resi_no='${create_resi_no}',
+		    tm_date=TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+		    receiver ='${receiver}'
+		where 
+			tm_seq ='${tm_seq}' 
+			and cust_no ='${cust_no}'
+			and store ='${store}'
+			and period ='${period}'
+</update>
+
+<select id="getTmMemoResult" parameterType="hashmap" resultType="hashmap">
+select 
+     decode(instr(wm_concat(recall_yn),'Y',1,1),0,'N','Y') as result
+from batm_memotb where
+    tm_seq = '${tm_seq}'
+</select>
+
+
+<select id="getTmmInfo" parameterType="hashmap" resultType="hashmap">
+	select * from batmmtb where store ='${store}' and period ='${period}' and tm_seq = '${tm_seq}'
+</select>
+
+
+<update id="uptTmlAll" parameterType="hashmap">
+		update BATMLTB set recall_yn='N' where tm_seq ='${tm_seq}' 
+</update>
+
+<update id="uptTmMemoAll" parameterType="hashmap">
+		update batm_memotb set recall_yn='N' where tm_seq ='${tm_seq}' 
+</update>
+
+
+</mapper>

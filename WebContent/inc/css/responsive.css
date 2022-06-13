@@ -1,0 +1,161 @@
+@media only screen and (max-width: 1800px) {
+
+}
+@media only screen and (max-width: 1800px) {
+	.chk-ul > li+ li {
+	    margin-left: 5px;
+	}
+	.chk-ul-4 > li + li, .chk-ul-3 > li + li{
+		margin-left:0;
+	}
+	.cal-input{
+		width:150px;
+	}
+	.cal-input180 {
+	   	width: 45% !important;
+	}
+	.gift-table tbody{
+		height:250px;
+	}
+	.oddn-sel .selectedOption{
+	    min-width: 80px;
+	}
+	.table-top .wid-35 .select-box, .table-top .wid-15 .select-box, .table-top .wid-2 .select-box, .certi-res .select-box{
+		min-width:80px;
+	}
+	.table-mem02 .wid-15 .select-box, .table-mem02 .wid-15 .selectedOption, .table-mem02 select{
+		min-width:50px;
+	}
+	.table-top .wid-35 #season_target .select-box, .table-top .wid-35 #tar_get_season_target .select-box{
+		min-width:120px;
+	}
+	.selectedOption, .table-mem02 select{
+		padding: 0 20px 0 8px;
+	}
+	.lol-txt p{
+		font-size:14px;
+	}
+	.lol-txt{
+		lefT:50px;
+	}
+	.lecr-sear-snm {
+	    padding: 30px 15px 0;
+	}
+	.plan-onof a.bor-btn{
+		width:40px;
+	}
+	.onoff > div.on {
+	    padding: 0 20px 0 8px;
+	}
+	.onoff > div{
+		font-size:10px;
+		width:45px;
+	}
+	.table > div.gnb-ri li{
+		font-size:10px !important;
+	}
+	.wid3-sel .select-box {
+	    min-width: 90px;
+	    width: 90px;
+	}
+	.step2-btn a {
+	    min-width: 104px;
+	}
+	.table-top #season_target .select-box {
+	    min-width: 120px;
+	    max-width: 120px;
+	}
+	.lect-pwrap02 .lec-1dept .table > div + .wid-5 ul, .lec-2dept > div, .sect_ul_big {
+	    height: 115px;
+	}
+	.list-edit .lect-pwrap03 .scr-staton {
+	    height: 120px;
+	}
+	.plg-wr{
+		width:200px;
+	}
+	.ban-inp02 input{
+		width:75%;
+	}
+	.scr-staton tr th, .table-list tr th, .thead-box tr th, .table-dragwr .table-inner ul > li, .table-dragwr .table-inner ul > li.table-th{
+		font-size:10px;
+	}
+	.table-list tr th img, .table-dragwr .table-inner ul.ul9 li span img, .thead-box tr th img{
+		width:10px;
+	}
+	.select-ul li{
+		padding:5px;
+		white-space:nowrap;
+	}
+	.trans-list .sear-tit_left{
+		padding-left:0;
+	}
+	.trans-list .sear-tit_120{
+		width:100px;
+	}
+	.men-join .wid-5 .sear-tit{
+		width:80px;
+	}
+	.btn{
+		min-width:100px;
+	}
+	.ak-wrap_new .bor-div > .top-row > .wid-5{
+		width:48%;
+	}
+	.ak-wrap_new .bor-div > .top-row > .wid-5 + .wid-5{
+		margin-left:2%;
+	}
+	.gift-tsl .select-box{
+		min-width:100px;
+	}
+	.card-slide .btn-a{
+		padding:7px 15px;
+	}
+	.table-input .select-box, .table-input input, .table-input .selectedOption{
+		min-width:50px;
+	}
+	.table-corpfg .btn{
+		padding:0 5px;
+	}
+	td{
+		font-size:10px;
+	}	
+	.chk-ul02 > li + li{
+		margin-left:10px;
+	}
+	.s-btn {
+	    min-width: 50px;
+	}
+	.plan-save a {
+	    height: 22px;
+	    line-height: 20px;
+	}
+	.btn{
+		font-size:10px;
+	}
+	.member-profile .row > .wid-5, .trans-wrap .row > .wid-5, .tm-wrap .row > .wid-5{
+		width:48%;
+	}
+	.member-profile .row > .wid-5 + .wid-5, .trans-wrap .row > .wid-5 + .wid-5, .tm-wrap .row > .wid-5 + .wid-5 {
+	    margin-left: 4%;
+	}
+	.member-profile .wid-5_last:before, .trans-wrap .wid-5_last:before, .tm-wrap .wid-5_last:before{
+		left:-4%;
+	}
+	.table-dragwr .table-inner ul > li > span b{
+		width:50px;
+	}
+	.table-list thead th i, .fix-head thead i, .thead-box thead th i{
+		font-size:12px;
+	}
+	.table-wr_mem02 .btn-row {
+	    width: 100%;
+	}
+	input[type="checkbox"] + label:before, input[type="radio"] + label:before, .table-list .table-listin input[type="checkbox"] + label:before{
+		margin-right:3px;
+	}
+	#ul_radio > li+ li{
+		margin-left:15px;
+	}
+}
+	

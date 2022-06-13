@@ -1,0 +1,1 @@
+http://112.106.55.70:8088/member/lect/view

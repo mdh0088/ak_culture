@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc 
+	http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd 
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+		
+
+	<!-- 트랜젝션 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- @Transactional 애노테이션을 sacn하기 위한 설정 -->
+	<tx:annotation-driven/>
+	<!-- 트랜젝션 -->
+	
+	<!-- <context:component-scan base-package="com.lge.*" /> -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations" value="/WEB-INF/config/system.properties"></property>
+	</bean>
+	<!-- common -->
+	<bean class="ak_culture.controller.common.CommonController"/>
+	<bean class="ak_culture.controller.common.AuthController"/>
+	<!-- api -->
+	<bean class="ak_culture.controller.api.ApiController"/>
+	<!-- basic -->
+	<bean class="ak_culture.controller.basic.UserController"/>
+	<bean class="ak_culture.controller.basic.CodeController"/>
+	<bean class="ak_culture.controller.basic.IpController"/>
+	<bean class="ak_culture.controller.basic.PosController"/>
+	<bean class="ak_culture.controller.basic.ParkController"/>
+	<bean class="ak_culture.controller.basic.PeriController"/>
+	<bean class="ak_culture.controller.basic.GiftController"/>
+	<bean class="ak_culture.controller.basic.EncdController"/>
+	<!-- member -->
+	<bean class="ak_culture.controller.member.CustController"/>
+	<bean class="ak_culture.controller.member.LectController"/>
+	<bean class="ak_culture.controller.member.WaitController"/>
+	<bean class="ak_culture.controller.member.ReloController"/>
+	<bean class="ak_culture.controller.member.SmsController"/>
+	<!-- lecture -->
+	<bean class="ak_culture.controller.lecture.LectController"/>
+	<bean class="ak_culture.controller.lecture.LecrController"/>
+	<!-- main -->
+	<bean class="ak_culture.controller.MainController"/>
+	
+	<!-- trms -->
+	<bean class="ak_culture.controller.trms.TrmsController"/>
+	
+	<!-- it -->
+	<bean class="ak_culture.controller.it.ItController"/>
+	<!-- stat -->
+	<bean class="ak_culture.controller.stat.StatController"/>
+	<!-- web -->
+	<bean class="ak_culture.controller.web.WebController"/>
+	
+	
+		<!-- common -->
+	<bean class="ak_culture.model.api.ApiDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- common -->
+	<bean class="ak_culture.model.common.CommonDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.common.AuthDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- basic -->
+	<bean class="ak_culture.model.basic.UserDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.basic.IpDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.basic.CodeDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.basic.PosDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.basic.ParkDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.basic.PeriDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.basic.GiftDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.basic.EncdDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- member -->
+	<bean class="ak_culture.model.member.CustDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.member.LectDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.member.WaitDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.member.ReloDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.member.SmsDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- lecture -->
+	<bean class="ak_culture.model.lecture.LectDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<bean class="ak_culture.model.lecture.LecrDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- trms -->
+	<bean class="ak_culture.model.trms.TrmsDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- it -->
+	<bean class="ak_culture.model.it.ItDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- web -->
+	<bean class="ak_culture.model.web.WebDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- stat -->
+	<bean class="ak_culture.model.stat.StatDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	<!-- akris -->
+	<bean class="ak_culture.model.akris.AkrisDAO">
+		<property name="sqlSessionFactory" ref="sqlSessionFactory2" />
+	</bean>
+
+	
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<bean id="beanNameViewResolver"
+		class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="0" />
+	</bean>
+	
+	<mvc:annotation-driven />
+	<bean id="interceptor" class="ak_culture.classes.Interceptor"/>
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/basic/user/*"/>
+			<mvc:mapping path="/basic/ip/*"/>
+			<mvc:mapping path="/basic/pos/*"/>
+			<mvc:mapping path="/basic/code/*"/>
+			<mvc:mapping path="/basic/peri/*"/>
+			<mvc:mapping path="/basic/park/*"/>
+			<mvc:mapping path="/basic/gift/*"/>
+			<mvc:mapping path="/basic/encd/*"/>
+			<mvc:mapping path="/lecture/lecr/*"/>
+			<mvc:mapping path="/lecture/lect/*"/>
+			<mvc:mapping path="/member/cust/*"/>
+			<mvc:mapping path="/member/lect/*"/>
+			<mvc:mapping path="/member/relo/*"/>
+			<mvc:mapping path="/member/sms/*"/>
+			<mvc:mapping path="/member/wait/*"/>
+			<mvc:mapping path="/trms/trms/*"/>
+			<mvc:mapping path="/it/*"/>
+			<mvc:mapping path="/web/*"/>
+			<mvc:mapping path="/auth/*"/>
+			<!-- 권한필요 경로 -->
+			<!-- <mvc:mapping path="/basic/code/list"/>
+			<mvc:mapping path="/basic/encd/list"/>
+			<mvc:mapping path="/basic/encd/listed"/>
+			<mvc:mapping path="/basic/encd/write"/>
+			<mvc:mapping path="/basic/gift/list"/>
+			<mvc:mapping path="/basic/gift/listed"/>
+			<mvc:mapping path="/basic/gift/write"/>
+			<mvc:mapping path="/basic/ip/list"/>
+			<mvc:mapping path="/basic/park/list"/>
+			<mvc:mapping path="/basic/peri/list"/>
+			<mvc:mapping path="/basic/pos/list"/>
+			<mvc:mapping path="/basic/user/level"/>
+			<mvc:mapping path="/basic/user/list"/>
+			<mvc:mapping path="/basic/user/log"/>
+			<mvc:mapping path="/basic/user/view"/>
+			<mvc:mapping path="/it/change"/>
+			<mvc:mapping path="/it/check"/>
+			<mvc:mapping path="/it/deadline"/>
+			<mvc:mapping path="/it/elect"/>
+			<mvc:mapping path="/it/end"/>
+			<mvc:mapping path="/it/list"/>
+			<mvc:mapping path="/it/material"/>
+			<mvc:mapping path="/it/payment"/>
+			<mvc:mapping path="/it/status"/>
+			<mvc:mapping path="/it/tally"/>
+			<mvc:mapping path="/lecture/lecr/certificate"/>
+			<mvc:mapping path="/lecture/lecr/certificate_list"/>
+			<mvc:mapping path="/lecture/lecr/certificate_tax"/>
+			<mvc:mapping path="/lecture/lecr/contract"/>
+			<mvc:mapping path="/lecture/lecr/list"/>
+			<mvc:mapping path="/lecture/lecr/listed"/>
+			<mvc:mapping path="/lecture/lecr/status"/>
+			<mvc:mapping path="/lecture/lecr/transaction"/>
+			<mvc:mapping path="/lecture/lecr/write"/>
+			<mvc:mapping path="/lecture/lect/attend"/>
+			<mvc:mapping path="/lecture/lect/detail"/>
+			<mvc:mapping path="/lecture/lect/list"/>
+			<mvc:mapping path="/lecture/lect/list_cate"/>
+			<mvc:mapping path="/lecture/lect/main"/>
+			<mvc:mapping path="/lecture/lect/plan"/>
+			<mvc:mapping path="/lecture/lect/room"/>
+			<mvc:mapping path="/lecture/lect/write"/>
+			<mvc:mapping path="/member/cust/list"/>
+			<mvc:mapping path="/member/cust/list_mem"/>
+			<mvc:mapping path="/member/cust/write"/>
+			<mvc:mapping path="/member/lect/checkView"/>
+			<mvc:mapping path="/member/lect/view"/>
+			<mvc:mapping path="/member/relo/list"/>
+			<mvc:mapping path="/member/relo/write"/>
+			<mvc:mapping path="/member/sms/list"/>
+			<mvc:mapping path="/member/sms/list_tm"/>
+			<mvc:mapping path="/member/sms/write"/>
+			<mvc:mapping path="/member/wait/list"/>
+			<mvc:mapping path="/stat/attend"/>
+			<mvc:mapping path="/stat/list"/>
+			<mvc:mapping path="/stat/member_lecture"/>
+			<mvc:mapping path="/stat/member_list"/>
+			<mvc:mapping path="/stat/member_receipt"/>
+			<mvc:mapping path="/stat/payment"/>
+			<mvc:mapping path="/stat/receipt"/>
+			<mvc:mapping path="/stat/receipt_day"/>
+			<mvc:mapping path="/stat/receipt_detail"/>
+			<mvc:mapping path="/trms/trms/check"/>
+			<mvc:mapping path="/trms/trms/close_write"/>
+			<mvc:mapping path="/trms/trms/detail"/>
+			<mvc:mapping path="/trms/trms/list"/>
+			<mvc:mapping path="/trms/trms/print"/>
+			<mvc:mapping path="/trms/trms/send"/>
+			<mvc:mapping path="/trms/trms/trms_write"/> -->
+			<ref bean="interceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<context:annotation-config />
+
+</beans>
+
+

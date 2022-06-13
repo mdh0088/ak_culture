@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/giftMapper">
+<select id="getGiftCount" parameterType="hashmap" resultType="hashmap">
+		select
+		   count(*) as cnt
+		from BAPRSNTMTB aa where
+		    aa.store = '${store}'
+		    and aa.period = '${period}'
+		    <if test="!search_start.equals('')">
+		        and aa.create_date <![CDATA[>=]]> replace('${search_start}','-','')||'000000'
+		    </if>
+		    <if test="!search_end.equals('')">
+		        and aa.create_date <![CDATA[<=]]> replace('${search_end}','-','')||'999999'
+		    </if>
+		    <if test="!gubun.equals('')">
+		        <if test="gubun eq '1'.toString()">
+		            and (aa.give_period_start <![CDATA[<=]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') and aa.give_period_end >= TO_CHAR(SYSDATE, 'YYYY-MM-DD')  --진행중
+		          		 or (aa.give_period_start is null and aa.give_period_end is null))
+		        </if>
+		        <if test="gubun eq '2'.toString()">
+		            and aa.give_period_end <![CDATA[<]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') --종료
+		        </if>
+		    </if>
+		    <if test="!gift_fg.equals('')">
+		        and aa.gift_fg in(${gift_fg}) 
+		    </if>
+
+
+</select>
+
+<select id="getGiftList" parameterType="hashmap" resultType="hashmap">
+ select
+   X.*
+   from ( 
+       select rownum as rnum, A.*
+       from (
+       
+				select
+					aa.store,
+					aa.period,
+					aa.gift_cd,
+				    (case
+				        when aa.give_period_start <![CDATA[<=]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') and aa.give_period_end <![CDATA[>=]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') then '진행중'
+				        when aa.give_period_start <![CDATA[>]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') then '대기중'
+				        when aa.give_period_end <![CDATA[<]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') then '종료'
+				        else '진행중'
+				        end
+				    ) as gubun,
+				    decode(trim(aa.gift_fg),'1','상품권','2','현물') as gift_fg,
+				    aa.gift_nm,
+				    aa.gift_cnt_t,
+				    nvl(aa.gift_cnt_w,'0') as gift_cnt_w,
+				    nvl(aa.gift_cnt_m,'0') as gift_cnt_m,
+				    nvl(aa.gift_cnt_d,'0') as gift_cnt_d,
+				    (aa.gift_cnt_t) - ( select count(*) from BAPRSNTTB where store=aa.store and period= aa.period and gift_status != 0 and gift_cd=aa.gift_cd) as left_cnt,
+				    aa.give_period_start||' ~ '||aa.give_period_end as give_period,
+				    decode(aa.give_type,'1','자동선착순','2','무작위') as give_type,
+				    TO_CHAR(TO_DATE( aa.CREATE_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+				    nvl((select name from bamanagertb where seq_no = aa.create_resi_no),'-') as regi_name
+				from BAPRSNTMTB aa where
+				    aa.store = '${store}'
+				    and aa.period = '${period}'
+				    <if test="!search_start.equals('')">
+				        and aa.create_date <![CDATA[>=]]> replace('${search_start}','-','')||'000000'
+				    </if>
+				    <if test="!search_end.equals('')">
+				        and aa.create_date <![CDATA[<=]]> replace('${search_end}','-','')||'999999'
+				    </if>
+				    <if test="!gubun.equals('')">
+				        <if test="gubun eq '1'.toString()">
+				            and (aa.give_period_start <![CDATA[<=]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') and aa.give_period_end >= TO_CHAR(SYSDATE, 'YYYY-MM-DD')  --진행중
+				       				or (aa.give_period_start is null and aa.give_period_end is null))
+				        </if>
+				        <if test="gubun eq '2'.toString()">
+				            and aa.give_period_end <![CDATA[<]]> TO_CHAR(SYSDATE, 'YYYY-MM-DD') --종료
+				        </if>
+				    </if>
+				    <if test="!gift_fg.equals('')">
+				        and aa.gift_fg in(${gift_fg}) 
+				    </if>
+	                  
+	            <if test="!order_by.equals('') and !sort_type.equals('')">
+			    	order by ${sort_type} ${order_by}
+			    </if>
+			    
+			    
+       ) A
+       where rownum <![CDATA[<=]]> #{e_rownum}) X
+   where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+<select id="getGiftCustCount" parameterType="hashmap" resultType="hashmap">
+		select
+		    count(*) as cnt
+		from 
+		(
+		    select
+		        aa.store,
+		        aa.period,
+		        nvl((select net_sale_amt from batrmstb where hq='00' and store=aa.store and period=aa.period and sale_ymd =aa.sale_ymd and pos_no=aa.pos_no and recpt_no=aa.recpt_no),'0') as gift_price,
+		        aa.pos_no,
+		        decode(substr(aa.pos_no, - 2), '13', 'WEB', '14', 'MOBILE','DESK') AS accept_type,
+		        TO_CHAR(TO_DATE( aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+		        decode(aa.gift_status,'0','반납','1','지급','2','미지급','3','강좌취소') as give_type,
+		        TO_CHAR(TO_DATE( aa.gift_back_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as gift_back_date,
+		        TO_CHAR(TO_DATE( aa.GIFT_GIVE_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as GIFT_GIVE_DATE,
+		        aa.contents,
+		        aa.gift_cd,
+		        aa.cust_no,
+		          nvl2((
+		             SELECT MIN(PERIOD)  AS COUNT              
+		                  FROM BAPERETB         
+		                 WHERE
+		                    STORE        =  aa.store
+		                   AND CUST_NO    =  aa.cust_no
+		                   AND PERIOD   <![CDATA[<]]> (select get_web_period(aa.store) period from dual)
+		                   GROUP BY CUST_NO 
+		            ),'기존','신규') as cust_fg
+		    from BAPRSNTTB aa where
+		         aa.store = '${store}'
+		         and aa.period='${period}'
+		         <if test="!start_ymd.equals('')">
+		            and  aa.create_date <![CDATA[>=]]> replace('${start_ymd}','-','')||'000000'
+		        </if>
+		        <if test="!end_ymd.equals('')">
+		            and  aa.create_date <![CDATA[<=]]> replace('${end_ymd}','-','')||'999999'
+		        </if>
+		        <if test="!gift_status.equals('')">
+		            and aa.gift_status = '${gift_status}'
+		        </if>
+		 )t1,
+		
+		(  
+		    select 
+		        *
+		    from BAPRSNTMTB where 1=1
+		        <if test="!gift_fg.equals('')">
+		            and gift_fg in(${gift_fg})
+		        </if>
+		        
+		        <if test="!gift_cd.equals('')">
+		            and gift_cd ='${gift_cd}'
+		        </if>
+		)t2,
+		
+		(
+		    select
+		        *
+		    from bacusttb where 1=1
+		        <if test="!search_name.equals('')">
+		            <if test="search_type eq 'cus_no'.toString()">
+		                and cus_no='${search_name}'
+		            </if>
+		            
+		            <if test="search_type eq 'ptl_id'.toString()">
+		                 and ptl_id='${search_name}'
+		            </if>
+		            
+		            <if test="search_type eq 'phone_num'.toString()">
+		                and trim(h_phone_no_1)||h_phone_no_2||h_phone_no_3 = replace('${search_name}','-','');  
+		            </if>
+		            <if test="search_type eq 'kor_nm'.toString()">
+		                and kor_nm='${search_name}'
+		            </if>
+		        </if>
+		)t3 
+		
+		where
+		    t1.store = t2.store
+		    and t1.period = t2.period
+		    and t1.gift_cd = t2.gift_cd
+		    and t1.cust_no = t3.cust_no
+            
+
+</select>
+
+<select id="getCustGiftList" parameterType="hashmap" resultType="hashmap">
+select
+    X.*
+    from ( 
+       select rownum as rnum, A.*
+       from (
+
+		 select
+		    t1.cust_no,
+		    t3.kor_nm,
+		    t2.gift_nm,
+		    t1.gift_price,
+		    decode(trim(t2.gift_fg),'1','상품권','2','현물') as gift_fg,
+		    t1.pos_no,
+		    t1.cust_fg,
+		    t1.accept_type,
+		    t1.create_date,
+		    t1.give_type,
+		    t1.gift_back_date,
+		    t1.gift_give_date,
+		    t1.contents,
+		    t1.gift_cd,
+		    decode(t2.give_type,'1',t1.give_order_cnt,'') as give_order_cnt
+		from 
+		(
+		    select
+		        aa.store,
+		        aa.period,
+		        nvl((select net_sale_amt from batrmstb where hq='00' and store=aa.store and period=aa.period and sale_ymd =aa.sale_ymd and pos_no=aa.pos_no and recpt_no=aa.recpt_no),'0') as gift_price,
+		        aa.pos_no,
+		        decode(substr(aa.pos_no, - 2), '13', 'WEB', '14', 'MOBILE','DESK') AS accept_type,
+		        TO_CHAR(TO_DATE( aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+		        decode(aa.gift_status,'0','반납','1','지급','2','미지급','3','강좌취소') as give_type,
+		        TO_CHAR(TO_DATE( aa.gift_back_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as gift_back_date,
+		        TO_CHAR(TO_DATE( aa.GIFT_GIVE_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as GIFT_GIVE_DATE,
+		        aa.contents,
+		        aa.gift_cd,
+		        aa.cust_no,
+		          nvl2((
+		             SELECT MIN(PERIOD)  AS COUNT              
+		                  FROM BAPERETB         
+		                 WHERE
+		                    STORE        =  aa.store
+		                   AND CUST_NO    =  aa.cust_no
+		                   AND PERIOD   <![CDATA[<]]> (select get_web_period(aa.store) period from dual)
+		                   GROUP BY CUST_NO 
+		            ),'기존','신규') as cust_fg,
+		        RANK() OVER (PARTITION BY aa.gift_cd ORDER BY aa.create_date DESC ) as give_order_cnt
+		    from BAPRSNTTB aa where
+		         aa.store = '${store}'
+		         and aa.period='${period}'
+		         <if test="!start_ymd.equals('')">
+		            and  aa.create_date <![CDATA[>=]]> replace('${start_ymd}','-','')||'000000'
+		        </if>
+		        <if test="!end_ymd.equals('')">
+		            and  aa.create_date <![CDATA[<=]]> replace('${end_ymd}','-','')||'999999'
+		        </if>
+		        <if test="!gift_status.equals('')">
+		            and aa.gift_status = '${gift_status}'
+		        </if>
+		 )t1,
+		
+		(  
+		    select 
+		        *
+		    from BAPRSNTMTB where 1=1
+		        <if test="!gift_fg.equals('')">
+		            and gift_fg in(${gift_fg})
+		        </if>
+		        
+		        <if test="!gift_cd.equals('')">
+		            and gift_cd ='${gift_cd}'
+		        </if>
+		)t2,
+		
+		(
+		    select
+		        *
+		    from bacusttb where 1=1
+		        <if test="!search_name.equals('')">
+		            <if test="search_type eq 'cus_no'.toString()">
+		                and cus_no='${search_name}'
+		            </if>
+		            
+		            <if test="search_type eq 'ptl_id'.toString()">
+		                 and ptl_id='${search_name}'
+		            </if>
+		            
+		            <if test="search_type eq 'phone_num'.toString()">
+		                and trim(h_phone_no_1)||h_phone_no_2||h_phone_no_3 = replace('${search_name}','-','');  
+		            </if>
+		            <if test="search_type eq 'kor_nm'.toString()">
+		                and kor_nm like '%${search_name}%'
+		            </if>
+		        </if>
+		)t3 
+		
+		where
+		    t1.store = t2.store
+		    and t1.period = t2.period
+		    and t1.gift_cd = t2.gift_cd
+		    and t1.cust_no = t3.cust_no
+		   
+
+       ) A
+    where rownum <![CDATA[<=]]> ${e_rownum}) X
+where X.rnum <![CDATA[>]]> ${s_rownum}
+
+ <if test="!order_by.equals('') and !sort_type.equals('')">
+       order by ${sort_type} ${order_by}
+  </if>
+		    
+		    
+</select>
+
+	
+
+	<select id="changeGift" parameterType="hashmap" resultType="hashmap">
+			     select 
+	                gift_fg,
+	                gift_cd,
+	                gift_nm
+	            from BAPRSNTMTB where 1=1
+	                and store = ${store}
+	                and period = ${period}
+	                
+	                <if test="!gift_fg.equals('')">
+	                	and gift_fg=${gift_fg}
+	                </if>
+	            order by create_date
+	</select>
+	
+	<select id="chk_left_cnt" parameterType="hashmap" resultType="int">
+			  select
+                (aa.gift_cnt_t) - ( select count(*) from BAPRSNTTB where
+                                     gift_status!=0
+                                     and gift_cd=aa.gift_cd) as left_cnt
+                
+			 from BAPRSNTMTB aa where 1=1
+			    and aa.store='${store}'
+			    and aa.period='${period}'
+                and aa.gift_cd ='${gift_cd}'
+	</select>
+
+	<select id="getGiftInfo" parameterType="hashmap" resultType="hashmap">
+			select 
+				(aa.gift_cnt_t) - ( select count(*) from BAPRSNTTB where gift_status!=0 and gift_cd=aa.gift_cd) as left_cnt,
+				aa.store,
+				aa.period,
+				aa.gift_fg,
+				aa.gift_price,
+				aa.give_period_start,
+				aa.give_period_end,
+				aa.gift_cnt_w,
+				aa.gift_cnt_m,
+				aa.gift_cnt_d,
+				aa.return_fg,
+				(select name from bamanagertb where seq_no = aa.create_resi_no) as create_resi_no,
+				TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+				(select name from bamanagertb where seq_no = aa.update_resi_no) as update_resi_no,
+				TO_CHAR(TO_DATE(aa.update_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as update_date,
+				aa.gift_cnt_t,
+				aa.gift_nm,
+				aa.gift_cd,
+				aa.subject_fg,
+				aa.cust_fg,
+				aa.lect_cnt,
+				aa.semester_cnt,
+				aa.grade,
+				aa.give_fg
+			 from BAPRSNTMTB aa where
+			 	 aa.store=${store}
+			     and aa.period=${period}
+			     <if test="!gift_cd.equals('')">
+			    	and aa.gift_cd ='${gift_cd}'
+			    </if>
+			     <if test="!gift_nm.equals('')">
+			    	and aa.gift_nm ='${gift_nm}'
+			    </if>
+			    
+			
+	</select>
+	
+	<select id="getNewGiftCode" parameterType="hashmap" resultType="hashmap">
+		select nvl(max(to_number(gift_cd))+1,'1') as gift_cd from BAPRSNTMTB where store ='${store}' and period = '${period}'
+	</select>
+
+	<insert id="addGiftCode" parameterType="hashmap">
+	    insert into bacodetb
+	 	(
+		 	CODE_FG,				SUB_CODE,					SHORT_NAME,
+		 	LONG_NAME,				CREATE_RESI_NO,				CREATE_DATE
+		)
+		VALUES
+		(
+			'${code_fg}',			'${sub_code}',				'${new_sub_code}',
+			'${new_sub_code}',		'${create_resi_no}',		TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		)
+	</insert>
+
+	<insert id="insGiftM" parameterType="hashmap">
+		 insert into BAPRSNTMTB
+ 		(
+ 			STORE,			PERIOD,
+	 		GIFT_FG,		GIFT_PRICE,		GIVE_PERIOD_START,		GIVE_PERIOD_END,
+	 		GIFT_CNT_W,		GIFT_CNT_M,		GIFT_CNT_D,				RETURN_FG,
+	 		CREATE_RESI_NO,	CREATE_DATE,	GIFT_CNT_T,				GIFT_NM,
+	 		GIFT_CD,		GIVE_TYPE,		GIVE_FG
+ 		)
+		VALUES
+		(	
+			'${store}', 			'${period}',
+			'${gift_fg}',			'${gift_price}',						'${start_ymd}', 		'${end_ymd}',								
+			'${gift_cnt_w}',		'${gift_cnt_m}',						'${gift_cnt_d}',		'${return_fg}',
+			'${create_resi_no}',	TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),	'${gift_cnt_t}', 		'${new_gift_nm}',
+			'${gift_cd}',			'${give_type}',							'${give_fg}'
+		)
+	
+	</insert>
+
+	<update id="updateGiftM" parameterType="hashmap">
+		update BAPRSNTMTB set 
+		    gift_price = '${gift_price}',
+		    give_period_start = '${start_ymd}',
+		    give_period_end = '${end_ymd}',
+		    gift_cnt_w = '${gift_cnt_w}',
+		    gift_cnt_m = '${gift_cnt_m}',
+		    gift_cnt_d = '${gift_cnt_d}',
+		   	gift_cnt_t = '${gift_cnt_t}',
+		    return_fg = '${return_fg}',
+		    UPDATE_RESI_NO ='${create_resi_no}',
+		    UPDATE_DATE =TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		    give_type = '${give_type}',
+		    give_fg = '${give_fg}'
+		where 
+			store ='${store}' 
+			and period ='${period}'
+			and gift_cd ='${gift_cd}' 
+			
+	</update>
+	
+	<update id="uptGiftMForGrade" parameterType="hashmap">
+		update BAPRSNTMTB set 
+		    subject_fg ='${subject_fg}',
+		    cust_fg ='${cust_fg}',
+		    lect_cnt ='${lect_cnt}',
+		    semester_cnt = '${semester_cnt}',
+		    grade ='${choose_val}'
+		where 
+				store ='${store}' 
+			and period ='${period}'
+			and gift_cd ='${gift_cd}' 
+	</update>
+	
+	<select id="gift_dupl_chk" parameterType="hashmap" resultType="hashmap">
+		select count(*) as cnt from BAPRSNTTB where
+		    store = '${store}'
+		    and period ='${period}'
+		    and cust_no = '${cust_no}'
+		    and gift_cd = '${gift_cd}'
+	</select>
+
+<update id="updateContent" parameterType="hashmap">
+		update BAPRSNTTB set 
+		    contents = '${contents}'
+		where store ='${store}' 
+			and period ='${period}' 
+			and cust_no = '${cust_no}'
+			and gift_cd = '${gift_cd}'
+</update>
+
+<insert id="insGift" parameterType="hashmap">
+	insert into BAPRSNTTB
+ 		(
+	 		STORE,				PERIOD,					GIFT_CD,
+	 		CUST_NO,			CREATE_RESI_NO,			CREATE_DATE,
+	 		POS_NO
+	 		
+ 		)
+	VALUES
+		(
+			'${store}',			'${period}',			'${gift_cd}',
+			'${cust_no}',		'${create_resi_no}',	TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+			'${pos_no}'
+        )
+</insert>
+
+<insert id="insGiftForTarget" parameterType="hashmap">
+	insert into BAPRSNTTB
+ 		(
+	 		STORE,				PERIOD,					GIFT_CD,
+	 		CUST_NO,			CREATE_RESI_NO,			CREATE_DATE,
+	 		POS_NO,				SALE_YMD,				SUBJECT_CD
+	 		
+ 		)
+	VALUES
+		(
+			'${store}',			'${period}',					'${gift_cd}',
+			'${cust_no}',		'${create_resi_no}',			TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+			'${pos_no}',		TO_CHAR(SYSDATE, 'YYYYMMDD'),	'${subject_cd}'
+        )
+</insert>
+
+<update id="UptGiftForTarget" parameterType="hashmap">
+	update BAPRSNTTB set
+		update_resi_no = '${create_resi_no}',
+		update_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		gift_status = '2',
+		sale_ymd = TO_CHAR(SYSDATE, 'YYYYMMDD'),
+		recpt_no = '${recpt_no}',
+		pos_no = '${pos_no}',
+		subject_cd = '${subject_cd}',
+		contents =''
+	where
+		store='${store}'
+		and period ='${period}'
+		and gift_cd = '${gift_cd}'
+		and cust_no = '${cust_no}'
+		
+		
+</update>
+
+
+<select id="getPeriList" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+            select * from baperitb where store =03 order by period desc
+          ) A
+          where rownum <![CDATA[<=]]> ${semester_cnt}) X
+		where X.rnum <![CDATA[>]]> 0
+</select>
+
+<select id="getCustInfo" parameterType="hashmap" resultType="hashmap">
+select  
+     DISTINCT 
+     cust_no,
+     (select X.* from 
+        (select rownum as rnum from 
+            (select b.sale_ymd from batrmstb b where b.cust_no = ${cust_list} and b.cancel_yn = 'N') A 
+                where rownum <![CDATA[<=]]> 1) X 
+            where X.rnum <![CDATA[>]]> 0
+        ) as cust_fg,
+     (select count(*) from (
+        select distinct l.subject_cd,l.subject_fg,c.*  from baperetb c left join bapelttb l on c.subject_cd = l.subject_cd and c.store = l.store
+            where c.cust_no = ${cust_list} and c.regis_cancel_fg !=2 and c.pay_yn = 'Y'
+                <if test="!subject_fg.equals('')">
+                    and l.subject_fg in (${subject_fg})
+                </if>
+        )
+      ) as lect_cnt,
+     (select count(distinct d.period) as dcnt from baperetb d 
+        where period in('') and d.cust_no = ${cust_list} and d.regis_cancel_fg !=2  and d.pay_yn='Y' ) as semester_cnt
+from baperetb where cust_no = ${cust_list}
+</select>
+
+<update id="upGiftEnd" parameterType="hashmap">
+		update BAPRSNTTB set 
+			
+			<if test="act eq '1'.toString()">
+				GIFT_GIVE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+			</if>
+			
+			<if test="act eq '0'.toString()">
+				GIFT_BACK_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+			</if>
+			GIFT_STATUS = '${act}',
+			
+			UPDATE_RESI_NO = '${create_resi_no}',
+			UPDATE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where 
+            store='${store}'
+            and period='${period}'
+            and gift_cd='${gift_cd}'
+            and cust_no=${cust_no}
+</update>
+
+<delete id="delGift" parameterType="hashmap">
+	delete from BAPRSNTMTB
+	where gift_cd = '${gift_cd}'
+</delete>
+
+
+<select id="getTotCnt" parameterType="hashmap" resultType="hashmap">
+	select * from BAPRSNTMTB where store ='${store}' and period = '${period}' and gift_cd ='${gift_cd}' 
+</select>
+
+<select id="getGiveCnt" parameterType="hashmap" resultType="hashmap">
+	select count(*) as cnt from BAPRSNTTB where store ='${store}' and period = '${period}' and gift_cd ='${gift_cd}' and gift_status ='1'
+</select>
+
+
+</mapper>

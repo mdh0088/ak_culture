@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/periMapper">
+	<select id="getPeriOne" parameterType="hashmap" resultType="hashmap">
+		select * from BAPERITB where PERIOD = '${selPeri}' and STORE = '${selBranch}' and ROWNUM = 1
+	</select>
+	<select id="getLastPeri" parameterType="hashmap" resultType="hashmap">
+		select * from BAPERITB where STORE = '${selBranch}' order by PERIOD desc
+	</select>
+	<insert id="insPeri" parameterType="hashmap">
+		insert into BAPERITB
+		(HQ, STORE, PERIOD, START_YMD, ADULT_S_BGN_YMD, ADULT_F_BGN_YMD, END_YMD, WEB_OPEN_YMD, WEB_TEXT, CANCLED_LIST, 
+		TECH_1_S, TECH_1_YMD, TECH_2_S, TECH_2_YMD, TECH_3_S, TECH_3_YMD, MATE_1_S, MATE_1_YMD, MATE_2_S, MATE_2_YMD, MATE_3_S, MATE_3_YMD, CREATE_RESI_NO, CREATE_DATE, time)
+		VALUES
+		('00', '${selBranch}', '${period}', #{start_ymd}, #{adult_s_bgn_ymd}, #{adult_f_bgn_ymd}, #{end_ymd}, #{web_open_ymd}, #{web_text}, #{cancled_list}, 
+		#{tech_1_status}, #{tech_1_ymd}, #{tech_2_status}, #{tech_2_ymd}, #{tech_3_status}, #{tech_3_ymd}, #{mate_1_status}, #{mate_1_ymd}, #{mate_2_status}, #{mate_2_ymd}, #{mate_3_status}, #{mate_3_ymd}, '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), '${lect_hour}')
+	</insert>
+	<update id="upPeri" parameterType="hashmap">
+		update BAPERITB
+		set
+		START_YMD = #{start_ymd},
+		ADULT_S_BGN_YMD = #{adult_s_bgn_ymd},
+		ADULT_F_BGN_YMD = #{adult_f_bgn_ymd},
+		END_YMD = #{end_ymd},
+		WEB_OPEN_YMD = #{web_open_ymd},
+		WEB_TEXT = #{web_text},
+		CANCLED_LIST = #{cancled_list},
+		TECH_1_S = #{tech_1_status},
+		TECH_1_YMD = #{tech_1_ymd},
+		TECH_2_S = #{tech_2_status},
+		TECH_2_YMD = #{tech_2_ymd},
+		TECH_3_S = #{tech_3_status},
+		TECH_3_YMD = #{tech_3_ymd},
+		MATE_1_S = #{mate_1_status},
+		MATE_1_YMD = #{mate_1_ymd},
+		MATE_2_S = #{mate_2_status},
+		MATE_2_YMD = #{mate_2_ymd},
+		MATE_3_S = #{mate_3_status},
+		MATE_3_YMD = #{mate_3_ymd},
+		time = '${lect_hour}'
+		where
+		STORE = '${selBranch}' and PERIOD = '${period}'
+	</update>
+	<update id="upCancled" parameterType="hashmap" >
+		update BAPECATB
+		set
+		CANCLED = #{cancled}
+		where
+		STORE = '${store}' and PERIOD = '${period}' and MAIN_CD = '${main_cd}' and SECT_CD = '${sect_cd}'
+	</update>
+	<update id="insCancled" parameterType="hashmap" >
+		insert into BAPECATB
+		(STORE, PERIOD, MAIN_CD, SECT_CD, CANCLED)
+		VALUES
+		('${store}', '${period}', '${main_cd}', '${sect_cd}', '${cancled}')
+	</update>
+	<select id="getCancled" parameterType="hashmap" resultType="hashmap">
+		select * from BAPECATB where STORE = '${store}' and PERIOD = '${period}' 
+		<if test="!main_cd.equals('')">
+			and MAIN_CD = '${main_cd}'
+		</if>
+		<if test="!sect_cd.equals('')">
+			 and SECT_CD = '${sect_cd}'
+		</if>
+	</select>
+	<select id="getHoliday" parameterType="hashmap" resultType="hashmap">
+		select * from baperitb where STORE = '${store}' and PERIOD = '${period}' 
+	</select>
+	<select id="setWebPeri" parameterType="hashmap" resultType="hashmap">
+		UPDATE BAWBPRTB
+                   SET PERIOD         = '${period}',
+                       UPDAE_RESI_NO = '${login_seq}',
+                       UPDATE_DATE    = to_char(sysdate, 'yyyymmddhh24miss')
+                 WHERE HQ     = '00'
+                   AND STORE  = '${store}' 
+	</select>
+	<select id="seqPeriCount" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) AS COUNT
+				 FROM BACSEQTB  
+				WHERE HQ = '00'
+				  AND STORE = '${store}'
+				  AND PERIOD = '${period}'
+				  AND SEQ_FG ='88'
+	</select>
+	<select id="getPeriodByDate" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) AS COUNT
+				 FROM baperitb  
+				WHERE STORE = '${store}'
+				  AND (  
+				  			(start_ymd <![CDATA[<=]]> '${start_ymd}' and end_ymd <![CDATA[>=]]> '${start_ymd}')
+				  			or
+				  			(start_ymd <![CDATA[<=]]> '${end_ymd}' and end_ymd <![CDATA[>=]]> '${end_ymd}')
+				  	  )
+	</select>
+	<insert id="insPeriSeq" parameterType="hashmap">
+		INSERT INTO BACSEQTB
+                 ( HQ , STORE , SEQ_FG , PERIOD , SEQ_NO , CLOSE_YN )
+                VALUES
+                 ( '00' , '${store}' , '88' , '${period}' , 1 , 'N')  
+	</insert>
+</mapper>

@@ -1,0 +1,265 @@
+/* 강사 계약서  */
+
+.cours-sec01 .sub-tit{
+	font-size: 23px;
+    color: #343434;
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 10px;
+}
+.cour-left{
+	position: relative;
+	padding-left: 25px;
+}
+.cour-txt {
+    color: #8a8a8a;
+    margin: 0.2em 0;
+    font-size: 16px;
+}
+.contract-wr {
+    padding: 30px;
+    background: #fff;
+}
+
+dl, dt, dd {
+  margin:0;
+  padding:0;
+}
+dl{
+	width:100%;
+}
+dt, dd {
+  height:50px;
+  padding:2px 0;
+  overflow:hidden;
+  white-space: nowrap;
+  float:left;
+  border-bottom:1px solid #777;
+  border-top:1px solid #777;
+  border-right:1px solid #777;
+  margin-top: -1px;
+  line-height: 48px;
+  text-align: center;
+  font-size: 16px;
+  color: #777;
+  font-weight: 500;
+}
+
+dt {
+  width: 10%;
+  border-left:1px solid gray;
+  margin-left:-1px;
+}
+
+dd {
+  width: 40%;
+}
+
+.contract_sroll {
+    overflow-y: scroll;
+}
+
+.contract-box {
+    height: 700px;
+    overflow-y: scroll;
+   	padding: 190px 30px 288px 0;
+    margin: auto;
+    width: 100%;
+}
+.contract-box h1 {
+    font-size: 37px;
+    color: #000;
+    text-align: center;
+}
+.contract-box .ct-logo {
+    margin-top: 170px;
+    text-align: center;
+}
+.contract-box .ct-logo img {
+    width: 10%;
+}
+.contract-box .ct-kor {
+	margin-top: 300px;
+    font-size: 26px;
+    color: #000;
+    text-align: center;
+    line-height: 1;
+    margin-bottom:60px;
+}
+
+.contract-cont {
+    margin-top: 200px;
+}
+
+.desc-g {
+    padding-top: 7px;
+    line-height: 28px;
+    font-size: 14px;
+}
+.contract-cont strong {
+    padding-top: 40px;
+}
+.tit-subject {
+    display: block;
+    line-height: 28px;
+    font-size: 16px;
+}
+.desc-g.desc-align {
+    padding-top: 15px;
+}
+.desc-date {
+    text-align: center;
+    font-size: 15px;
+    margin-top: 40px;
+    color: #343434;
+}
+.ct-info {
+    font-size: 0;
+    margin-top: 60px;
+}
+
+.cours-sec table {
+    margin-top: 30px;
+}
+.clause-table{
+	padding:0 30px;
+}
+.table-bg{
+	background:#fafafa;
+	font-weight:500;
+}
+table.cl-table .table-bg{
+	padding: 13px 5px;
+	font-size:14px;
+	background:#fafafa;
+	font-weight:500;
+}
+table.cl-table{
+	text-align:center;
+}
+table.cl-table th{
+	color:#555;
+}
+
+table.cl-table td{
+	padding: 13px 5px;
+	font-size:14px;
+	border-left: 1px solid #e8e8e8;
+}
+table.cl-table td:first-child {
+    border-left: 0;
+}
+table.cl-table td p{
+	font-size:14px;
+}
+
+table.cl-table01{
+	border-top: 2px solid #cfb6a4;
+}
+table.cl-table01 tbody tr:last-child td{
+	border-bottom:none;
+}
+
+table.cl-table01 td:first-child{
+	width:20%;
+}
+table.cl-table01 td:last-child{
+	width: 50%;
+}
+
+table.cl-table02{
+	margin-top:0;
+	border-top:1px solid #e8e8e8;
+}
+
+table.cl-table02 tr td{
+	padding: 10px 5px;
+	border-bottom:1px solid #cfb6a4 !important;
+}
+
+
+
+ul.ct-info-wra {
+    display: inline-block;
+    vertical-align: top;
+    width: 40%;
+}
+ul.ct-info-wra > li {
+    font-size: 15px;
+    color: #343434;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: 1.2px;
+}
+
+.tutor-sign {
+    display: inline-block;
+    vertical-align: top;
+}
+.tutor-sign p {
+    font-size: 15px;
+    color: #343434;
+    text-align: right;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: 1.2px;
+    text-align: left;
+}
+.tutor-sign p.top {
+    margin-bottom: 50px;
+}
+
+
+
+ul.list_1depth {
+    padding-left: 25px;
+}
+ul.list_1depth > li{
+	padding-top:5px;
+	line-height:28px;
+	font-size: 14px;
+	word-break:keep-all;
+}
+
+ul.list_1depth .txt_num {
+    margin: 0 12px 0 -25px;
+}
+
+ul.list_2depth{
+	margin-top:5px;
+	padding-left:13px;
+}
+ul.list_2depth > li{
+	line-height:28px;
+	font-size: 14px;
+}
+
+
+.empha {
+    font-weight: 500;
+    border-bottom: 1px solid #000;
+}
+
+
+.article-wra p {
+    padding-top: 5px;
+    line-height: 28px;
+    font-size: 16px;
+    word-break: keep-all;
+}
+.cont03{
+    margin: 150px 0 0;
+    padding:50px 0;
+    border:1px solid #e0e0e0;
+    text-align: center;	
+}
+
+
+
+
+
+
+
+
+
+

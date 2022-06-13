@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/codeMapper">
+
+
+   <select id="getCodeList" parameterType="hashmap" resultType="hashmap">
+		select * from BACODETB where CODE_FG = '00' and delete_yn='N' 		
+	</select>
+
+   <select id="getCode" parameterType="hashmap" resultType="hashmap">
+		select * from BACODETB where CODE_FG = '00' and delete_yn='N' 
+			
+			<if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+		    
+		   	<if test="order_by.equals('') and sort_type.equals('')">
+		   		 order by sub_code
+		    </if>
+		
+		
+	</select>
+   
+   <select id="getSubCode" parameterType="hashmap" resultType="hashmap">
+		select * from BACODETB aa where aa.code_fg = #{code_fg} order by delete_yn,aa.sub_code
+	</select>
+	
+	<select id="getLastCodeNum" parameterType="hashmap" resultType="hashmap">
+		select sub_code from bacodetb where 1=1 
+		
+		
+			and code_fg =${code_fg}
+	
+		
+
+		
+	</select>
+	
+	
+	
+	<insert id="insMainCode" parameterType="hashmap">
+		insert into BACODETB
+		(CODE_FG, SUB_CODE, SHORT_NAME, LONG_NAME, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('00', '${main_code}','${main_code_nm}','${main_code_cont}','${create_resi_no}',TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	
+	<insert id="insCode" parameterType="hashmap">
+		insert into BACODETB
+		(CODE_FG, SUB_CODE, SHORT_NAME, LONG_NAME, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('${code_fg}', '${sub_code}','${short_name}','${long_name}','${create_resi_no}',TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	
+	<update id="edit_sub_code" parameterType="hashmap">
+        update bacodetb set 
+            sub_code='${edit_sub_code}',
+            update_resi_no='${create_resi_no}',
+            short_name ='${short_name}',
+            long_name ='${long_name}',
+            UPDATE_DATE=TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where code_fg='${code_fg}'
+           and sub_code='${sub_code}'
+	</update>
+
+	<update id="del_sub_code" parameterType="hashmap">
+	        update bacodetb set 
+				delete_yn='Y'
+			where code_fg='${code_fg}'
+	           and sub_code='${sub_code}'
+	</update>
+	
+	<update id="upt_sub_code" parameterType="hashmap">
+	        update bacodetb set 
+				delete_yn='N'
+			where code_fg='${code_fg}'
+	           and sub_code='${sub_code}'
+	</update>
+</mapper>

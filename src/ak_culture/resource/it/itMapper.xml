@@ -1,0 +1,2434 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/it/itMapper">
+	<select id="getPeltCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as CNT from bapelttb where 1=1
+		<if test="!store.equals('')">
+    		and store = '${store}'
+    	</if>
+    	<if test="!period.equals('')">
+    		and period = '${period}'
+    	</if>
+    	<if test="!search_name.equals('')">
+			<if test="search_type eq 'lecr_name'.toString()">
+				and web_lecturer_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'subject_nm'.toString()">
+				and subject_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'subject_cd'.toString()">
+				and subject_cd like '%'||'${search_name}'||'%'
+			</if>
+		</if>
+		<if test="!store.equals('')">
+    		and store = '${store}'
+    	</if>
+    	<if test="!period.equals('')">
+    		and period = '${period}'
+    	</if>
+	</select>
+	<select id="getPelt" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+		    	select bapelttb.*, 
+		    	regis_no+web_regis_no as tot_regis_no,
+		    	(regis_no+web_regis_no) * regis_fee as tot_regis_fee,
+		    	(select bmd from ams_cus where cus_no = bapelttb.cus_no and rownum = 1) as bmd,
+		        case when end_yn = 'Y' then '폐강'
+		             when end_yn = 'O' then '개강'
+		             when (CAPACITY_NO - (NVL(WEB_REGIS_NO,0)) - (NVL(REGIS_NO,0))) <![CDATA[<=]]> 0 then '마감'
+		             else '' end as ISPLAY, 
+		        decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+		        (select name from bamanagertb where seq_no = TRIM(bapechtb.create_resi_no)) as NEXT_CREATE_NAME,
+        		(select name from bamanagertb where seq_no = TRIM(bapechtb.update_resi_no)) as NEXT_UPDATE_DATE,
+        		bapechtb.prev_fix_pay_yn,
+        		bapechtb.prev_fix_amt,
+        		bapechtb.prev_fix_rate,
+        		bapechtb.next_fix_pay_yn,
+        		bapechtb.next_fix_amt,
+        		bapechtb.next_fix_rate,
+        		bapechtb.confirm_yn,
+        		bapechtb.change_reason,
+        		bapechtb.no_reason,
+        		bapechtb.create_date as NEXT_CREATE_DATE,
+        		bapechtb.update_date as NEXT_UPDATE_NAME
+        		
+		    	from bapelttb, bapechtb where 1=1
+		    	and bapelttb.store = bapechtb.store(+)
+		    	and bapelttb.period = bapechtb.period(+)
+		    	and bapelttb.subject_cd = bapechtb.subject_cd(+)
+		    	<if test="!store.equals('')">
+		    		and bapelttb.store = '${store}'
+		    	</if>
+		    	<if test="!period.equals('')">
+		    		and bapelttb.period = '${period}'
+		    	</if>
+		    	<if test="!search_name.equals('')">
+					<if test="search_type eq 'lecr_name'.toString()">
+						and bapelttb.web_lecturer_nm like '%'||'${search_name}'||'%'
+					</if>
+					<if test="search_type eq 'subject_nm'.toString()">
+						and bapelttb.subject_nm like '%'||'${search_name}'||'%'
+					</if>
+					<if test="search_type eq 'subject_cd'.toString()">
+						and bapelttb.subject_cd like '%'||'${search_name}'||'%'
+					</if>
+				</if>
+		    	<if test="!order_by.equals('') and !sort_type.equals('')">
+		    		order by ${sort_type} ${order_by}
+		    	</if>
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+		
+	</select> 
+	<select id="getACLASS" parameterType="hashmap" resultType="hashmap">
+		select 
+	    NVL((
+	        select 
+	        decode(mbr_gdc, '109', 'A','110','A', '120', 'A', '111', 'A', '112', 'A', '114', 'A', '115', 'A', '116', '우수가망', '117', '우수가망', '118', '일반', '119', '일반')
+	        from ams_bz_sect_mbr_grade 
+	        where
+	        cus_no = (select cus_no from bacusttb where cust_no = baperetb.cust_no and store = baperetb.store) 
+	        and bz_sect = '1' and to_char(sysdate,'yyyymmdd') between apy_bgng_dt and apy_ed_dt and rownum = 1
+	    ), '일반') as aclass
+	    from baperetb 
+	    where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</select>
+	<select id="getChfix" parameterType="hashmap" resultType="hashmap">
+		 select
+        (select name from bamanagertb where seq_no = TRIM(bapechtb.create_resi_no)) as create_name,
+        (select name from bamanagertb where seq_no = TRIM(bapechtb.update_resi_no)) as update_name,
+        (select bmd from ams_cus where cus_no = bapelttb.cus_no and rownum = 1) as bmd,
+        bapelttb.web_lecturer_nm,
+        bapelttb.subject_nm,
+        bapelttb.regis_fee,
+        bapelttb.regis_no,
+        bapelttb.web_regis_no,
+        bapelttb.lect_cnt,
+        bapechtb.*
+       
+        from bapechtb, bapelttb
+        where
+        bapechtb.store = bapelttb.store
+        and bapechtb.period = bapelttb.period
+        and bapechtb.subject_cd = bapelttb.subject_cd
+        
+	    and bapechtb.store = '${store}' and bapechtb.period = '${period}' and bapechtb.subject_cd = '${subject_cd}'
+	    order by bapechtb.create_date desc
+	</select>
+	<insert id="insChfix" parameterType="hashmap">
+		insert into bapechtb
+		(hq, store, period, subject_cd, prev_fix_pay_yn, prev_fix_amt, prev_fix_rate, next_fix_pay_yn, next_fix_amt, next_fix_rate, create_resi_no, create_date, change_reason, confirm_yn)
+		values
+		('00', '${store}', '${period}', '${subject_cd}', '${prev_fix_pay_yn}', '${prev_fix_amt}', '${prev_fix_rate}', '${next_fix_pay_yn}', '${next_fix_amt}', '${next_fix_rate}', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), '${change_reason}', '1')
+	</insert>
+	<update id="upChfix" parameterType="hashmap">
+		update bapechtb
+		set
+		prev_fix_pay_yn = '${prev_fix_pay_yn}',
+		prev_fix_amt = '${prev_fix_amt}',
+		prev_fix_rate = '${prev_fix_rate}',
+		next_fix_pay_yn = '${next_fix_pay_yn}',
+		next_fix_amt = '${next_fix_amt}',
+		next_fix_rate = '${next_fix_rate}',
+		create_resi_no = '${login_seq}',
+		create_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		change_reason = '${change_reason}',
+		confirm_yn = '1'
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<update id="upChangeConfirm" parameterType="hashmap">
+		update bapechtb
+		set
+		confirm_yn = '${act}',
+		no_reason = '${no_reason}',
+		update_resi_no = '${login_seq}',
+		update_date = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<update id="upPeltFix" parameterType="hashmap">
+		update bapelttb
+		set
+		fix_pay_yn = '${fix_pay_yn}',
+		fix_amt = '${fix_amt}',
+		fix_rate = '${fix_rate}'
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<select id="getPaymentCheckCount" parameterType="hashmap" resultType="hashmap">
+	select count(*) as CNT from BAPELTTB where store = '${store}'  and period = '${period}'
+</select>
+<select id="getPaymentCheck" parameterType="hashmap" resultType="hashmap">
+	select
+	X.*
+	from ( 
+	    select rownum as rnum, A.*
+	    from ( 
+	    	select
+			(select short_name from bacodetb where code_fg = '09' and sub_code = bapelttb.main_cd) as MAIN_NM,
+			decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+			bapelttb.lect_cnt, bapelttb.start_ymd, bapelttb.end_ymd, bapelttb.subject_cd, bapelttb.subject_nm,
+			decode(balecrtb.corp_fg, '1', '법인', '2', '개인') as corp_fg, balecrtb.biz_nm, balecrtb.biz_no, balecrtb.lecturer_kor_nm,
+			substr(balecrtb.lecturer_cd, 0, 6) as bmd, balecrtb.bank_cd, balecrtb.account_no,
+			bapelttb.fix_pay_yn, bapelttb.fix_amt, bapelttb.fix_rate, bapelttb.regis_fee, bapelttb.regis_no, bapelttb.web_regis_no,
+			
+			(
+			    select sum(enuri_amt1) + sum(enuri_amt2) from batrmstb, baperetb
+			    where
+			    batrmstb.store = baperetb.store and batrmstb.sale_ymd = baperetb.sale_ymd and batrmstb.pos_no = baperetb.pos_no and batrmstb.recpt_no = baperetb.recpt_no
+			    and baperetb.store = bapelttb.store and baperetb.period = bapelttb.period and baperetb.subject_cd = bapelttb.subject_cd
+			) as enuri_amt,
+			
+			(
+			    select sum(net_sale_amt) from batrmstb, baperetb
+			    where
+			    batrmstb.store = baperetb.store and batrmstb.sale_ymd = baperetb.sale_ymd and batrmstb.pos_no = baperetb.pos_no and batrmstb.recpt_no = baperetb.recpt_no
+			    and baperetb.store = bapelttb.store and baperetb.period = bapelttb.period and baperetb.subject_cd = bapelttb.subject_cd
+			) as total_amt
+			
+			from
+			bapelttb, balecrtb
+			where
+			bapelttb.cus_no = balecrtb.cus_no
+			and bapelttb.store = '${store}' and bapelttb.period = '${period}'
+	    	<if test="!search_name.equals('')">
+	    		and id like CONCAT(CONCAT('%', #{search_name}), '%')
+	    	</if>
+	    	<if test="!order_by.equals('') and !sort_type.equals('')">
+	    		order by ${sort_type} ${order_by}, bapelttb.CREATE_DATE DESC
+	    	</if>
+	    ) A
+	    where rownum <![CDATA[<=]]> #{e_rownum}) X
+	where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+<select id="getDoc" parameterType="hashmap" resultType="hashmap">
+	select * from aznmmatb@akris where type_l = '${type_l}'
+</select>
+<select id="getPayment1" parameterType="hashmap" resultType="hashmap">
+	SELECT A.DT_SLIP     DT_SLIP    ,
+                       A.SLIP_HNO    SLIP_HNO   ,
+                       A.CODE_ACCT   CODE_ACCT  ,
+                       B.END_ACCT_NM END_ACCT_NM,
+                       A.AMT_DR      AMT_DR     ,
+                       A.AMT_CR      AMT_CR     ,
+                       A.JUKYO       JUKYO      ,
+                       A.CODE_BUSEO  CODE_BUSEO ,
+                       C.DEPT_NM     DEPT_NM    ,
+                       A.CODE_CUST||(select nvl(vendor_nm,'') from azvenmtb where biz_no=A.CODE_CUST and rownum = 1)   CODE_CUST  ,
+                       A.CODE_BANK   CODE_BANK  ,
+                       (SELECT KOR_NM
+                          FROM AZNMMATB@akris
+                         WHERE TYPE_L = '748'
+                           AND TYPE_S = A.CODE_BANK) as CODE_BANK_NM,
+                       A.NO_GAEJWA   NO_GAEJWA  ,
+                       A.GBN_PAY     GBN_PAY    ,
+                       (CASE WHEN A.GBN_PAY||A.GBN_EDI = '13' THEN
+                                  '현금'
+                             ELSE
+                                   (
+									SELECT nm_code
+									  	FROM AKUSSYS.usbi011t@akhrac
+									 	WHERE code_company = '00'
+									   		and gbn_upmu = 'AC'
+									   		and gbn_code = '201'
+									   		and code = a.gbn_pay
+									   		and yn_usage = 'Y' 
+									)
+                         END )       GBN_PAY_NM, 
+                       A.GBN_EDI     GBN_EDI    ,
+                       --DECODE(A.GBN_EDI, '', '','3','출납현금', 'REAL') as GBN_EDI_NM,
+                       -- DECODE(A.GBN_EDI, '', '','3','Internet Banking', 'REAL') as GBN_EDI_NM,
+                       DECODE(A.GBN_EDI, '', '','3','Internet Banking', 'F/B REAL') as GBN_EDI_NM,	-- 2016.11.18 박소연 요청
+                       A.DT_PAY      DT_PAY     ,
+                       A.GBN_PROOF   GBN_PROOF  ,
+                       A.NO_BILL     NO_BILL    ,
+                       A.GBN_BILL    GBN_BILL   ,
+                       A.DT_END      DT_END     ,
+                       DECODE(D.BIZ_NO, '', 'N', 'Y') AS CHK    
+                  FROM AXIF02TB@akris A,
+                       (SELECT DISTINCT CODE_ACCT END_ACCT_CODE, NM_ACCT END_ACCT_NM FROM akacsys.acbi001t@akhrac) B,
+                       (SELECT DISTINCT CODE_BUSEO DEPT_CD, NM_BUSEO DEPT_NM FROM akacsys.acbi012t@AKHRAC) C,
+                       (SELECT DISTINCT B.BIZ_NO
+                          FROM AZVESMTB A, AZVENMTB B,
+                              (SELECT DECODE(CODE_COMPANY, '10', '00', '30', '00', '20', '00', '40', '00', '00')      HQ,
+                                      DECODE(CODE_AUNT, '1021', '01', '3031', '02', '2041', '03', '4071', '04', '2701','05' ) STORE,
+                                      NO_SAUPJA                                                                 BIZ_NO,
+                                      SUM(DECODE(GBN_BLOCK, '1', AMT_CHEGUN, -1*AMT_CHEGUN))                    AMT_CHEGUN,
+                                      SUM(DECODE(GBN_BLOCK, '1', 1, -1))                                        GBN_BLOCK
+                                 FROM ACBI034T
+                                GROUP BY CODE_COMPANY, CODE_AUNT, NO_SAUPJA
+                               HAVING SUM(DECODE(GBN_BLOCK, '1', AMT_CHEGUN, -1*AMT_CHEGUN)) > 0
+                                   OR SUM(DECODE(GBN_BLOCK, '1', 1, -1)) > 0) C
+                         WHERE A.HQ          = '00'
+                           AND A.STORE       = '${store}'
+                           AND B.VENDOR = A.VENDOR
+                           AND C.HQ     = A.HQ
+                           AND C.STORE  = A.STORE
+                           AND C.BIZ_NO = B.BIZ_NO
+                         ORDER BY B.BIZ_NO) D               
+                 WHERE A.CODE_COMPANY  = (SELECT KOR_NM FROM AZNMMATB@akris WHERE TYPE_L = '740' AND TYPE_S = '00'||'${store}')
+                   AND A.CODE_AUNT     = (SELECT TYPE_S FROM AZNMMATB@akris WHERE TYPE_L = '710' AND KOR_NM = '00'||'${store}')
+                   AND A.DT_SLIP BETWEEN '${start_ymd}'
+                                     AND '${end_ymd}'
+                   AND A.GBN_SLIP   LIKE '${doc_type}'||'%'
+                   AND A.GBN_UPMU   LIKE '${status_fg}'||'%'
+                   AND A.CODE_ACCT     = B.END_ACCT_CODE
+                   AND A.CODE_BUSEO    = C.DEPT_CD
+                   AND A.CODE_CUST     = D.BIZ_NO (+)
+                 ORDER BY DT_SLIP, GBN_SLIP, NO_SLIP, SEQ_ACCT
+</select>
+<select id="getPayment2" parameterType="hashmap" resultType="hashmap">
+	SELECT A.DT_SLIP     DT_SLIP    ,
+                       A.SLIP_HNO    SLIP_HNO   ,
+                       A.CODE_ACCT   CODE_ACCT  ,
+                       B.END_ACCT_NM END_ACCT_NM,
+                       A.AMT_DR      AMT_DR     ,
+                       A.AMT_CR      AMT_CR     ,
+                       A.JUKYO       JUKYO      ,
+                       A.CODE_BUSEO  CODE_BUSEO ,
+                       C.DEPT_NM     DEPT_NM    ,
+                       A.CODE_CUST||(select nvl(vendor_nm,'') from azvenmtb@akris where biz_no=A.CODE_CUST and rownum = 1)   CODE_CUST  ,
+                       A.CODE_BANK   CODE_BANK  ,
+                       (SELECT KOR_NM
+                          FROM AZNMMATB@akris
+                         WHERE TYPE_L = '748'
+                           AND TYPE_S = A.CODE_BANK) as CODE_BANK_NM,
+                       A.NO_GAEJWA   NO_GAEJWA  ,
+                       A.GBN_PAY     GBN_PAY    ,
+                       (CASE WHEN A.GBN_PAY||A.GBN_EDI = '13' THEN
+                                  '현금'
+                             ELSE
+                                   (
+/*                                   --2016.11.18 오현진 요청
+                                   	SELECT KOR_NM
+                                      FROM AZNMMATB@akris
+                                     WHERE TYPE_L  ='131'
+                                       AND ENG_NM = A.GBN_PAY||A.GBN_EDI
+*/
+									SELECT nm_code
+									  FROM AKUSSYS.usbi011t@akhrac
+									 WHERE code_company = '00'
+									   and gbn_upmu = 'AC'
+									   and gbn_code = '201'
+									   and code = a.gbn_pay
+									   and yn_usage = 'Y' 
+									)
+                         END )       GBN_PAY_NM,                       
+/*                       (SELECT KOR_NM
+                          FROM AZNMMATB@akris
+                         WHERE TYPE_L = '131'
+                           --AND ENG_NM =  ( CASE WHEN  A.CODE_COMPANY IN ('10','30') THEN 'Z' else A.GBN_PAY end ) ||A.GBN_EDI) as GBN_PAY_NM,
+                           AND ENG_NM =  (CASE WHEN GBN_SLIP = 'VG' THEN 
+                                                    DECODE( A.GBN_PAY || A.GBN_EDI, '13', '11', A.GBN_PAY || A.GBN_EDI )
+                                               ELSE
+                                                    A.GBN_PAY || A.GBN_EDI
+                                          END  ) as GBN_PAY_NM,  -- 출납현금 -> 현금을 매칭 시키기 위함. 
+*/                                          
+                       A.GBN_EDI     GBN_EDI    ,
+                       -- DECODE(A.GBN_EDI, '', '','3','Internet Banking', 'REAL') as GBN_EDI_NM, --2016.11.18 오현진 요청
+                       DECODE(A.GBN_EDI, '', '','3','Internet Banking', 'F/B REAL') as GBN_EDI_NM,
+                       A.DT_PAY      DT_PAY     ,
+                       A.GBN_PROOF   GBN_PROOF  ,
+                       A.NO_BILL     NO_BILL    ,
+                       A.GBN_BILL    GBN_BILL   ,
+                       A.DT_END      DT_END     
+                  FROM AXIF02TB@akris A,
+                       (SELECT DISTINCT CODE_ACCT END_ACCT_CODE, NM_ACCT END_ACCT_NM FROM akacsys.acbi001t@akhrac) B,
+                       (SELECT DISTINCT CODE_BUSEO DEPT_CD, NM_BUSEO DEPT_NM FROM akacsys.acbi012t@AKHRAC) C
+                 WHERE A.CODE_COMPANY  = (SELECT KOR_NM FROM AZNMMATB@akris WHERE TYPE_L = '740' AND TYPE_S = '00'||'${store}')
+                   AND A.CODE_AUNT     = (SELECT TYPE_S FROM AZNMMATB@akris WHERE TYPE_L = '710' AND KOR_NM = '00'||'${store}')
+                   AND A.DT_SLIP BETWEEN '${start_ymd}'
+                                     AND '${end_ymd}'
+                   AND A.GBN_SLIP   LIKE '${doc_type}'||'%'
+                   AND A.GBN_UPMU   LIKE '${status_fg}'||'%'
+                   AND A.CODE_ACCT    = B.END_ACCT_CODE
+                  AND A.CODE_BUSEO    = C.DEPT_CD
+                ORDER BY DT_SLIP, GBN_SLIP, NO_SLIP, SEQ_ACCT   
+</select>
+<select id="getEndCloseStatus" parameterType="hashmap" resultType="String">
+	select close_stat
+             from axclostb
+            where hq         = '00'
+              and store      = '${store}'
+              and close_fg   = '${close_fg}'
+              and close_ymd = '${sale_ymd}'
+</select>
+<insert id="insEnd" parameterType="hashmap">
+INSERT INTO AXCLOSTB
+            (HQ, STORE, CLOSE_FG, CLOSE_YMD, CLOSE_STAT, CREATE_YMD, CREATE_START_TIME, CREATE_END_TIME, CREATE_RESI_NO)
+            values
+            ('00' , '${store}',   '${close_fg}', '${sale_ymd}', 'I',
+             TO_CHAR(SYSDATE,'YYYYMMDD'),
+             TO_CHAR(SYSDATE, 'HH24MISS'),
+             NULL,
+             '${login_seq}'
+            )
+</insert>
+
+<select id="getElectList" parameterType="hashmap" resultType="hashmap">
+
+
+	select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+		    	select a.hq, a.store, a.lecturer_cd lecturer_cd,
+                    nvl(b.c_nm, b.biz_nm)  co_nm ,
+                    sum(a.lect_pay) lect_pay,
+<!--                     TRUNC((SUM(A.LECT_PAY) / 1.1) * 0.1 , 0) vat , -->
+<!--                     ( sum(a.lect_pay) - TRUNC((SUM(A.LECT_PAY) / 1.1) * 0.1 , 0)) as ex_amt, -->
+					sum(a.vat) as vat,
+					sum(a.net_lect_pay) ex_amt,
+                    a.vat_fg  vat_fg,
+                    b.lecturer_kor_nm lecturer_nm,
+                    b.h_phone_no1||'-'||b.h_phone_no2||'-'||b.h_phone_no3 phone_no,
+                    b.biz_no,
+                    b.biz_nm,
+                    b.president_nm,
+                    b.biz_addr,
+                    b.email_addr,
+                    b.industry_c,
+                    b.industry_s,
+                    a.accept_yn accept_yn,
+                    a.accept_yn old_accept_yn,
+                    a.pay_day,
+                    a.journal_yn,
+                    a.seq seq ,
+                    decode(nvl(c.interface_no , '0') , '0', '0' , '1') interface_no,
+                    a.accept_ymd,
+                    a.lect_ym,
+                    a.period
+                from BAJRCOTB a , BALECRTB b , extifltb@akris c
+                where a.hq            = '00'
+                  and a.store         = '${store}'
+                  and a.period        = '${period}'
+                  and a.lect_ym       = '${lect_ym}'
+                  and a.journal_yn like '${journal_yn}'||'%'
+                  and a.lecturer_cd   = b.lecturer_cd
+                  and b.corp_fg = '1'
+                  and a.lect_pay <![CDATA[<>]]> '0'
+                  and a.seq = c.interface_no(+)
+             group by a.hq, a.store, a.lecturer_cd, b.c_nm , a.vat_fg, b.lecturer_kor_nm, b.h_phone_no1||'-'||b.h_phone_no2||'-'||b.h_phone_no3,
+                      b.biz_no, b.biz_nm, b.president_nm, b.biz_addr, b.email_addr, b.industry_c, b.industry_s,
+                      a.accept_yn, a.pay_day, a.journal_yn, a.seq , c.interface_no,a.accept_ymd, a.lect_ym, a.period
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+		<if test="!order_by.equals('') and !sort_type.equals('')">
+	   		order by ${sort_type} ${order_by}
+	   	</if>
+</select>
+<select id="getElectListCount" parameterType="hashmap" resultType="hashmap">
+	 select count(*) as CNT
+                from BAJRCOTB a , BALECRTB b , extifltb@akris c
+                where a.hq            = '00'
+                  and a.store         = '${store}'
+                  and a.period        = '${period}'
+                  and a.lect_ym       = '${lect_ym}'
+                  and a.journal_yn like '${journal_yn}'||'%'
+                  and a.lecturer_cd   = b.lecturer_cd
+                  and b.corp_fg = '1'
+                  and a.lect_pay <![CDATA[<>]]> '0'
+                  and a.seq = c.interface_no(+)
+</select>
+<!-- <select id="getStatusListCount1" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT count(*) as CNT                       -->
+<!--                   FROM BAJRCOTB A -->
+<!--                  WHERE A.HQ         = '00' -->
+<!--                    AND A.STORE      = '${store}' -->
+<!--                    AND A.PAY_DAY    BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                    AND A.CONFIRM_YN = 'Y' -->
+<!--                    AND A.JOURNAL_YN = 'Y' -->
+<!--                 ORDER BY A.PERIOD, A.MAIN_CD, A.SECT_CD, A.SUBJECT_CD, A.LECTURER_CD, A.LECT_YM    -->
+<!-- </select> -->
+<!-- <select id="getStatusListCount2" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT count(*) as CNT                         -->
+<!--                   FROM -->
+<!--                        ( -->
+<!--                        SELECT HQ, -->
+<!--                               STORE, -->
+<!--                               PERIOD, -->
+<!--                               LECT_YM, -->
+<!--                               LECTURER_CD, -->
+<!--                               PAY_DAY, -->
+<!--                               SUM(LECT_PAY) LECT_ALL_PAY -->
+<!--                          FROM BAJRCOTB -->
+<!--                         WHERE HQ        = '00' -->
+<!--                           AND STORE     = '${store}' -->
+<!--                           AND PAY_DAY BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                           AND ACCEPT_YN  = 'Y' -->
+<!--                           AND JOURNAL_YN = 'Y' -->
+<!--                        GROUP BY HQ, STORE, PERIOD, LECT_YM, LECTURER_CD, PAY_DAY -->
+<!--                        ) A, BALECRTB B -->
+<!--                  WHERE A.LECTURER_CD = B.LECTURER_CD -->
+<!--                  GROUP BY A.LECTURER_CD ,A.PAY_DAY , B.C_NM , A.LECT_YM, DECODE(B.LECTURER_KOR_NM, NULL, B.LECTURER_W_NM, B.LECTURER_KOR_NM) -->
+<!--                  ORDER BY DECODE(B.LECTURER_KOR_NM, NULL, B.LECTURER_W_NM, B.LECTURER_KOR_NM)      -->
+<!-- </select> -->
+<!-- <select id="getStatusListCount3" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT count(*) as CNT -->
+<!--                   FROM BAJRPRTB A -->
+<!--                  WHERE A.HQ         = '00' -->
+<!--                    AND A.STORE      = '${store}' -->
+<!--                    AND A.LECT_YM||to_char(A.PAY_DAY,'FM00') BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                    AND A.CONFIRM_YN = 'Y' -->
+<!--                    AND A.JOURNAL_YN = 'Y' -->
+<!--                 ORDER BY A.PAY_DAY, A.MAIN_CD, A.SECT_CD, A.SUBJECT_CD, A.LECTURER_CD, A.LECT_YM    -->
+<!-- </select> -->
+<!-- <select id="getStatusListCount4" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT count(*) as CNT -->
+<!--                   FROM  -->
+<!--                  	 ( -->
+<!--                 	  SELECT A.HQ, A.STORE, A.PERIOD, -->
+<!--                 	         A.LECT_YM, A.LECTURER_CD, B.LECTURER_KOR_NM, -->
+<!--                 	         A.LECT_ALL_PAY, A.PAY_DAY, -->
+<!--                 	         B.CORP_FG, -->
+<!--                 	         DECODE(B.CORP_FG, '1', 0, '2', CASE WHEN (TRUNC((A.LECT_ALL_PAY * 0.03) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE TRUNC((A.LECT_ALL_PAY * 0.03) * 0.1, 0) * 10 -->
+<!--                 			                                      END, -->
+<!--                 			                           '3', CASE WHEN (TRUNC((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE (TRUNC((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1, 0) * 10) -->
+<!--                 			                                      END -->
+<!--                 			        ) AS INCOME_TAX, -->
+<!--                 	         DECODE(B.CORP_FG, '1', 0, '2', CASE WHEN (TRUNC((A.LECT_ALL_PAY * 0.03) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE TRUNC(((A.LECT_ALL_PAY * 0.03) * 0.1) * 0.1, 0) * 10 -->
+<!--                 			                                      END, -->
+<!--                 			                           '3', CASE WHEN (TRUNC((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE (TRUNC(((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1) * 0.1, 0) * 10) -->
+<!--                 			                                      END -->
+<!--                 			       ) AS RESI_TAX -->
+<!--                 	    FROM -->
+<!--                 	         ( -->
+<!--                 	         SELECT HQ, STORE, PERIOD, LECT_YM, LECTURER_CD, PAY_DAY, SUM(LECT_PAY) LECT_ALL_PAY -->
+<!--                 	           FROM BAJRPRTB -->
+<!--                 	          WHERE HQ         = '00' -->
+<!--                 	            AND STORE      = '${store}' -->
+<!--                 	            AND LECT_YM||to_char(PAY_DAY,'FM00') BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                 	            AND CONFIRM_YN = 'Y' -->
+<!--                 	            AND JOURNAL_YN = 'Y' -->
+<!--                 	          GROUP BY HQ, STORE, PERIOD, LECT_YM, LECTURER_CD, PAY_DAY -->
+<!--                 	         ) A, BALECRTB B -->
+<!--                 	   WHERE A.LECTURER_CD = B.LECTURER_CD -->
+<!--                 	   ) A -->
+<!--                    ORDER BY PAY_DAY , LECTURER_KOR_NM	   -->
+<!-- </select> -->
+<select id="getStatusList1" parameterType="hashmap" resultType="hashmap"> 
+	SELECT
+	balecrtb.biz_nm,
+    balecrtb.biz_no,
+    bapelttb.web_lecturer_nm,
+    bapelttb.subject_nm,
+    bapelttb.regis_no + bapelttb.part_regis_no + bapelttb.web_regis_no as tot_regis_no,
+    bajrcotb.lect_pay,
+    bajrcotb.net_lect_pay,
+    bajrcotb.resi_tax,
+    decode(bajrcotb.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn,
+    bajrcotb.fix_amt,
+    bajrcotb.fix_rate,
+    bajrcotb.vat,
+    bajrcotb.vat_fg,
+    bapelttb.regis_fee * bajrcotb.person_count as tot_regis_fee,
+    bajrcotb.pay_day,
+    bajrcotb.journal_yn,
+    (SELECT BANK_NM FROM BABANKTB where BANK_CD = balecrtb.BANK_CD) BANK_NM,
+    balecrtb.account_no
+    from bajrcotb, bapelttb, balecrtb
+    where 1=1
+    and bajrcotb.store = '${store}'
+    and bajrcotb.period = '${period}'
+    and bajrcotb.lect_ym = '${lect_ym}'
+    and bajrcotb.hq = bapelttb.hq
+    and bajrcotb.store = bapelttb.store
+    and bajrcotb.period = bapelttb.period
+    and bajrcotb.subject_cd = bapelttb.subject_cd
+    and bajrcotb.lecturer_cd = balecrtb.lecturer_cd
+    <if test="!journal_yn.equals('')">
+   		and bajrcotb.journal_yn = '${journal_yn}'
+   	</if>
+    order by bajrcotb.lecturer_cd
+</select>
+<select id="getStatusList2" parameterType="hashmap" resultType="hashmap"> 
+	SELECT
+	balecrtb.lecturer_kor_nm,
+    balecrtb.lecturer_cd,
+    bapelttb.subject_nm,
+    bapelttb.regis_no + bapelttb.part_regis_no + bapelttb.web_regis_no as tot_regis_no,
+    bapelttb.regis_fee * bajrprtb.person_count as tot_regis_fee,
+    decode(bajrprtb.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn,
+    bajrprtb.lect_pay,
+    bajrprtb.income_tax,
+    bajrprtb.resi_tax,
+    bajrprtb.net_lect_pay,
+    bajrprtb.lect_ym,
+    bajrprtb.pay_day,
+    bajrprtb.journal_yn,
+    (SELECT BANK_NM FROM BABANKTB where BANK_CD = balecrtb.BANK_CD) BANK_NM,
+    balecrtb.account_no
+    from bajrprtb, bapelttb, balecrtb
+    where 1=1
+    and bajrprtb.store = '${store}'
+    and bajrprtb.period = '${period}'
+    and bajrprtb.lect_ym = '${lect_ym}'
+    and bajrprtb.hq = bapelttb.hq
+    and bajrprtb.store = bapelttb.store
+    and bajrprtb.period = bapelttb.period
+    and bajrprtb.subject_cd = bapelttb.subject_cd
+    and bajrprtb.lecturer_cd = balecrtb.lecturer_cd
+    <if test="!journal_yn.equals('')">
+   		and bajrprtb.journal_yn = '${journal_yn}'
+   	</if>
+    order by bajrprtb.lecturer_cd
+</select>
+<select id="getStatusByPeriList" parameterType="hashmap" resultType="hashmap"> 
+
+	select
+	t.biz_nm,
+	t.corp_fg,
+	t.lecturer_cd,
+	t.lecturer_kor_nm,
+	sum(decode(t.lect_ym, '${lect_ym1}', t.lect_pay, 0)) as lect_pay_1,
+	sum(decode(t.lect_ym, '${lect_ym2}', t.lect_pay, 0)) as lect_pay_2,
+	sum(decode(t.lect_ym, '${lect_ym3}', t.lect_pay, 0)) as lect_pay_3,
+	'' as vat_fg
+	from 
+	(
+	SELECT
+        balecrtb.corp_fg,
+		balecrtb.biz_nm,
+	    bajrprtb.lecturer_cd,
+	    balecrtb.lecturer_kor_nm,
+	    bajrprtb.lect_pay,
+	    bajrprtb.lect_ym
+	FROM
+	    bajrprtb,
+	    balecrtb,
+	    bapelttb
+	WHERE
+	    1 = 1
+	    AND bajrprtb.store = '${store}'
+	    AND bajrprtb.period = '${period}'
+	    and bapelttb.store = '${store}'
+	    and bapelttb.period = '${period}'
+	    and bapelttb.subject_cd = bajrprtb.subject_cd
+	    AND bajrprtb.lecturer_cd = balecrtb.lecturer_cd
+	) t
+	group by t.biz_nm, t.corp_fg, t.lecturer_cd, t.lecturer_kor_nm
+	
+	union all
+	
+	select
+	t.biz_nm,
+	t.corp_fg,
+	t.lecturer_cd,
+	t.lecturer_kor_nm,
+	sum(decode(t.lect_ym, '${lect_ym1}', t.lect_pay, 0)) as lect_pay_1,
+	sum(decode(t.lect_ym, '${lect_ym2}', t.lect_pay, 0)) as lect_pay_2,
+	sum(decode(t.lect_ym, '${lect_ym3}', t.lect_pay, 0)) as lect_pay_3,
+	t.vat_fg
+	from 
+	(
+	SELECT
+		balecrtb.biz_nm,
+        balecrtb.corp_fg,
+	    bajrcotb.lecturer_cd,
+	    balecrtb.lecturer_kor_nm,
+	    bajrcotb.vat_fg,
+	    bajrcotb.lect_pay,
+	    bajrcotb.lect_ym
+	FROM
+	    bajrcotb,
+	    balecrtb,
+	    bapelttb
+	WHERE
+	    1 = 1
+	    AND bajrcotb.store = '${store}'
+	    AND bajrcotb.period = '${period}'
+	    and bapelttb.store = '${store}'
+	    and bapelttb.period = '${period}'
+	    and bapelttb.subject_cd = bajrcotb.subject_cd
+	    AND bajrcotb.lecturer_cd = balecrtb.lecturer_cd
+	) t
+	group by t.biz_nm, t.corp_fg, t.lecturer_cd, t.lecturer_kor_nm, t.vat_fg
+		
+<!-- 	select -->
+<!-- 	decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM, -->
+<!-- 	bapelttb.web_lecturer_nm, -->
+<!-- 	bapelttb.subject_nm, -->
+<!-- 	decode(bajrcotb.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn, -->
+<!-- 	bajrcotb.fix_amt, -->
+<!-- 	bajrcotb.fix_rate, -->
+<!-- 	bajrcotb.lect_pay, -->
+<!-- 	bajrcotb.net_lect_pay, -->
+<!-- 	bajrcotb.lect_ym, -->
+<!-- 	bajrcotb.subject_cd -->
+<!-- 	from bajrcotb, bapelttb, balecrtb -->
+<!-- 	where 1=1 -->
+<!-- 	and bajrcotb.store = '${store}' -->
+<!-- 	and bajrcotb.period = '${period}' -->
+<!-- 	and bajrcotb.hq = bapelttb.hq -->
+<!-- 	and bajrcotb.store = bapelttb.store -->
+<!-- 	and bajrcotb.period = bapelttb.period -->
+<!-- 	and bajrcotb.subject_cd = bapelttb.subject_cd -->
+<!-- 	and bajrcotb.lecturer_cd = balecrtb.lecturer_cd -->
+	
+<!-- 	union all -->
+	
+<!-- 	select -->
+<!-- 	decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM, -->
+<!-- 	balecrtb.lecturer_kor_nm, -->
+<!-- 	bapelttb.subject_nm, -->
+<!-- 	decode(bajrprtb.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn, -->
+<!-- 	bajrprtb.fix_amt, -->
+<!-- 	bajrprtb.fix_rate, -->
+<!-- 	bajrprtb.lect_pay, -->
+<!-- 	bajrprtb.net_lect_pay, -->
+<!-- 	bajrprtb.lect_ym, -->
+<!-- 	bajrprtb.subject_cd -->
+<!-- 	from bajrprtb, bapelttb, balecrtb -->
+<!-- 	where 1=1 -->
+<!-- 	and bajrprtb.store = '${store}' -->
+<!-- 	and bajrprtb.period = '${period}' -->
+<!-- 	and bajrprtb.hq = bapelttb.hq -->
+<!-- 	and bajrprtb.store = bapelttb.store -->
+<!-- 	and bajrprtb.period = bapelttb.period -->
+<!-- 	and bajrprtb.subject_cd = bapelttb.subject_cd -->
+<!-- 	and bajrprtb.lecturer_cd = balecrtb.lecturer_cd -->
+<!-- 	order by web_lecturer_nm, subject_nm, lect_ym -->
+</select>
+<select id="getStatusByPeriList_food" parameterType="hashmap" resultType="hashmap"> 
+	select
+	decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+	balecrtb.lecturer_kor_nm,
+	bapelttb.subject_nm,
+	bafoodtb.food_pay_amt,
+	bafoodtb.food_ym,
+	bafoodtb.subject_cd
+	from bafoodtb, bapelttb, balecrtb
+	where 1=1
+	and bafoodtb.store = '${store}'
+	and bafoodtb.period = '${period}'
+	and bafoodtb.hq = bapelttb.hq
+	and bafoodtb.store = bapelttb.store
+	and bafoodtb.period = bapelttb.period
+	and bafoodtb.subject_cd = bapelttb.subject_cd
+	and bafoodtb.lecturer_cd = balecrtb.lecturer_cd
+	order by lecturer_kor_nm, subject_nm, food_ym
+</select>
+<!-- <select id="getStatusList1" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT A.PERIOD, -->
+<!--                        BA_SECT_NM(A.HQ, A.STORE, A.MAIN_CD, A.SECT_CD) AS SECT_NM, -->
+<!--                        A.SUBJECT_CD, -->
+<!--                        BA_SUBJECT_NM(A.HQ, A.STORE, A.SUBJECT_CD) AS SUBJECT_NM,                        -->
+<!--                        LECT_YM, -->
+<!--                        LECTURER_CD, -->
+<!--                        (SELECT C_NM -->
+<!--                           FROM BALECRTB -->
+<!--                          WHERE LECTURER_CD = A.LECTURER_CD) LECTURER_KOR_NM, -->
+<!--                        NVL(A.LECT_PAY,0) LECT_PAY, -->
+<!--                        NVL(A.INCOME_TAX,0) INCOME_TAX, -->
+<!--                        NVL(A.RESI_TAX,0) RESI_TAX, -->
+<!--                        NVL(A.NET_LECT_PAY,0) NET_LECT_PAY, -->
+<!--                        A.PAY_DAY PAY_DAY, -->
+<!--                        (select (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) from BALECRTB g where lecturer_cd= A.lecturer_cd ) BANK_NM , -->
+<!--                        (select ACCOUNT_NO from BALECRTB g where lecturer_cd=A.lecturer_cd)  ACCOUNT_NO                           -->
+<!--                   FROM BAJRCOTB A -->
+<!--                  WHERE A.HQ         = '00' -->
+<!--                    AND A.STORE      = '${store}' -->
+<!--                    AND A.PAY_DAY    BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                    AND A.CONFIRM_YN = 'Y' -->
+<!--                    AND A.JOURNAL_YN = 'Y' -->
+<!--                 ORDER BY A.PERIOD, A.MAIN_CD, A.SECT_CD, A.SUBJECT_CD, A.LECTURER_CD, A.LECT_YM    -->
+<!-- </select> -->
+<!-- <select id="getStatusList2" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT A.LECTURER_CD, -->
+<!--                        SUM(A.LECT_ALL_PAY) AS LECT_ALL_PAY, -->
+<!--                        A.PAY_DAY, -->
+<!--                        B.C_NM C_NM, -->
+<!--                        A.LECT_YM LECT_YM, -->
+<!--                        DECODE(B.LECTURER_KOR_NM, NULL, B.LECTURER_W_NM, B.LECTURER_KOR_NM) AS LECTURER_KOR_NM, -->
+<!--                        (select (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) from BALECRTB g where lecturer_cd= A.lecturer_cd ) BANK_NM , -->
+<!--                        (select ACCOUNT_NO from BALECRTB g where lecturer_cd=A.lecturer_cd)  ACCOUNT_NO                          -->
+<!--                   FROM -->
+<!--                        ( -->
+<!--                        SELECT HQ, -->
+<!--                               STORE, -->
+<!--                               PERIOD, -->
+<!--                               LECT_YM, -->
+<!--                               LECTURER_CD, -->
+<!--                               PAY_DAY, -->
+<!--                               SUM(LECT_PAY) LECT_ALL_PAY -->
+<!--                          FROM BAJRCOTB -->
+<!--                         WHERE HQ        = '00' -->
+<!--                           AND STORE     = '${store}' -->
+<!--                           AND PAY_DAY BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                           AND ACCEPT_YN  = 'Y' -->
+<!--                           AND JOURNAL_YN = 'Y' -->
+<!--                        GROUP BY HQ, STORE, PERIOD, LECT_YM, LECTURER_CD, PAY_DAY -->
+<!--                        ) A, BALECRTB B -->
+<!--                  WHERE A.LECTURER_CD = B.LECTURER_CD -->
+<!--                  GROUP BY A.LECTURER_CD ,A.PAY_DAY , B.C_NM , A.LECT_YM, DECODE(B.LECTURER_KOR_NM, NULL, B.LECTURER_W_NM, B.LECTURER_KOR_NM) -->
+<!--                  ORDER BY DECODE(B.LECTURER_KOR_NM, NULL, B.LECTURER_W_NM, B.LECTURER_KOR_NM)      -->
+<!-- </select> -->
+<!-- <select id="getStatusList3" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT A.PERIOD, -->
+<!--                        BA_SECT_NM(A.HQ, A.STORE, A.MAIN_CD, A.SECT_CD) AS SECT_NM, -->
+<!--                        A.SUBJECT_CD, -->
+<!--                        BA_SUBJECT_NM(A.HQ, A.STORE, A.SUBJECT_CD) AS SUBJECT_NM, -->
+<!--                        LECT_YM, -->
+<!--                        A.LECTURER_CD, -->
+<!--                        (SELECT LECTURER_KOR_NM FROM BALECRTB WHERE LECTURER_CD = A.LECTURER_CD) LECTURER_KOR_NM, -->
+<!--                        NVL(A.LECT_PAY,0) LECT_PAY, -->
+<!--                        NVL(A.INCOME_TAX,0) INCOME_TAX, -->
+<!--                        NVL(A.RESI_TAX,0) RESI_TAX, -->
+<!--                        NVL(A.NET_LECT_PAY,0) NET_LECT_PAY, -->
+<!--                        A.PAY_DAY PAY_DAY, -->
+<!--                        (select (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) from BALECRTB g where lecturer_cd= A.lecturer_cd ) BANK_NM , -->
+<!--                        (select ACCOUNT_NO from BALECRTB g where lecturer_cd=A.lecturer_cd)  ACCOUNT_NO                                              -->
+<!--                   FROM BAJRPRTB A -->
+<!--                  WHERE A.HQ         = '00' -->
+<!--                    AND A.STORE      = '${store}' -->
+<!--                    AND A.LECT_YM||to_char(A.PAY_DAY,'FM00') BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                    AND A.CONFIRM_YN = 'Y' -->
+<!--                    AND A.JOURNAL_YN = 'Y' -->
+<!--                 ORDER BY A.PAY_DAY, A.MAIN_CD, A.SECT_CD, A.SUBJECT_CD, A.LECTURER_CD, A.LECT_YM    -->
+<!-- </select> -->
+<!-- <select id="getStatusList4" parameterType="hashmap" resultType="hashmap"> -->
+<!-- 				SELECT HQ, STORE, PERIOD,  -->
+<!--                        LECT_YM, LECTURER_CD, LECTURER_KOR_NM, -->
+<!--                        LECT_ALL_PAY, PAY_DAY, CORP_FG,  -->
+<!--                        INCOME_TAX, RESI_TAX, (LECT_ALL_PAY - INCOME_TAX - RESI_TAX) AS NET_LECT_PAY, -->
+<!--                        (select (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) from BALECRTB g where lecturer_cd= A.lecturer_cd ) BANK_NM , -->
+<!--                        (select ACCOUNT_NO from BALECRTB g where lecturer_cd=A.lecturer_cd)  ACCOUNT_NO                         -->
+<!--                   FROM  -->
+<!--                  	 ( -->
+<!--                 	  SELECT A.HQ, A.STORE, A.PERIOD, -->
+<!--                 	         A.LECT_YM, A.LECTURER_CD, B.LECTURER_KOR_NM, -->
+<!--                 	         A.LECT_ALL_PAY, A.PAY_DAY, -->
+<!--                 	         B.CORP_FG, -->
+<!--                 	         DECODE(B.CORP_FG, '1', 0, '2', CASE WHEN (TRUNC((A.LECT_ALL_PAY * 0.03) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE TRUNC((A.LECT_ALL_PAY * 0.03) * 0.1, 0) * 10 -->
+<!--                 			                                      END, -->
+<!--                 			                           '3', CASE WHEN (TRUNC((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE (TRUNC((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1, 0) * 10) -->
+<!--                 			                                      END -->
+<!--                 			        ) AS INCOME_TAX, -->
+<!--                 	         DECODE(B.CORP_FG, '1', 0, '2', CASE WHEN (TRUNC((A.LECT_ALL_PAY * 0.03) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE TRUNC(((A.LECT_ALL_PAY * 0.03) * 0.1) * 0.1, 0) * 10 -->
+<!--                 			                                      END, -->
+<!--                 			                           '3', CASE WHEN (TRUNC((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1, 0) * 10) <![CDATA[<]]> 1000 -->
+<!--                 			                                     THEN 0 -->
+<!--                 			                                     ELSE (TRUNC(((A.LECT_ALL_PAY - (A.LECT_ALL_PAY * 0.75) * 0.2) * 0.1) * 0.1, 0) * 10) -->
+<!--                 			                                      END -->
+<!--                 			       ) AS RESI_TAX -->
+<!--                 	    FROM -->
+<!--                 	         ( -->
+<!--                 	         SELECT HQ, STORE, PERIOD, LECT_YM, LECTURER_CD, PAY_DAY, SUM(LECT_PAY) LECT_ALL_PAY -->
+<!--                 	           FROM BAJRPRTB -->
+<!--                 	          WHERE HQ         = '00' -->
+<!--                 	            AND STORE      = '${store}' -->
+<!--                 	            AND LECT_YM||to_char(PAY_DAY,'FM00') BETWEEN '${start_ymd}' AND '${end_ymd}' -->
+<!--                 	            AND CONFIRM_YN = 'Y' -->
+<!--                 	            AND JOURNAL_YN = 'Y' -->
+<!--                 	          GROUP BY HQ, STORE, PERIOD, LECT_YM, LECTURER_CD, PAY_DAY -->
+<!--                 	         ) A, BALECRTB B -->
+<!--                 	   WHERE A.LECTURER_CD = B.LECTURER_CD -->
+<!--                 	   ) A -->
+<!--                    ORDER BY PAY_DAY , LECTURER_KOR_NM	   -->
+<!-- </select> -->
+
+<select id="getCorp1List" parameterType="hashmap" resultType="hashmap">
+
+select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+				select c.hq      hq,
+                    c.store   store,
+                    c.period  period,
+                    '${lect_ym}'  lect_ym,
+                    c.main_cd main_cd,
+                    c.main_nm main_nm,
+                    c.sect_cd sect_cd,
+                    c.sect_nm sect_nm,
+                    c.subject_cd subject_cd,
+                    c.subject_nm subject_nm,
+                    c.regis_fee ,
+                    c.fix_pay_yn,
+                    c.fix_amt,
+                    c.fix_rate,                    
+                    c.capacity_no capacity_no,
+                    f.regis_no regis_no ,
+                    c.issue_yn  issue_yn,
+                    c.issue_yn  issue_yn_ori, 
+                    c.accept_yn accept_yn,
+                    c.vat_fg    vat_fg,
+                    c.pay_day   pay_day,
+                    c.journal_yn journal_yn,
+                    c.lecturer_cd lecturer_cd,
+                    c.issue_yn old_issue_yn ,
+                    c.accept_yn old_accept_yn  ,
+                    c.co_nm co_nm ,
+                    c.mid_regis_no,
+                    c.mid_regis_amt ,
+                    c.half_regis_no,
+                    c.part_regis_no ,
+                    BA_GET_PART_REGIS_FEE(C.STORE, C.PERIOD, C.SUBJECT_CD) AS PART_REGIS_AMT,
+                    c.bank_nm,
+                    c.account_no,
+                    c.create_date create_date,
+                    decode(c.accept_yn,'R','미승인','Y','승인','N','등록가능','오류') accept_nm,
+                    c.submit_yn,
+                    c.subject_fg_nm,
+                    c.subject_fg,
+                    c.lect_cnt,
+                    c.start_ymd,
+                    c.end_ymd,
+                    c.web_lecturer_nm,
+                    c.bmd,
+                    c.end_yn,
+                    nvl((
+                     SELECT
+					    (
+					        SUM(pere.regis_fee)
+					        -
+					        SUM
+					        (
+					            nvl(decode
+					            (
+					                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code1), 'Y', 0, trde.enuri_amt1
+					            ),0)
+					        )
+					        -
+					        SUM
+					        (
+					            nvl(decode
+					            (
+					                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code2), 'Y', 0, trde.enuri_amt2
+					            ),0)
+					        )
+					    ) as regis_fee
+					    FROM
+					    batrdetb trde, 
+					    baperetb pere, 
+					    bapelttb pelt
+					    WHERE
+					    trde.hq = pere.hq
+					    and trde.store = pere.store
+					    and trde.sale_ymd = pere.sale_ymd
+					    and trde.pos_no = pere.pos_no
+					    and trde.recpt_no = pere.recpt_no
+					    and trde.seq_no = pere.seq
+					    and pelt.store = '${store}'
+					    and pelt.period = '${period}'
+					    and pelt.subject_cd = c.subject_cd
+					    and pere.store = '${store}'
+					    and pere.period = '${period}'
+					    and pere.subject_cd = c.subject_cd
+					    and pere.regis_cancel_fg = '1'
+					    and pere.recpt_no != '*'
+					    AND (SELECT MEM_FG FROM BAWBTRTB WHERE STORE = pere.STORE AND PERIOD = pere.PERIOD AND SUBJECT_CD = pere.SUBJECT_CD AND SEND_RECPT_NO = pere.RECPT_NO AND SALE_YMD = pere.SALE_YMD AND CUST_NO = pere.CUST_NO AND POS_TYPE = DECODE(pere.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C') IS NULL
+                    
+                    ), 0) + BA_GET_PART_REGIS_FEE(C.STORE, C.PERIOD, C.SUBJECT_CD)
+				   as tot_regis_amt,
+				   nvl((
+                     SELECT
+					    (
+					        SUM
+					        (
+					            nvl(trde.enuri_amt1,0)
+					        )
+					        +
+					        SUM
+					        (
+					            nvl(trde.enuri_amt2,0)
+					        )
+					    ) as enuri_amt
+					    FROM
+					    batrdetb trde, 
+					    baperetb pere, 
+					    bapelttb pelt
+					    WHERE
+					    trde.hq = pere.hq
+					    and trde.store = pere.store
+					    and trde.sale_ymd = pere.sale_ymd
+					    and trde.pos_no = pere.pos_no
+					    and trde.recpt_no = pere.recpt_no
+					    and trde.seq_no = pere.seq
+					    and pelt.store = '${store}'
+					    and pelt.period = '${period}'
+					    and pelt.subject_cd = c.subject_cd
+					    and pere.store = '${store}'
+					    and pere.period = '${period}'
+					    and pere.subject_cd = c.subject_cd
+					    and pere.regis_cancel_fg = '1'
+					    and pere.recpt_no != '*'
+                    
+                    ), 0)
+				   as tot_enuri_amt
+             from (
+                   select
+                          a.hq hq,
+                          a.store store,
+                          a.period period,
+                          a.main_cd main_cd,
+                          ba_main_nm(a.main_cd) as main_nm,   
+                          a.sect_cd sect_cd,
+                          ba_sect_nm('00', '${store}', a.main_cd, a.sect_cd) as sect_nm,    
+                          a.subject_cd subject_cd,
+                          a.subject_nm subject_nm,
+                          a.REGIS_FEE, 
+                          a.fix_amt , 
+                          a.fix_rate ,                           
+                          nvl(a.capacity_no, 0) + nvl(a.web_capacity_no, 0) capacity_no,
+                          nvl(b.journal_yn, 'N') journal_yn,
+                          nvl(b.issue_yn , 'N') issue_yn,
+                          nvl(b.accept_yn, 'N') accept_yn,
+                          decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') AS submit_yn,
+                          nvl(b.vat_fg , 'X4') vat_fg ,
+                          nvl(b.pay_day,'') pay_day ,
+                          g.lecturer_cd lecturer_cd ,
+                          nvl(g.c_nm, g.biz_nm)  co_nm ,
+                          a.mid_regis_no mid_regis_no ,
+                          a.mid_regis_amt ,
+                          a.half_regis_no half_regis_no,
+                          a.part_regis_no , 
+                          a.part_regis_amt , 
+                          (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) BANK_NM,
+                          g.ACCOUNT_NO,
+                          b.create_date create_date,
+                          decode(a.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+                          a.subject_fg,
+                          a.lect_cnt,
+                          a.start_ymd,
+                          a.end_ymd,
+                          a.web_lecturer_nm,
+                          a.end_yn,
+                          (select bmd from ams_cus where cus_no = trim(a.cus_no)) as bmd,
+                          decode(a.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn
+                     from BAPELTTB a, BAJRCOTB b ,  BALECRTB g
+                    where a.hq            = '00'
+                      and a.store         = '${store}'
+                      and a.period        = '${period}'
+                      and a.hq            = b.hq(+)
+                      and a.store         = b.store(+)
+                      and a.period        = b.period(+)
+                      and a.subject_cd    = b.subject_cd(+)
+                      and a.lecturer_cd   = b.lecturer_cd(+)
+                      and a.lecturer_cd   = g.lecturer_cd
+                      and g.corp_fg = '1'
+                      <if test="!lect_ym.equals('')">
+	                      and b.lect_ym(+)    = '${lect_ym}'
+                      </if>
+                      <if test="!pay_day.equals('')">
+	                      and a.regis_fee_cnt = '${pay_day}'
+                      </if>
+                      <if test="!subject_fg.equals('')">
+                      	and a.subject_fg = '${subject_fg}'
+                      </if>
+                      <if test="act eq 'Y'.toString()">
+	                     and 
+	                     (
+	                     	 (
+		                     	 a.end_yn != 'Y'
+			                     and (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) <![CDATA[>]]> 0
+			                     and regis_fee+part_regis_amt <![CDATA[>]]> 0
+	                     	 )
+		                     or
+		                     decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') = 'Y'
+	                     )
+	                 </if>
+	                 <if test="act eq 'N'.toString()">
+	                 	and 
+		                 (
+	                        a.end_yn = 'Y'
+	                        or (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) = 0
+	                        or regis_fee+part_regis_amt = 0
+		                 )
+		                 and decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') != 'Y'
+	                 </if>
+	                 <if test="submit_yn eq 'Y'.toString()">
+	                 	and b.create_date is not null
+	                 </if>
+	                 <if test="submit_yn eq 'N'.toString()">
+	                 	and b.create_date is null
+	                 </if>
+                  ) c,
+                  (
+                   select
+                          d.hq,
+                          d.store,
+                          d.period,
+                          d.main_cd,
+                          d.sect_cd,
+                          d.subject_cd,
+                          sum(d.cancel_person_count) sum_cancel_no
+                     from BAJRCOTB d
+                    where d.hq            = '00'
+                      and d.store         = '${store}'
+                      and d.period        = '${period}'
+                      group by hq, store, period, main_cd, sect_cd, subject_cd
+                   ) e,
+                   (
+                   select /*+ index(f BAPEREX2) */
+                          f.hq,
+                          f.store,
+                          f.period,
+                          f.main_cd,
+                          f.sect_cd,
+                          f.subject_cd,
+                          count(*) regis_no
+                     from BAPERETB f
+                    where f.hq            = '00'
+                      and f.store         = '${store}'
+                      and f.period        = '${period}'
+                      and f.pay_yn = 'Y'  and f.recpt_no != '*'
+                      AND (SELECT MEM_FG FROM BAWBTRTB WHERE STORE = f.STORE AND PERIOD = f.PERIOD AND SUBJECT_CD = f.SUBJECT_CD AND SEND_RECPT_NO = f.RECPT_NO AND SALE_YMD = f.SALE_YMD AND CUST_NO = f.CUST_NO AND POS_TYPE = DECODE(f.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C') IS NULL
+                      group by hq, store, period, main_cd, sect_cd, subject_cd
+                   ) f
+              where
+                    c.hq       = e.hq(+)
+                and c.hq        = f.hq(+)
+                and c.store        = e.store(+)
+                and c.store        = f.store(+)
+                and c.period        = e.period(+)
+                and c.period        = f.period(+)
+                and c.main_cd       = e.main_cd(+)
+                and c.main_cd       = f.main_cd(+)
+                and c.sect_cd       = e.sect_cd(+)
+                and c.sect_cd       = f.sect_cd(+)
+                and c.subject_cd    = e.subject_cd(+)
+                and c.subject_cd    = f.subject_cd(+)
+				<if test="!order_by.equals('') and !sort_type.equals('')">
+				   		order by ${sort_type} ${order_by}
+				   	</if>
+				) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+		
+
+
+</select>
+<select id="getCorp1ListCount" parameterType="hashmap" resultType="hashmap">
+				select count(*) as cnt
+             from (
+                   select
+                          a.hq hq,
+                          a.store store,
+                          a.period period,
+                          a.main_cd main_cd,
+                          ba_main_nm(a.main_cd) as main_nm,   
+                          a.sect_cd sect_cd,
+                          ba_sect_nm('00', '${store}', a.main_cd, a.sect_cd) as sect_nm,    
+                          a.subject_cd subject_cd,
+                          a.subject_nm subject_nm,
+                          a.REGIS_FEE, 
+                          a.fix_amt , 
+                          a.fix_rate ,                           
+                          nvl(a.capacity_no, 0) + nvl(a.web_capacity_no, 0) capacity_no,
+                          nvl(b.journal_yn, 'N') journal_yn,
+                          nvl(b.issue_yn , 'N') issue_yn,
+                          nvl(b.accept_yn, 'N') accept_yn,
+                          decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') AS submit_yn,
+                          nvl(b.vat_fg , 'X4') vat_fg ,
+                          nvl(b.pay_day,'') pay_day ,
+                          g.lecturer_cd lecturer_cd ,
+                          g.c_nm  co_nm ,
+                          a.mid_regis_no mid_regis_no ,
+                          a.mid_regis_amt ,
+                          a.half_regis_no half_regis_no,
+                          a.part_regis_no , 
+                          a.part_regis_amt , 
+                          (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) BANK_NM,
+                          g.ACCOUNT_NO,
+                          b.create_date create_date,
+                          decode(a.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+                          a.subject_fg,
+                          a.lect_cnt,
+                          a.start_ymd,
+                          a.end_ymd,
+                          a.web_lecturer_nm,
+                          (select bmd from ams_cus where cus_no = (select cus_no from BALECTURETB where lecturer_cd = a.lecturer_cd and rownum = 1)) as bmd,
+                          decode(a.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn
+                     from BAPELTTB a, BAJRCOTB b ,  BALECRTB g
+                    where a.hq            = '00'
+                      and a.store         = '${store}'
+                      and a.period        = '${period}'
+                      and a.hq            = b.hq(+)
+                      and a.store         = b.store(+)
+                      and a.period        = b.period(+)
+                      and a.subject_cd    = b.subject_cd(+)
+                      and a.lecturer_cd   = b.lecturer_cd(+)
+                      <if test="!lect_ym.equals('')">
+	                      and b.lect_ym(+)    = '${lect_ym}'
+                      </if>
+                      <if test="!pay_day.equals('')">
+	                      and a.regis_fee_cnt = '${pay_day}'
+                      </if>
+                      and a.lecturer_cd   = g.lecturer_cd
+                      and g.corp_fg = '1'
+                      <if test="!subject_fg.equals('')">
+                      	and a.subject_fg = '${subject_fg}'
+                      </if>
+                      <if test="act eq 'Y'.toString()">
+	                     and 
+	                     (
+	                     	 (
+		                     	 a.end_yn != 'Y'
+			                     and (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) <![CDATA[>]]> 0
+			                     and regis_fee+part_regis_amt <![CDATA[>]]> 0
+	                     	 )
+		                     or
+		                     decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') = 'Y'
+	                     )
+	                 </if>
+	                 <if test="act eq 'N'.toString()">
+	                 	and 
+		                 (
+	                        a.end_yn = 'Y'
+	                        or (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) = 0
+	                        or regis_fee+part_regis_amt = 0
+		                 )
+		                 and decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') != 'Y'
+	                 </if>
+	                 <if test="submit_yn eq 'Y'.toString()">
+	                 	and b.create_date is not null
+	                 </if>
+	                 <if test="submit_yn eq 'N'.toString()">
+	                 	and b.create_date is null
+	                 </if>
+                  ) c,
+                  (
+                   select
+                          d.hq,
+                          d.store,
+                          d.period,
+                          d.main_cd,
+                          d.sect_cd,
+                          d.subject_cd,
+                          sum(d.cancel_person_count) sum_cancel_no
+                     from BAJRCOTB d
+                    where d.hq            = '00'
+                      and d.store         = '${store}'
+                      and d.period        = '${period}'
+                      group by hq, store, period, main_cd, sect_cd, subject_cd
+                   ) e,
+                   (
+                   select /*+ index(f BAPEREX2) */
+                          f.hq,
+                          f.store,
+                          f.period,
+                          f.main_cd,
+                          f.sect_cd,
+                          f.subject_cd,
+                          count(*) regis_no
+                     from BAPERETB f
+                    where f.hq            = '00'
+                      and f.store         = '${store}'
+                      and f.period        = '${period}'
+                      and f.pay_yn = 'Y'
+                      group by hq, store, period, main_cd, sect_cd, subject_cd
+                   ) f
+              where
+                    c.hq       = e.hq(+)
+                and c.hq        = f.hq(+)
+                and c.store        = e.store(+)
+                and c.store        = f.store(+)
+                and c.period        = e.period(+)
+                and c.period        = f.period(+)
+                and c.main_cd       = e.main_cd(+)
+                and c.main_cd       = f.main_cd(+)
+                and c.sect_cd       = e.sect_cd(+)
+                and c.sect_cd       = f.sect_cd(+)
+                and c.subject_cd    = e.subject_cd(+)
+                and c.subject_cd    = f.subject_cd(+)
+		
+</select>
+<select id="getCorp2List" parameterType="hashmap" resultType="hashmap">
+
+
+
+select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+				select c.hq      hq,
+			       c.store   store,
+			       c.period  period,
+			       '${lect_ym}'  lect_ym,   
+			       c.main_cd main_cd,
+			       c.main_nm main_nm,
+			       c.sect_cd sect_cd,
+			       c.sect_nm sect_nm,
+			       c.subject_cd subject_cd,
+			       c.subject_nm subject_nm,
+			       c.lecture_nm,
+			       c.regis_fee ,
+			       c.fix_pay_yn,
+			       c.fix_amt,
+			       c.fix_rate,                       
+			       c.pay_day   pay_day,
+			       c.capacity_no capacity_no,
+			       f.regis_no regis_no ,
+			       c.c_nm c_nm,
+			       c.confirm_yn confirm_yn,
+			       c.journal_yn journal_yn,
+			       c.mid_regis_no mid_regis_no,
+			       c.bank_nm,
+			       xx1.dec_varchar2_sel(c.account_no,10,'AES16') account_no,
+			       c.mid_regis_amt ,
+			       c.half_regis_no ,
+			       c.part_regis_no ,
+			       BA_GET_PART_REGIS_FEE(C.STORE, C.PERIOD, C.SUBJECT_CD) AS PART_REGIS_AMT,
+			       c.submit_yn,
+                   c.subject_fg_nm,
+                   c.subject_fg,
+                   c.lect_cnt,
+                   c.start_ymd,
+                   c.end_ymd,
+                   c.web_lecturer_nm,
+                   c.bmd,
+                   c.end_yn,
+                   c.birth_ymd,
+                  nvl((
+                     SELECT
+					    (
+					        SUM(pere.regis_fee)
+					        -
+					        SUM
+					        (
+					            nvl(decode
+					            (
+					                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code1), 'Y', 0, trde.enuri_amt1
+					            ),0)
+					        )
+					        -
+					        SUM
+					        (
+					            nvl(decode
+					            (
+					                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code2), 'Y', 0, trde.enuri_amt2
+					            ),0)
+					        )
+					    ) as regis_fee
+					    FROM
+					    batrdetb trde, 
+					    baperetb pere, 
+					    bapelttb pelt
+					    WHERE
+					    trde.hq = pere.hq
+					    and trde.store = pere.store
+					    and trde.sale_ymd = pere.sale_ymd
+					    and trde.pos_no = pere.pos_no
+					    and trde.recpt_no = pere.recpt_no
+					    and trde.seq_no = pere.seq
+					    and pelt.store = '${store}'
+					    and pelt.period = '${period}'
+					    and pelt.subject_cd = c.subject_cd
+					    and pere.store = '${store}'
+					    and pere.period = '${period}'
+					    and pere.subject_cd = c.subject_cd
+					    and pere.regis_cancel_fg = '1'
+					    and pere.recpt_no != '*'
+					    AND (SELECT MEM_FG FROM BAWBTRTB WHERE STORE = pere.STORE AND PERIOD = pere.PERIOD AND SUBJECT_CD = pere.SUBJECT_CD AND SEND_RECPT_NO = pere.RECPT_NO AND SALE_YMD = pere.SALE_YMD AND CUST_NO = pere.CUST_NO AND POS_TYPE = DECODE(pere.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C') IS NULL
+                    
+                    ),0) + BA_GET_PART_REGIS_FEE(C.STORE, C.PERIOD, C.SUBJECT_CD)
+				   as tot_regis_amt,
+				   nvl((
+                     SELECT
+					    (
+					        SUM
+					        (
+					            nvl(trde.enuri_amt1,0)
+					        )
+					        +
+					        SUM
+					        (
+					            nvl(trde.enuri_amt2,0)
+					        )
+					    ) as enuri_amt
+					    FROM
+					    batrdetb trde, 
+					    baperetb pere, 
+					    bapelttb pelt
+					    WHERE
+					    trde.hq = pere.hq
+					    and trde.store = pere.store
+					    and trde.sale_ymd = pere.sale_ymd
+					    and trde.pos_no = pere.pos_no
+					    and trde.recpt_no = pere.recpt_no
+					    and trde.seq_no = pere.seq
+					    and pelt.store = '${store}'
+					    and pelt.period = '${period}'
+					    and pelt.subject_cd = c.subject_cd
+					    and pere.store = '${store}'
+					    and pere.period = '${period}'
+					    and pere.subject_cd = c.subject_cd
+					    and pere.regis_cancel_fg = '1'
+					    and pere.recpt_no != '*'
+                    
+                    ), 0)
+				   as tot_enuri_amt
+			from (
+			  select /*+ ordered leading(a) use_nl(a b g) */
+			         a.hq hq,
+			         a.store store,
+			         a.period period,
+			         a.main_cd main_cd,
+			         ba_main_nm(a.main_cd) as main_nm, 
+			         a.sect_cd sect_cd,
+					 ba_sect_nm('00', '${store}', a.main_cd, a.sect_cd) as sect_nm,
+			         a.subject_cd subject_cd,
+			         a.subject_nm subject_nm,
+			         g.lecturer_kor_nm as lecture_nm,
+			         NVL2(g.BIRTH_YMD,substr(g.BIRTH_YMD,0,4)||'-'||substr(g.BIRTH_YMD,5,2)||'-'||substr(g.BIRTH_YMD,7),'-') as BIRTH_YMD,
+			         a.REGIS_FEE, 
+			         a.fix_amt , 
+			         a.fix_rate , 
+			         nvl(b.pay_day,'') pay_day ,
+			         nvl(a.capacity_no, 0) + nvl(a.web_capacity_no, 0) capacity_no,
+			         nvl(b.confirm_yn, 'N') confirm_yn,
+			         nvl(b.journal_yn, 'N') journal_yn,
+			         decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') AS submit_yn,
+			         a.mid_regis_no mid_regis_no ,
+			         a.mid_regis_amt ,
+			         g.c_nm,
+			         g.lecturer_cd lecturer_cd ,
+			         (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) BANK_NM,
+			         g.ACCOUNT_NO,                         
+			         a.part_regis_no , 
+			         a.part_regis_amt ,                          
+			         a.half_regis_no half_regis_no,
+                     decode(a.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+                     a.subject_fg,
+                     a.lect_cnt,
+                     a.start_ymd,
+                     a.end_ymd,
+                     a.web_lecturer_nm,
+                     a.end_yn,
+                     (select bmd from ams_cus where cus_no = trim(a.cus_no)) as bmd,
+                     decode(a.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn
+			    from BAPELTTB# a, BAJRPRTB# b , BALECRTB# g
+			   where a.hq            = '00'
+			     and a.store         = '${store}'
+			     and a.period        = '${period}'
+			   
+			     and a.hq            = b.hq(+)
+			     and a.store         = b.store(+)
+			     and a.period        = b.period(+)
+			     and a.subject_cd    = b.subject_cd(+)
+			     and a.lecturer_cd   = b.lecturer_cd(+)
+			     <if test="!lect_ym.equals('')">
+                  and b.lect_ym(+)    = '${lect_ym}'
+                 </if>
+                 <if test="!pay_day.equals('')">
+                  and a.regis_fee_cnt = '${pay_day}'
+                 </if>
+			     <if test="!subject_fg.equals('')">
+                 	and a.subject_fg = '${subject_fg}'
+                 </if>
+                 <if test="act eq 'Y'.toString()">
+                     and 
+	                     (
+	                     	 (
+		                     	 a.end_yn != 'Y'
+			                     and (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) <![CDATA[>]]> 0
+			                     and regis_fee+part_regis_amt <![CDATA[>]]> 0
+	                     	 )
+		                     or
+		                     decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') = 'Y'
+	                     )
+                 </if>
+                 <if test="act eq 'N'.toString()">
+                 	and 
+	                 (
+                        a.end_yn = 'Y'
+                        or (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) = 0
+                        or regis_fee+part_regis_amt = 0
+	                 )
+	                 and decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') != 'Y'
+                 </if>
+                 <if test="submit_yn eq 'Y'.toString()">
+                 	and b.create_date is not null
+                 </if>
+                 <if test="submit_yn eq 'N'.toString()">
+                 	and b.create_date is null
+                 </if>
+			     and a.lecturer_cd   = g.lecturer_cd
+			     and g.corp_fg = '2'
+			     and g.status_fg = 'Y'
+                   
+                 
+                 
+			 ) c,
+			 (
+			  select /*+ index(d BAJRPRTB_PK ) */ 
+			         d.hq,
+			         d.store,
+			         d.period,
+			         d.main_cd,
+			         d.sect_cd,
+			         d.subject_cd
+			    from BAJRPRTB# d
+			   where d.hq            = '00'
+			     and d.store         = '${store}'
+			     and d.period        = '${period}'
+			  
+			     group by hq, store, period, main_cd, sect_cd, subject_cd
+			  ) e,
+			  (
+			  select /*+ index(f f(hq store period)) */
+			         f.hq,
+			         f.store,
+			         f.period,
+			         f.main_cd,
+			         f.sect_cd,
+			         f.subject_cd,
+			         count(*) regis_no
+			    from BAPERETB f
+			   where f.hq            = '00'
+			     and f.store         = '${store}'
+			     and f.period        = '${period}'
+			   
+			     and f.pay_yn = 'Y' and f.recpt_no != '*'
+			     AND (SELECT MEM_FG FROM BAWBTRTB WHERE STORE = f.STORE AND PERIOD = f.PERIOD AND SUBJECT_CD = f.SUBJECT_CD AND SEND_RECPT_NO = f.RECPT_NO AND SALE_YMD = f.SALE_YMD AND CUST_NO = f.CUST_NO AND POS_TYPE = DECODE(f.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C') IS NULL
+			     group by hq, store, period, main_cd, sect_cd, subject_cd
+			  ) f
+			where
+			   c.hq              = e.hq(+)
+			and c.hq             = f.hq(+)
+			and c.store          = e.store(+)
+			and c.store          = f.store(+)
+			and c.period         = e.period(+)
+			and c.period         = f.period(+)
+			and c.main_cd        = e.main_cd(+)
+			and c.main_cd        = f.main_cd(+)
+			and c.sect_cd        = e.sect_cd(+)
+			and c.sect_cd        = f.sect_cd(+)
+			and c.subject_cd     = e.subject_cd(+)
+			and c.subject_cd     = f.subject_cd(+)
+			<if test="!order_by.equals('') and !sort_type.equals('')">
+					   		order by ${sort_type} ${order_by}
+					   	</if>   
+			 ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+		    
+
+</select>
+<select id="getCorp2ListCount" parameterType="hashmap" resultType="hashmap">
+	select count(*) as cnt
+			from (
+			  select /*+ ordered leading(a) use_nl(a b g) */
+			         a.hq hq,
+			         a.store store,
+			         a.period period,
+			         a.main_cd main_cd,
+			         ba_main_nm(a.main_cd) as main_nm, 
+			         a.sect_cd sect_cd,
+					 ba_sect_nm('00', '${store}', a.main_cd, a.sect_cd) as sect_nm,
+			         a.subject_cd subject_cd,
+			         a.subject_nm subject_nm,
+			         g.lecturer_kor_nm as lecture_nm,
+			         NVL2(g.BIRTH_YMD,substr(g.BIRTH_YMD,0,4)||'/'||substr(g.BIRTH_YMD,5,2)||'/'||substr(g.BIRTH_YMD,7),'-') as BIRTH_YMD,
+			         a.REGIS_FEE, 
+			         a.fix_amt , 
+			         a.fix_rate , 
+			         nvl(b.pay_day,'') pay_day ,
+			         nvl(a.capacity_no, 0) + nvl(a.web_capacity_no, 0) capacity_no,
+			         nvl(b.confirm_yn, 'N') confirm_yn,
+			         nvl(b.journal_yn, 'N') journal_yn,
+			         decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') AS submit_yn,
+			         a.mid_regis_no mid_regis_no ,
+			         a.mid_regis_amt ,
+			         g.c_nm,
+			         g.lecturer_cd lecturer_cd ,
+			         (SELECT BANK_NM FROM BABANKTB where BANK_CD = g.BANK_CD) BANK_NM,
+			         g.ACCOUNT_NO,                         
+			         a.part_regis_no , 
+			         a.part_regis_amt ,                          
+			         a.half_regis_no half_regis_no,
+                     decode(a.subject_fg, '1', '정규', '2', '단기', '3', '특강') as SUBJECT_FG_NM,
+                     a.subject_fg,
+                     a.lect_cnt,
+                     a.start_ymd,
+                     a.end_ymd,
+                     a.web_lecturer_nm,
+                     (select bmd from ams_cus where cus_no = (select cus_no from BALECTURETB where lecturer_cd = a.lecturer_cd and rownum = 1)) as bmd,
+                     decode(a.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn
+			    from BAPELTTB# a, BAJRPRTB# b , BALECRTB# g
+			   where a.hq            = '00'
+			     and a.store         = '${store}'
+			     and a.period        = '${period}'
+			   
+			     and a.hq            = b.hq(+)
+			     and a.store         = b.store(+)
+			     and a.period        = b.period(+)
+			     and a.subject_cd    = b.subject_cd(+)
+			     and a.lecturer_cd   = b.lecturer_cd(+)
+			     <if test="!lect_ym.equals('')">
+                  and b.lect_ym(+)    = '${lect_ym}'
+                 </if>
+                 <if test="!pay_day.equals('')">
+                  and a.regis_fee_cnt = '${pay_day}'
+                 </if>
+			     <if test="!subject_fg.equals('')">
+                 	and a.subject_fg = '${subject_fg}'
+                 </if>
+                 <if test="act eq 'Y'.toString()">
+                     and 
+	                     (
+	                     	 (
+		                     	 a.end_yn != 'Y'
+			                     and (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) <![CDATA[>]]> 0
+			                     and regis_fee+part_regis_amt <![CDATA[>]]> 0
+	                     	 )
+		                     or
+		                     decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') = 'Y'
+	                     )
+                 </if>
+                 <if test="act eq 'N'.toString()">
+                 	and 
+	                 (
+                        a.end_yn = 'Y'
+                        or (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) = 0
+                        or regis_fee+part_regis_amt = 0
+	                 )
+	                 and decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') != 'Y'
+                 </if>
+                 <if test="submit_yn eq 'Y'.toString()">
+                 	and b.create_date is not null
+                 </if>
+                 <if test="submit_yn eq 'N'.toString()">
+                 	and b.create_date is null
+                 </if>
+			     and a.lecturer_cd   = g.lecturer_cd
+			     and g.corp_fg = '2'
+			     and g.status_fg = 'Y'
+                 
+                 
+			 ) c,
+			 (
+			  select /*+ index(d BAJRPRTB_PK ) */ 
+			         d.hq,
+			         d.store,
+			         d.period,
+			         d.main_cd,
+			         d.sect_cd,
+			         d.subject_cd
+			    from BAJRPRTB# d
+			   where d.hq            = '00'
+			     and d.store         = '${store}'
+			     and d.period        = '${period}'
+			  
+			     group by hq, store, period, main_cd, sect_cd, subject_cd
+			  ) e,
+			  (
+			  select /*+ index(f f(hq store period)) */
+			         f.hq,
+			         f.store,
+			         f.period,
+			         f.main_cd,
+			         f.sect_cd,
+			         f.subject_cd,
+			         count(*) regis_no
+			    from BAPERETB f
+			   where f.hq            = '00'
+			     and f.store         = '${store}'
+			     and f.period        = '${period}'
+			   
+			     and f.pay_yn = 'Y'
+			     group by hq, store, period, main_cd, sect_cd, subject_cd
+			  ) f
+			where
+			   c.hq              = e.hq(+)
+			and c.hq             = f.hq(+)
+			and c.store          = e.store(+)
+			and c.store          = f.store(+)
+			and c.period         = e.period(+)
+			and c.period         = f.period(+)
+			and c.main_cd        = e.main_cd(+)
+			and c.main_cd        = f.main_cd(+)
+			and c.sect_cd        = e.sect_cd(+)
+			and c.sect_cd        = f.sect_cd(+)
+			and c.subject_cd     = e.subject_cd(+)
+			and c.subject_cd     = f.subject_cd(+)
+</select>
+<select id="getFoodList" parameterType="hashmap" resultType="hashmap">
+
+select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+				select c.hq, c.store, c.main_cd, c.main_nm, c.sect_cd, c.sect_nm,
+                       c.subject_cd, c.subject_nm, c.capacity_no,
+                       c.regis_no, c.food_amt, c.food_all_amt,
+                       c.food_pay_amt, c.food_rest_amt,
+                       c.confirm_yn, c.journal_yn, c.period,
+                      '${food_ym}'  food_ym,
+                       C.BIRTH_YMD,
+                       C.LECTURE_NM, c.submit_yn, c.start_ymd, c.end_ymd,c.tot_food_amt,
+<!--                        ((select food_pay_amt from bapelttb where store = '${store}' and period = '${period}' and subject_cd = c.subject_cd) -->
+<!-- 				   - -->
+<!-- 				   (select sum(food_fee) from baperetb where store = '${store}' and period = '${period}' and subject_cd = c.subject_cd and regis_cancel_fg = '2')) -->
+<!-- 				   as tot_food_amt, -->
+<!-- 				   decode(nvl((select food_ym from bafoodtb where store = '${store}' and period=  '${period}' and subject_cd = c.subject_cd and food_ym = '${food_ym}'), 'N'), 'N', 'N', 'Y') as end_yn, -->
+				   (select food_pay_amt from bafoodtb where store = '${store}' and period = '${period}' and subject_cd = c.subject_cd and food_ym = '${food_ym1}') as food_pay_amt_1,
+                   (select food_pay_amt from bafoodtb where store = '${store}' and period = '${period}' and subject_cd = c.subject_cd and food_ym = '${food_ym2}') as food_pay_amt_2,
+                   (select food_pay_amt from bafoodtb where store = '${store}' and period = '${period}' and subject_cd = c.subject_cd and food_ym = '${food_ym3}') as food_pay_amt_3,
+                   c.end_yn
+                 from (
+                        SELECT A.HQ hq,
+                               A.STORE store,
+                               A.MAIN_CD main_cd,
+                               ba_main_nm(a.main_cd) as main_nm,
+                               A.SECT_CD as sect_cd,
+                               A.period as period,
+                               ba_sect_nm('00', '${store}', a.main_cd, a.sect_cd) as sect_nm,
+                              A.SUBJECT_CD as subject_cd,
+                              A.SUBJECT_NM as subject_nm,
+                              nvl(A.CAPACITY_NO,0) + nvl(A.WEB_CAPACITY_NO,0) as capacity_no,
+                              
+<!--                               nvl((select nvl(count(*), 0) from baperetb where store = '${store}' and period = '${period}' and subject_cd = a.subject_cd and pay_yn = 'Y' and recpt_no != '*'),0) as regis_no, -->
+                              (SELECT COUNT(*)
+						         FROM BAPERETB
+						           WHERE HQ         = '00'
+						            AND STORE      = A.STORE
+						            AND PERIOD     = A.PERIOD
+						             AND SUBJECT_CD = A.SUBJECT_CD
+						            AND PAY_YN     = 'Y' and recpt_no != '*'
+						            AND (SELECT MEM_FG FROM BAWBTRTB WHERE SALE_YMD = BAPERETB.SALE_YMD AND STORE = BAPERETB.STORE AND PERIOD = BAPERETB.PERIOD AND SUBJECT_CD = BAPERETB.SUBJECT_CD AND SEND_RECPT_NO = BAPERETB.RECPT_NO AND SALE_YMD = BAPERETB.SALE_YMD AND CUST_NO = BAPERETB.CUST_NO AND POS_TYPE = DECODE(BAPERETB.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C' AND ROWNUM = 1) IS NULL
+						            ) as regis_no,
+                              nvl(A.FOOD_AMT,0) food_amt,
+                              nvl(card_fd_amt,0)+nvl(cash_fd_amt,0)+nvl(cash_card_fd_amt,0) food_all_amt,
+                              nvl(a.food_pay_amt, 0) food_pay_amt,
+                              nvl(a.cash_fd_amt, 0) + nvl(a.card_fd_amt, 0)+nvl(cash_card_fd_amt,0) - nvl(a.food_pay_amt,0) food_rest_amt,
+                              nvl(B.CONFIRM_YN,'N') as confirm_yn,
+                              nvl(B.JOURNAL_YN,'N') as JOURNAL_YN,
+                              decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') AS submit_yn,
+                              (select bmd from ams_cus where cus_no = trim(a.cus_no)) as birth_ymd,
+                              D.LECTURER_KOR_NM AS LECTURE_NM,
+                              A.start_ymd,
+                              A.end_ymd,
+                              A.end_yn,
+                              (
+                              
+                              SELECT 
+                              
+                              
+                              	SUM(
+								        CASE 
+								            WHEN H.SALE_YMD IS NOT NULL AND NVL((SELECT MEM_FG FROM BAWBTRTB WHERE STORE = H.STORE AND PERIOD = H.PERIOD AND SUBJECT_CD = H.SUBJECT_CD AND SEND_RECPT_NO = H.RECPT_NO AND SALE_YMD = H.SALE_YMD AND CUST_NO = H.CUST_NO AND POS_TYPE = DECODE(H.POS_NO, '070013', 'W', '070014', 'M', '')), 'A') != 'C' THEN
+								                CASE WHEN H.MAIN_CD = '2' AND H.CHILD_NO1 IS NOT NULL AND TRIM(H.CHILD_NO1) != '0' THEN G.FOOD_AMT * 1.5
+								                    ELSE G.FOOD_AMT
+								                END
+								            ELSE 0
+								        END
+								    )+BA_GET_PART_FOOD_AMT('${store}', '${period}', A.SUBJECT_CD)
+								    
+								    
+<!-- 							     sum(CASE WHEN H.MAIN_CD = '2' AND H.CHILD_NO1 IS NOT NULL AND TRIM(H.CHILD_NO1) != '0' THEN G.FOOD_AMT * 1.5 -->
+<!-- 							            ELSE G.FOOD_AMT -->
+<!-- 							       END) + ba_get_part_food_amt('${store}', '${period}', A.SUBJECT_CD) -->
+							       
+							       
+							       FROM BAPELTTB E, BATRMSTB F, BATRDETB G, BAPERETB H
+							       WHERE F.HQ = G.HQ
+							       AND F.STORE = G.STORE
+							       AND F.SALE_YMD = G.SALE_YMD
+							       AND F.POS_NO = G.POS_NO
+							       AND F.RECPT_NO = G.RECPT_NO
+							       AND H.HQ = F.HQ
+							       AND H.STORE = F.STORE
+							       AND H.PERIOD = F.PERIOD
+							       AND H.SALE_YMD = F.SALE_YMD
+							       AND H.POS_NO = F.POS_NO
+							       AND H.RECPT_NO = F.RECPT_NO
+							       AND H.SUBJECT_CD = G.SUBJECT_CD
+							       AND H.SEQ = G.SEQ_NO
+							       AND E.STORE = H.STORE
+							       AND E.PERIOD = H.PERIOD
+							       AND E.SUBJECT_CD = H.SUBJECT_CD
+							       AND E.STORE = '${store}'
+							       AND E.PERIOD = '${period}'
+							       AND E.SUBJECT_CD = A.SUBJECT_CD
+							       AND F.SALE_FG = '01' AND F.CANCEL_YN != 'Y'
+							       AND (SELECT MEM_FG FROM BAWBTRTB WHERE SALE_YMD = H.SALE_YMD AND STORE = H.STORE AND PERIOD = H.PERIOD AND SUBJECT_CD = H.SUBJECT_CD AND SEND_RECPT_NO = H.RECPT_NO AND SALE_YMD = H.SALE_YMD AND CUST_NO = H.CUST_NO AND POS_TYPE = DECODE(H.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C' AND ROWNUM = 1) IS NULL
+							       group by E.lecturer_cd, E.start_ymd, E.end_ymd, E.capacity_no, E.web_capacity_no, E.food_amt, E.food_pay_amt, E.food_amt_cnt
+                              ) tot_food_amt
+<!--                               nvl(A.card_fd_amt,0)+nvl(A.cash_fd_amt,0)+nvl(A.cash_card_fd_amt,0) tot_food_amt -->
+                         FROM BAPELTTB A, BAFOODTB B, BALECRTB D
+                        WHERE A.main_cd      = B.main_cd(+)
+                          and A.sect_cd      = B.sect_cd(+)
+                          and A.subject_cd   = B.subject_cd(+)
+                          and A.lecturer_cd  = B.lecturer_cd(+)
+                          and A.hq           = B.hq(+)
+                          and A.store        = B.store(+)
+                          and A.period       = B.period(+)
+                           and A.HQ           = '00'
+                          and A.STORE        = '${store}'
+                          and A.PERIOD       = '${period}'
+                          and A.FOOD_YN      != 'N'
+                          <if test="!food_ym.equals('')">
+                          and B.food_ym(+)  = '${food_ym}'
+		                  </if>
+		                  <if test="!pay_day.equals('')">
+                          and a.food_amt_cnt like '%'||'${pay_day}'||'%'
+		                  </if>
+                          AND A.LECTURER_CD  = D.LECTURER_CD
+                          <if test="act eq 'Y'.toString()">
+		                     and 
+		                     (
+		                     	 (
+			                     	 a.end_yn != 'Y'
+									and (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) <![CDATA[>]]> 0
+									and a.food_amt <![CDATA[>]]> 0
+		                     	 )
+			                     or
+			                     decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') = 'Y'
+		                     )
+		                 </if>
+		                 <if test="act eq 'N'.toString()">
+		                 	and 
+			                 (
+		                        a.end_yn = 'Y'
+		                        or (a.regis_no + a.web_regis_no + a.part_regis_no + a.mid_regis_no) = 0
+		                        or a.food_amt = 0
+			                 )
+			                 and decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') != 'Y'
+		                 </if>
+							<if test="submit_yn eq 'Y'.toString()">
+			                 	and b.create_date is not null
+			                 </if>
+			                 <if test="submit_yn eq 'N'.toString()">
+			                 	and b.create_date is null
+			                 </if>
+			                 <if test="!order_by.equals('') and !sort_type.equals('')">
+						   		order by ${sort_type} ${order_by}
+						   	</if>
+                        ) C
+				) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+		
+
+
+
+</select>
+<select id="getFoodListCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as CNT
+                 from (
+                        SELECT A.HQ hq,
+                               A.STORE store,
+                               A.MAIN_CD main_cd,
+                               ba_main_nm(a.main_cd) as main_nm,
+                               A.SECT_CD as sect_cd,
+                               A.period as period,
+                               ba_sect_nm('00', '${store}', a.main_cd, a.sect_cd) as sect_nm,
+                              A.SUBJECT_CD as subject_cd,
+                              A.SUBJECT_NM as subject_nm,
+                              nvl(A.CAPACITY_NO,0) + nvl(A.WEB_CAPACITY_NO,0) as capacity_no,
+                              nvl(A.REGIS_NO,0) + nvl(A.WEB_REGIS_NO,0) as regis_no,
+                              nvl(A.FOOD_AMT,0) food_amt,
+                              nvl(card_fd_amt,0)+nvl(cash_fd_amt,0)+nvl(cash_card_fd_amt,0) food_all_amt,
+                              nvl(a.food_pay_amt, 0) food_pay_amt,
+                              nvl(a.cash_fd_amt, 0) + nvl(a.card_fd_amt, 0)+nvl(cash_card_fd_amt,0) - nvl(a.food_pay_amt,0) food_rest_amt,
+                              nvl(B.CONFIRM_YN,'N') as confirm_yn,
+                              nvl(B.JOURNAL_YN,'N') as JOURNAL_YN,
+                              NVL2(D.BIRTH_YMD,substr(D.BIRTH_YMD,0,4)||'/'||substr(D.BIRTH_YMD,5,2)||'/'||substr(D.BIRTH_YMD,7),'-') AS BIRTH_YMD,
+                              D.LECTURER_KOR_NM AS LECTURE_NM
+                         FROM BAPELTTB A, BAFOODTB B, BALECRTB D
+                        WHERE A.main_cd      = B.main_cd(+)
+                          and A.sect_cd      = B.sect_cd(+)
+                          and A.subject_cd   = B.subject_cd(+)
+                          and A.lecturer_cd  = B.lecturer_cd(+)
+                          and A.hq           = B.hq(+)
+                          and A.store        = B.store(+)
+                          and A.period       = B.period(+)
+                           and A.HQ           = '00'
+                          and A.STORE        = '${store}'
+                          and A.PERIOD       = '${period}'
+                          and A.FOOD_YN      = 'Y'
+                          AND A.LECTURER_CD  = D.LECTURER_CD
+                          <if test="!food_ym.equals('')">
+                          and B.food_ym(+)  = '${food_ym}'
+		                  </if>
+		                  <if test="!pay_day.equals('')">
+                          and a.food_amt_cnt like '%'||'${pay_day}'||'%'
+		                  </if>
+                           <if test="act eq 'Y'.toString()">
+		                     and 
+		                     (
+		                     	 (
+			                     	 a.end_yn != 'Y'
+									and (a.regis_no + a.web_regis_no) <![CDATA[>]]> 0
+									and a.food_amt <![CDATA[>]]> 0
+		                     	 )
+			                     or
+			                     decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') = 'Y'
+		                     )
+		                 </if>
+		                 <if test="act eq 'N'.toString()">
+		                 	and 
+			                 (
+		                        a.end_yn = 'Y'
+		                        or (a.regis_no + a.web_regis_no) = 0
+		                        or a.food_amt = 0
+			                 )
+			                 and decode(nvl(b.create_date, 'N'), 'N', 'N', 'Y') != 'Y'
+		                 </if>
+							<if test="submit_yn eq 'Y'.toString()">
+			                 	and b.create_date is not null
+			                 </if>
+			                 <if test="submit_yn eq 'N'.toString()">
+			                 	and b.create_date is null
+			                 </if>
+                        ) C
+</select>
+<select id="getMaterialList" parameterType="hashmap" resultType="hashmap">
+				select food_ymd,
+                    period,
+                    sum(nvl(food_pay_amt,0)) food_pay_amt
+               from BAFOODTB
+              where hq         = '00'
+                and store      = '${store}'
+                and period     between '${period_from}' and '${period_to}'
+                and journal_yn = 'Y'
+             group by period, food_ymd   
+</select>
+<insert id="saveJr" statementType="CALLABLE" parameterType="hashmap"> 
+{ 
+	CALL 
+	${procedure}
+	( 
+		'00',
+		'${store}',
+		'${period}',
+		'${subject_cd}',
+		'${lect_ym}',
+		'${main_cd}',
+		'${sect_cd}',
+		'${login_seq}'
+	) 
+}
+</insert>
+<delete id="delJr1" parameterType="hashmap">
+			DELETE   BAJRCOTB 
+               WHERE HQ          = '00'
+                 AND STORE       = '${store}'
+                 AND PERIOD      = '${period}'
+                 AND subject_cd  = '${subject_cd}'
+                 AND LECT_YM     = '${lect_ym}'
+                 AND LECTURER_CD = '${lecturer_cd}'
+                 AND JOURNAL_YN  = 'N'
+                 AND (accept_yn IS NULL  OR  accept_yn ='N' ) -- 세금계산서 발행 또는 수취완료경우는 삭제불가 (10.02.16)
+</delete>
+<delete id="delJr2" parameterType="hashmap">
+			DELETE   BAJRPRTB 
+               WHERE HQ          = '00'
+                 AND STORE       = '${store}'
+                 AND PERIOD      = '${period}'
+                 AND subject_cd  = '${subject_cd}'
+                 AND LECT_YM     = '${lect_ym}'
+                 AND JOURNAL_YN  = 'N'
+</delete>
+<insert id="saveFood" statementType="CALLABLE" parameterType="hashmap"> 
+{ 
+	CALL 
+	PR_BA_BAFOODTB
+	( 
+		'00',
+		'${store}',
+		'${period}',
+		'${subject_cd}',
+		'${food_ym}',
+		'${main_cd}',
+		'${sect_cd}',
+		'${login_seq}'
+	) 
+}
+</insert>
+<delete id="delFood" parameterType="hashmap">
+			 DELETE   BAFOODTB 
+               WHERE HQ          = '00'
+                 AND STORE       = '${store}'
+                 AND PERIOD      = '${period}'
+                 AND subject_cd  = '${subject_cd}'
+                 AND FOOD_YM     = substr('${food_ym}',1,6)
+                 AND JOURNAL_YN  = 'N'
+</delete>
+<select id="getPaydayByPeri" parameterType="hashmap" resultType="hashmap">
+	select * from baperitb where store = '${store}' and period = '${period}' 
+</select>
+<select id="getRegisEndCount" parameterType="hashmap" resultType="int">
+	<if test="!table.equals('')">
+		select count(*) as cnt
+		from
+		${table}
+		where 1=1
+		and ${table}.lect_ym = '${lect_ym}'
+   	</if>
+   	<if test="table.equals('')">
+   		select 
+		(
+		    (
+		        select count(*) as cnt
+				from
+				bajrcotb
+				where 1=1
+				and bajrcotb.lect_ym = '202011'
+		    )
+		    +
+		    (
+		        select count(*) as cnt
+				from
+				bajrprtb
+				where 1=1
+				and bajrprtb.lect_ym = '202011'
+		    )
+		) as cnt
+		from dual
+   	</if>
+</select>
+<select id="getRegisEndList" parameterType="hashmap" resultType="hashmap">
+	<if test="!table.equals('')">
+		select
+		bapelttb.*,
+		${table}.lect_pay,
+		${table}.net_lect_pay,
+		${table}.pay_day as jr_pay_day,
+		(select bmd from ams_cus where cus_no = trim(bapelttb.cus_no)) as bmd,
+		nvl((
+		
+		
+		
+		
+		SELECT
+	    (
+	        SUM
+	        (
+	            decode
+	            (
+	                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code1), 'Y', 0, trde.enuri_amt1
+	            )
+	        )
+	        +
+	        SUM
+	        (
+	            decode
+	            (
+	                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code2), 'Y', 0, trde.enuri_amt2
+	            )
+	        )
+	    ) as enuri_amt
+	    FROM
+	    batrdetb trde, 
+	    baperetb pere, 
+	    bapelttb pelt
+	    WHERE
+	    trde.hq = pere.hq
+	    and trde.store = pere.store
+	    and trde.sale_ymd = pere.sale_ymd
+	    and trde.pos_no = pere.pos_no
+	    and trde.recpt_no = pere.recpt_no
+	    and trde.seq_no = pere.seq
+	    and pelt.store = '${store}'
+	    and pelt.period = '${period}'
+	    and pelt.subject_cd = ${table}.subject_cd
+	    and pere.store = '${store}'
+	    and pere.period = '${period}'
+	    and pere.subject_cd = ${table}.subject_cd
+	    and pere.regis_cancel_fg = '1'
+		
+			
+<!-- 	        select (sum(batrdetb.enuri_amt1) + sum(batrdetb.enuri_amt2)) as enuri_amt from batrmstb, batrdetb -->
+<!-- 	        where 1=1 -->
+<!-- 	        and batrmstb.hq = batrdetb.hq -->
+<!-- 	        and batrmstb.store = batrdetb.store -->
+<!-- 	        and batrmstb.sale_ymd = batrdetb.sale_ymd -->
+<!-- 	        and batrmstb.pos_no = batrdetb.pos_no -->
+<!-- 	        and batrmstb.recpt_no = batrdetb.recpt_no -->
+<!-- 	        and batrdetb.subject_cd = ${table}.subject_cd -->
+<!-- 	        and batrmstb.store = '${store}' -->
+<!-- 	   		and batrmstb.period = '${period}' -->
+	    ), '0') as enuri_amt
+		
+		
+		
+		from
+		${table}, bapelttb
+		where 1=1
+		and ${table}.store = bapelttb.store
+		and ${table}.period = bapelttb.period
+		and ${table}.subject_cd = bapelttb.subject_cd
+		and ${table}.store = '${store}'
+		and ${table}.period = '${period}'
+		and ${table}.lect_ym = '${lect_ym}'
+		<if test="!subject_fg.equals('')">
+	    	and bapelttb.subject_fg = '${subject_fg}'
+	    </if>
+		<if test="!search_name.equals('')">
+	    	and
+	    	(
+	    		bapelttb.web_lecturer_nm like '%'||'${search_name}'||'%'
+	    		or
+	    		bapelttb.subject_nm like '%'||'${search_name}'||'%'
+	    		or
+	    		bapelttb.subject_cd like '%'||'${search_name}'||'%'
+	    	)
+	    </if>
+	    <if test="!order_by.equals('') and !sort_type.equals('')">
+	   		order by ${sort_type} ${order_by}
+	   	</if>
+   	</if>
+   	<if test="table.equals('')">
+   		select * from
+   		(
+	   		select
+			bapelttb.*,
+			bajrcotb.lect_pay,
+			bajrcotb.net_lect_pay,
+			bajrcotb.pay_day as jr_pay_day,
+			(select bmd from ams_cus where cus_no = (select cus_no from BALECTURETB where lecturer_cd = bajrcotb.lecturer_cd and rownum = 1)) as bmd,
+			nvl((
+			
+			
+			
+			SELECT
+		    (
+		        SUM
+		        (
+		            decode
+		            (
+		                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code1), 'Y', 0, trde.enuri_amt1
+		            )
+		        )
+		        +
+		        SUM
+		        (
+		            decode
+		            (
+		                (select lector_fee_yn from badsctmtb where store = '${store}' and period = '${period}' and enuri_cd = pere.enuri_code2), 'Y', 0, trde.enuri_amt2
+		            )
+		        )
+		    ) as enuri_amt
+		    FROM
+		    batrdetb trde, 
+		    baperetb pere, 
+		    bapelttb pelt
+		    WHERE
+		    trde.hq = pere.hq
+		    and trde.store = pere.store
+		    and trde.sale_ymd = pere.sale_ymd
+		    and trde.pos_no = pere.pos_no
+		    and trde.recpt_no = pere.recpt_no
+		    and trde.seq_no = pere.seq
+		    and pelt.store = '${store}'
+		    and pelt.period = '${period}'
+		    and pelt.subject_cd = bajrcotb.subject_cd
+		    and pere.store = '${store}'
+		    and pere.period = '${period}'
+		    and pere.subject_cd = bajrcotb.subject_cd
+		    and pere.regis_cancel_fg = '1'
+			
+<!-- 		        select (sum(batrdetb.enuri_amt1) + sum(batrdetb.enuri_amt2)) as enuri_amt from batrmstb, batrdetb -->
+<!-- 		        where 1=1 -->
+<!-- 		        and batrmstb.hq = batrdetb.hq -->
+<!-- 		        and batrmstb.store = batrdetb.store -->
+<!-- 		        and batrmstb.sale_ymd = batrdetb.sale_ymd -->
+<!-- 		        and batrmstb.pos_no = batrdetb.pos_no -->
+<!-- 		        and batrmstb.recpt_no = batrdetb.recpt_no -->
+<!-- 		        and batrdetb.subject_cd = bajrcotb.subject_cd -->
+<!-- 		        and batrmstb.store = '${store}' -->
+<!-- 		   		and batrmstb.period = '${period}' -->
+		    ), '0') as enuri_amt
+			
+			
+			
+			from
+			bajrcotb, bapelttb
+			where 1=1
+			and bajrcotb.store = bapelttb.store
+			and bajrcotb.period = bapelttb.period
+			and bajrcotb.subject_cd = bapelttb.subject_cd
+			and bajrcotb.store = '${store}'
+			and bajrcotb.period = '${period}'
+			and bajrcotb.lect_ym = '${lect_ym}'
+			<if test="!subject_fg.equals('')">
+		    	and bapelttb.subject_fg = '${subject_fg}'
+		    </if>
+			<if test="!search_name.equals('')">
+		    	and
+		    	(
+		    		bapelttb.web_lecturer_nm like '%'||'${search_name}'||'%'
+		    		or
+		    		bapelttb.subject_nm like '%'||'${search_name}'||'%'
+		    		or
+		    		bapelttb.subject_cd like '%'||'${search_name}'||'%'
+		    	)
+		    </if>
+		   	union all
+		   	select
+			bapelttb.*,
+			bajrprtb.lect_pay,
+			bajrprtb.net_lect_pay,
+			bajrprtb.pay_day as jr_pay_day,
+			(select bmd from ams_cus where cus_no = (select cus_no from BALECTURETB where lecturer_cd = bajrprtb.lecturer_cd and rownum = 1)) as bmd,
+			nvl((
+		        select (sum(batrdetb.enuri_amt1) + sum(batrdetb.enuri_amt2)) as enuri_amt from batrmstb, batrdetb
+		        where 1=1
+		        and batrmstb.hq = batrdetb.hq
+		        and batrmstb.store = batrdetb.store
+		        and batrmstb.sale_ymd = batrdetb.sale_ymd
+		        and batrmstb.pos_no = batrdetb.pos_no
+		        and batrmstb.recpt_no = batrdetb.recpt_no
+		        and batrdetb.subject_cd = bajrprtb.subject_cd
+		        and batrmstb.store = '${store}'
+		   		and batrmstb.period = '${period}'
+		    ), '0') as enuri_amt
+			
+			
+			
+			from
+			bajrprtb, bapelttb
+			where 1=1
+			and bajrprtb.store = bapelttb.store
+			and bajrprtb.period = bapelttb.period
+			and bajrprtb.subject_cd = bapelttb.subject_cd
+			and bajrprtb.store = '${store}'
+			and bajrprtb.period = '${period}'
+			and bajrprtb.lect_ym = '${lect_ym}'
+			<if test="!subject_fg.equals('')">
+		    	and bapelttb.subject_fg = '${subject_fg}'
+		    </if>
+			<if test="!search_name.equals('')">
+		    	and
+		    	(
+		    		bapelttb.web_lecturer_nm like '%'||'${search_name}'||'%'
+		    		or
+		    		bapelttb.subject_nm like '%'||'${search_name}'||'%'
+		    		or
+		    		bapelttb.subject_cd like '%'||'${search_name}'||'%'
+		    	)
+		    </if>
+	    )
+	    <if test="!order_by.equals('') and !sort_type.equals('')">
+	   		order by ${sort_type} ${order_by}
+	   	</if>
+   	</if>
+</select>
+<select id="getFoodEndCount" parameterType="hashmap" resultType="int">
+	select count(*) as cnt
+	from
+	bafoodtb
+	where 1=1
+	and bafoodtb.food_ym = '${food_ym}'
+</select>
+<select id="getFoodEndList" parameterType="hashmap" resultType="hashmap">
+
+
+	select  c.food_ymd,
+		(select bmd from ams_cus where cus_no = trim(e.cus_no)) as bmd,
+        c.lecturer_cd,
+        (SELECT LECTURER_KOR_NM
+           FROM BALECRTB
+          WHERE HQ = '00'
+            AND lecturer_cd = c.lecturer_cd) lecturer_nm,
+        c.subject_cd,
+        (SELECT SUBJECT_NM 
+           FROM BAPELTTB WHERE PERIOD = '${period}' 
+            AND C.MAIN_CD = MAIN_CD 
+            AND C.SECT_CD = SECT_CD 
+            AND C.SUBJECT_CD = SUBJECT_CD
+            AND HQ = '00'
+            AND STORE = '${store}') AS subject_nm,
+        e.food_amt,
+        (SELECT COUNT(*)
+	         FROM BAPERETB
+	           WHERE HQ         = '00'
+	            AND STORE      = E.STORE
+	            AND PERIOD     = E.PERIOD
+	             AND SUBJECT_CD = E.SUBJECT_CD
+	            AND PAY_YN     = 'Y' and recpt_no != '*'
+	            AND (SELECT MEM_FG FROM BAWBTRTB WHERE SALE_YMD = BAPERETB.SALE_YMD AND STORE = BAPERETB.STORE AND PERIOD = BAPERETB.PERIOD AND SUBJECT_CD = BAPERETB.SUBJECT_CD AND SEND_RECPT_NO = BAPERETB.RECPT_NO AND SALE_YMD = BAPERETB.SALE_YMD AND CUST_NO = BAPERETB.CUST_NO AND POS_TYPE = DECODE(BAPERETB.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C' AND ROWNUM = 1) IS NULL
+	            ) as jungwon,
+        d.fd_amt1 normal_pay,
+        d.fd_amt2 part_pay,
+        d.fd_amt1+d.fd_amt2 sum_pay,
+        e.food_pay_amt pre_pay,
+        c.food_pay_amt now_pay,
+        (select sum(food_pay_amt) from bafoodtb where store = '${store}' and period = '${period}' and subject_cd = c.subject_cd) as tot_pay,
+        d.fd_amt1+d.fd_amt2 - e.food_pay_amt  remain_pay
+   from BAFOODTB c, BAPELTTB e,
+   (
+		select
+		e.subject_cd,
+		SUM(
+	        CASE 
+	            WHEN H.SALE_YMD IS NOT NULL AND NVL((SELECT MEM_FG FROM BAWBTRTB WHERE STORE = H.STORE AND PERIOD = H.PERIOD AND SUBJECT_CD = H.SUBJECT_CD AND SEND_RECPT_NO = H.RECPT_NO AND SALE_YMD = H.SALE_YMD AND CUST_NO = H.CUST_NO AND POS_TYPE = DECODE(H.POS_NO, '070013', 'W', '070014', 'M', '')), 'A') != 'C' THEN
+	                CASE WHEN H.MAIN_CD = '2' AND H.CHILD_NO1 IS NOT NULL AND TRIM(H.CHILD_NO1) != '0' THEN G.FOOD_AMT * 1.5
+	                    ELSE G.FOOD_AMT
+	                END
+	            ELSE 0
+	        END
+	    ) fd_amt1,
+	    
+<!-- 		sum(CASE WHEN H.MAIN_CD = '2' AND H.CHILD_NO1 IS NOT NULL AND TRIM(H.CHILD_NO1) != '0' THEN G.FOOD_AMT * 1.5 -->
+<!--             ELSE G.FOOD_AMT -->
+<!--        END)-ba_get_part_food_amt('${store}', '${period}', e.SUBJECT_CD) fd_amt1, -->
+       ba_get_part_food_amt('${store}', '${period}', e.SUBJECT_CD) fd_amt2
+		FROM BAPELTTB E, BATRMSTB F, BATRDETB G, BAPERETB H
+       WHERE F.HQ = G.HQ
+       AND F.STORE = G.STORE
+       AND F.SALE_YMD = G.SALE_YMD
+       AND F.POS_NO = G.POS_NO
+       AND F.RECPT_NO = G.RECPT_NO
+       AND H.HQ(+) = G.HQ
+       AND H.STORE(+) = G.STORE
+       AND H.SALE_YMD(+) = G.SALE_YMD
+       AND H.POS_NO(+) = G.POS_NO
+       AND H.RECPT_NO(+) = G.RECPT_NO
+       AND H.SUBJECT_CD(+) = G.SUBJECT_CD
+       AND H.SEQ(+) = G.SEQ_NO
+       AND E.STORE = F.STORE
+       AND E.PERIOD = F.PERIOD
+       AND E.SUBJECT_CD = G.SUBJECT_CD
+       AND E.STORE = '${store}'
+       AND E.PERIOD = '${period}'
+       AND F.SALE_FG = '01' AND F.CANCEL_YN != 'Y'
+       AND (SELECT MEM_FG FROM BAWBTRTB WHERE SALE_YMD = H.SALE_YMD AND STORE = H.STORE AND PERIOD = H.PERIOD AND SUBJECT_CD = H.SUBJECT_CD AND SEND_RECPT_NO = H.RECPT_NO AND SALE_YMD = H.SALE_YMD AND CUST_NO = H.CUST_NO AND POS_TYPE = DECODE(H.POS_NO, '070013', 'W', '070014', 'M', '') AND MEM_FG = 'C' AND ROWNUM = 1) IS NULL
+       group by e.subject_cd, E.lecturer_cd, E.start_ymd, E.end_ymd, E.capacity_no, E.web_capacity_no, E.food_amt, E.food_pay_amt, E.food_amt_cnt
+	) d
+ where c.hq         = '00'
+   and c.store      = '${store}'
+   and c.period     = '${period}'
+   and c.food_ym   = '${food_ym}'
+   and c.subject_cd = d.subject_cd
+   and c.hq         = e.hq
+   and c.store      = e.store
+   and c.period     = e.period
+   and c.subject_cd = e.subject_cd
+
+
+<!-- 	select -->
+<!-- 	bapelttb.*, -->
+<!-- 	nvl(bapelttb.food_amt, 0) fd_amt, -->
+<!--     nvl(card_fd_amt, 0) + nvl(cash_fd_amt, 0) + nvl(cash_card_fd_amt, 0) fd_all_amt, -->
+<!--     nvl(bafoodtb.food_pay_amt, 0) fd_pay_amt, -->
+<!--     nvl(cash_fd_amt, 0) + nvl(card_fd_amt, 0) + nvl(cash_card_fd_amt, 0) - nvl(bafoodtb.food_pay_amt, 0) fd_rest_amt, -->
+<!-- 	bafoodtb.food_ymd, -->
+<!-- 	(select bmd from ams_cus where cus_no = (select cus_no from BALECTURETB where lecturer_cd = bafoodtb.lecturer_cd and rownum = 1)) as bmd, -->
+<!-- 	part.fd_amt1 - part.fd_amt2 normal_pay, -->
+<!-- 	part.fd_amt2 part_pay -->
+<!-- 	from -->
+<!-- 	bafoodtb, bapelttb,  -->
+<!-- 	( -->
+<!-- 		select -->
+<!-- 		trde.subject_cd, -->
+<!-- 		sum(trde.food_amt) as fd_amt1, -->
+<!-- 		sum( -->
+<!-- 		    case when trde.food_amt <![CDATA[<]]> pelt.food_amt then trde.food_amt -->
+<!-- 		    else 0 end  -->
+<!-- 		) as fd_amt2 -->
+<!-- 		from batrmstb trms, batrdetb trde, bapelttb pelt -->
+<!-- 		where trms.hq = trde.hq -->
+<!-- 		and trms.store = trde.store -->
+<!-- 		and trms.sale_ymd = trde.sale_ymd -->
+<!-- 		and trms.pos_no = trde.pos_no -->
+<!-- 		and trms.recpt_no = trde.recpt_no -->
+<!-- 		and pelt.store = trde.store -->
+<!-- 		and pelt.period = trms.period -->
+<!-- 		and pelt.subject_cd = trde.subject_cd -->
+<!-- 		and trms.food_fee <![CDATA[>]]> 0 -->
+<!-- 		and trms.store = '${store}' and trms.period = '${period}' -->
+<!-- 		group by trde.subject_cd -->
+<!-- 	) part -->
+<!-- 	where 1=1 -->
+<!-- 	and bafoodtb.store = bapelttb.store -->
+<!-- 	and bafoodtb.period = bapelttb.period -->
+<!-- 	and bafoodtb.subject_cd = bapelttb.subject_cd -->
+<!-- 	and part.subject_cd = bapelttb.subject_cd -->
+<!-- 	and bafoodtb.store = '${store}' -->
+<!-- 	and bafoodtb.period = '${period}' -->
+<!-- 	and bafoodtb.food_ym = '${food_ym}' -->
+	<if test="!search_name.equals('')">
+    	and
+    	(
+    		e.web_lecturer_nm like '%'||'${search_name}'||'%'
+    		or
+    		e.subject_nm like '%'||'${search_name}'||'%'
+    		or
+    		e.subject_cd like '%'||'${search_name}'||'%'
+    	)
+    </if>
+    <if test="!order_by.equals('') and !sort_type.equals('')">
+   		order by ${sort_type} ${order_by}
+   	</if>
+</select>
+<select id="getFoodYmList" parameterType="hashmap" resultType="hashmap">
+	select food_ym from bafoodtb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}' group by food_ym order by food_ym
+</select>
+<select id="getFoodEndOne" parameterType="hashmap" resultType="int">
+	select 
+	nvl(food_pay_amt, 0) fd_pay_amt
+	from bafoodtb where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}' and food_ym = '${food_ym}'
+</select>
+<select id="getElectDetailList" parameterType="hashmap" resultType="hashmap">
+	select
+    bapelttb.subject_nm,
+    bapelttb.day_flag,
+    bapelttb.web_lecturer_nm,
+    decode(bajrcotb.fix_pay_yn,'Y','정액','정률') AS fix_pay_yn,
+    bajrcotb.fix_amt,
+    bajrcotb.fix_rate,
+    bajrcotb.lect_pay,
+    bapelttb.regis_no + bapelttb.part_regis_no + bapelttb.web_regis_no as tot_regis_no
+    from bajrcotb, BALECTURETB, bapelttb
+    where 1=1
+    and BALECTURETB.lecturer_cd = bajrcotb.lecturer_cd
+    and bapelttb.cus_no = BALECTURETB.cus_no
+    and bapelttb.store = bajrcotb.store
+    and bapelttb.period = bajrcotb.period
+    and bapelttb.subject_cd = bajrcotb.subject_cd
+    and bajrcotb.store = '${store}' 
+    and bajrcotb.period = '${period}' 
+    and bajrcotb.lecturer_cd = '${lecturer_cd}' 
+    and bajrcotb.lect_ym = '${lect_ym}'
+    order by bapelttb.cus_no
+</select>
+<update id="saveElect" parameterType="hashmap">
+	UPDATE BAJRCOTB
+                 SET vat_fg     = '${vat_fg}', 
+                     pay_day    = '${pay_day}', 
+                     accept_ymd = '${accept_ymd}',
+                     seq        = '1',
+                     accept_yn =  'Y',
+                     vat = decode('${vat_fg}', 'YC', TRUNC((LECT_PAY / 1.1) * 0.1 , 0), 0),
+                     net_lect_pay = lect_pay - decode('${vat_fg}', 'YC', TRUNC((LECT_PAY / 1.1) * 0.1 , 0), 0)
+                where hq        = '00'
+                  and store     = '${store}'
+                  and period    = '${period}'
+                  and lect_ym   = '${lect_ym}'
+                  and lecturer_cd = '${lecturer_cd}'
+                  and journal_yn ='N'
+                  and accept_yn  ='N'
+                  and (acct_slip_ymd||acct_slip_type||acct_slip_seq) is null  
+</update>
+</mapper>

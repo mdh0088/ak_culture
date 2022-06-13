@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/api/apiMapper">
+
+	<select id="getAttendInfo" parameterType="hashmap" resultType="hashmap">
+		select * from baattendtb where store ='${store}' and period ='${period}' and subject_cd ='${subject_cd}' and is_lec='Y'
+	</select>
+	
+	<insert id="insAttend" parameterType="hashmap">
+		insert into BAATTENDTB
+			(
+				STORE,				PERIOD,				SUBJECT_CD,
+				p_cust,				c_cust1,			c_cust2,
+				CUST_NO,			DAY_CHK, 			IS_LEC,
+				CREATE_RESI_NO,		CREATE_DATE
+			)
+		VALUES
+			(
+				'${store}',			'${period}', 		'${subject_cd}', 
+				'${p_cust}', 		'${c_cust1}', 		'${c_cust2}',
+				'${cust_no}',		'${dayVal}',		'${isLec}',
+				'${login_seq}',		TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+			)
+	</insert>
+	
+	<select id="getEncdList" parameterType="hashmap" resultType="hashmap">
+		select
+		    aa.*
+		from BADSCTMTB aa where
+		    aa.store='${store}'
+		    and aa.period='${period}'
+		    and (select count(*) as cnt from BADSCTTB where store=aa.store and period = aa.period and enuri_cd = aa.enuri_cd and cust_no ='${cust_no}') <![CDATA[<]]> 1
+		    and aa.limited_cnt <![CDATA[>]]> (select count(*) from BADSCTTB where store =aa.store and period =aa.period and enuri_cd = aa.enuri_cd and use_yn='Y')
+		    AND ( aa.give_fg='T'
+		            or (aa.give_fg='G' 
+		            
+		                and (aa.cust_fg = ( SELECT nvl2(MIN(PERIOD),'2','1')  AS COUNT             
+		                                      FROM BAPERETB         
+		                                     WHERE
+		                                        STORE        = aa.store
+		                                       AND CUST_NO    = '${cust_no}'
+		                                       AND PERIOD   <![CDATA[<]]>  (select get_web_period(aa.store) period from dual)) or aa.cust_fg is null)
+		                                       
+		                      and (aa.grade like '%'||( select 
+				                                    decode(b.mbr_gdc,'109','109','110','110','111','111','112','112','114','114','115','115','116','116','117','117','118','118','119','119','120','120','119') as mbr_gdc 
+				                                from ams_bz_sect_mbr_grade b where
+				                                    b.cus_no='${cust_no}'
+
+				                                    and b.bz_sect = '1'
+				                                    and to_char(sysdate,'yyyymmdd') between b.apy_bgng_dt and b.apy_ed_dt 
+    												and rownum = 1   )||'%' or aa.grade is null)  
+
+		                                        
+		                     and (	(  select count(*) from baperetb where 
+		                                regis_cancel_fg != '2'
+		                                and RECPT_NO <![CDATA[<>]]> '*' 
+		                                and store= aa.store
+		                                and cust_no ='${cust_no}'
+		                                and period = aa.period
+		                                )  <![CDATA[>=]]> aa.lect_cnt
+		                            or aa.lect_cnt is null)  
+		                     and (BA_CUST_CONTINUE_CNT('${cust_no}',aa.store,aa.period,aa.semester_cnt) <![CDATA[>=]]> aa.semester_cnt or aa.semester_cnt is null)))
+		    and substr(TO_CHAR(SYSDATE,'yyyymmddhh24miss'), 0, 8 ) <![CDATA[>=]]> replace(aa.discount_period_start,'-','')
+		    and substr(TO_CHAR(SYSDATE,'yyyymmddhh24miss'), 0, 8 ) <![CDATA[<=]]> replace(aa.discount_period_end,'-','')
+		    
+		    <if test="!subject_cd.equals('')">
+		    	<!-- and (decode(instr(aa.subject_fg,(select subject_fg from bapelttb where hq=00 and store=aa.store and period = aa.period and subject_cd = '${subject_cd}'),1,1),0, 1, 0) = 0 or aa.subject_fg is null) -->
+		    	and (aa.main_cd = (select main_cd from bapelttb where hq=00 and store=aa.store and period = aa.period and subject_cd = '${subject_cd}') or aa.main_cd is null)
+		    	and (aa.sect_cd = (select sect_cd from bapelttb where hq=00 and store=aa.store and period = aa.period and subject_cd = '${subject_cd}') or aa.sect_cd is null)
+		    	and (aa.lect_subject_fg = (select subject_fg from bapelttb where hq=00 and store=aa.store and period = aa.period and subject_cd = '${subject_cd}') or aa.lect_subject_fg is null)
+		    	and (aa.subject_cd = '${subject_cd}' or aa.subject_cd is null)
+		    	
+		    </if>
+	</select>
+		
+	
+	<select id="getEncdList2" parameterType="hashmap" resultType="hashmap">
+		select
+		    aa.*
+		from BADSCTMTB aa where
+		    aa.store='${store}'
+		    and aa.period='${period}'
+	</select>
+	
+
+	<select id="getPeltMid" parameterType="hashmap" resultType="hashmap">
+		select
+			(select bmd from ams_cus where cus_no = bapelttb.cus_no) as bmd,
+			bapelttb.*
+		from bapelttb where 
+			store = '${store}' 
+			and period = '${period}' 
+			and subject_cd = '${subject_cd}'
+	</select>
+	
+	<select id="getHoliday" parameterType="hashmap" resultType="hashmap">
+		select * from baperitb where STORE = '${store}' and PERIOD = '${period}' 
+	</select>
+	
+</mapper>

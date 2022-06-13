@@ -1,0 +1,31 @@
+/* html, body { */
+/* 	 margin: 0; */
+/* 	 overflow: hidden; */
+/* } */
+/* .container { */
+/* 	 width: 100vw; */
+/* 	 height: 100vh; */
+/* 	 overflow: hidden; */
+/* 	 position: fixed; */
+/* } */
+html, body {
+	overflow-x:hidden;
+}
+.ani-eff.image{
+	overflow:hidden;
+}
+.scrollbar-track-y{
+	display:none !important;
+}
+.all-wrap{
+	padding:0 !important;
+}
+.footer-top, .fo-logo{
+    background: #fff;
+}
+.header{
+	border-bottom:0;
+}
+.right-line{
+	display:none;
+}

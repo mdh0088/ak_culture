@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/member/reloMapper">
+	<select id="getReloUser" parameterType="hashmap" resultType="hashmap">
+		select * from bacusttb where 1=1
+		<if test="!search_name.equals('')">
+    		and kor_nm like CONCAT(CONCAT('%', #{search_name}), '%')
+    	</if>
+		<if test="!search_phone.equals('')">
+    		and 
+    		(
+    			h_phone_no_1 like CONCAT(CONCAT('%', #{search_phone}), '%') or 
+    			h_phone_no_2 like CONCAT(CONCAT('%', #{search_phone}), '%') or 
+    			h_phone_no_3 like CONCAT(CONCAT('%', #{search_phone}), '%') 
+    		)
+    	</if>
+    	and cust_no like '1%'
+    	<if test="!order_by.equals('') and !sort_type.equals('')">
+		    order by ${sort_type} ${order_by}
+		</if>
+	</select>
+	<select id="getReloUserPere" parameterType="hashmap" resultType="hashmap">
+		select 
+		(select subject_nm from bapelttb where store = baperetb.store and period = baperetb.period and subject_cd = baperetb.subject_cd) as SUBJECT_NM, 
+		(select start_ymd from bapelttb where store = baperetb.store and period = baperetb.period and subject_cd = baperetb.subject_cd) as START_YMD,
+		(select end_ymd from bapelttb where store = baperetb.store and period = baperetb.period and subject_cd = baperetb.subject_cd) as END_YMD, 
+		baperetb.* 
+		from baperetb where store = '${store}' and period = '${period}' and cust_no = '${cust_no}' and regis_cancel_fg = '1'
+	</select>
+	<select id="getSamePriceLect" parameterType="hashmap" resultType="hashmap">
+		select * from bapelttb where store = '${store}' and period = '${period}' and regis_fee = '${regis_fee}' and food_yn = '${food_yn}' and subject_cd != '${subject_cd}'
+		and subject_nm not like '폐강%' and end_yn != 'Y'
+		<if test="food_yn eq 'Y'.toString()">
+    		and food_amt = '${food_amt}'
+    	</if>
+	</select>
+	<update id="movePelt" parameterType="hashmap">
+		update baperetb
+		set
+		subject_cd = '${next_subject_cd}', main_cd = '${main_cd}', sect_cd = '${sect_cd}'
+		where
+		store = '${store}' and period = '${period}' and cust_no = '${cust_no}' and subject_cd = '${prev_subject_cd}'
+	</update>
+	
+	<update id="upPeltRegis_minus" parameterType="hashmap">
+	 UPDATE BAPELTTB
+	                   SET REGIS_NO    =  NVL(REGIS_NO,0) - 1
+	                 WHERE HQ          =  '00'
+	                   AND STORE       =  '${store}'
+	                   AND PERIOD      =  '${period}'
+	                   AND SUBJECT_CD  =  '${prev_subject_cd}'
+	</update>
+	<update id="upPeltRegis_plus" parameterType="hashmap">
+	 UPDATE BAPELTTB
+	                   SET REGIS_NO    =  NVL(REGIS_NO,0) + 1
+	                 WHERE HQ          =  '00'
+	                   AND STORE       =  '${store}'
+	                   AND PERIOD      =  '${period}'
+	                   AND SUBJECT_CD  =  '${next_subject_cd}'
+	</update>
+	<insert id="insLemv" parameterType="hashmap">
+	 insert into balemvtb
+	 (hq, store, period, cust_no, prev_subject_cd, next_subject_cd, create_resi_no, create_date)
+	 values
+	 ('00', '${store}', '${period}', '${cust_no}', '${prev_subject_cd}', '${next_subject_cd}', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<select id="getLemv" parameterType="hashmap" resultType="hashmap">
+        select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+		    	select
+                (select cus_no from bacusttb where cust_no = BALEMVTB.cust_no) as CUS_NO,
+                (select ptl_id from bacusttb where cust_no = BALEMVTB.cust_no) as PTL_ID,
+                (select kor_nm from bacusttb where cust_no = BALEMVTB.cust_no) as KOR_NM,
+                PREV_SUBJECT_CD,
+                (select subject_nm from bapelttb where subject_cd = balemvtb.prev_subject_cd and store = balemvtb.store and period = balemvtb.period) as PREV_SUBJECT_NM,
+                NEXT_SUBJECT_CD,
+                (select subject_nm from bapelttb where subject_cd = balemvtb.next_subject_cd and store = balemvtb.store and period = balemvtb.period) as NEXT_SUBJECT_NM,
+                (select name from bamanagertb where seq_no = balemvtb.create_resi_no) as name,
+                CREATE_DATE
+		    	from BALEMVTB where 1=1
+		    	<if test="!search_name.equals('')">
+		    		and id like CONCAT(CONCAT('%', #{search_name}), '%')
+		    	</if>
+		    	<if test="!order_by.equals('') and !sort_type.equals('')">
+		    		order by ${sort_type} ${order_by}
+		    	</if>
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+   <select id="getLemvCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as CNT from BALEMVTB where 1=1
+    	<if test="!search_name.equals('')">
+    		and id like CONCAT(CONCAT('%', #{search_name}), '%')
+    	</if>
+	</select>
+</mapper>

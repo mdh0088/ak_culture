@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<mappers>
+		<!-- api -->
+		<mapper resource="ak_culture/resource/api/apiMapper.xml" />
+		<!-- common -->
+		<mapper resource="ak_culture/resource/common/commonMapper.xml" />
+		<mapper resource="ak_culture/resource/common/authMapper.xml" />
+		<!-- basic -->
+		<mapper resource="ak_culture/resource/basic/userMapper.xml" />
+		<mapper resource="ak_culture/resource/basic/ipMapper.xml" />
+		<mapper resource="ak_culture/resource/basic/codeMapper.xml" />
+		<mapper resource="ak_culture/resource/basic/posMapper.xml" />
+		<mapper resource="ak_culture/resource/basic/parkMapper.xml" />
+		<mapper resource="ak_culture/resource/basic/periMapper.xml" />	
+		<mapper resource="ak_culture/resource/basic/giftMapper.xml" />	
+		<mapper resource="ak_culture/resource/basic/encdMapper.xml" />
+		<!-- member -->
+		<mapper resource="ak_culture/resource/member/custMapper.xml" />
+		<mapper resource="ak_culture/resource/member/lectMapper.xml" />
+		<mapper resource="ak_culture/resource/member/waitMapper.xml" />
+		<mapper resource="ak_culture/resource/member/reloMapper.xml" />
+		<mapper resource="ak_culture/resource/member/smsMapper.xml" />	
+		<!-- lecture -->
+		<mapper resource="ak_culture/resource/lecture/lectMapper.xml" />
+		<mapper resource="ak_culture/resource/lecture/lecrMapper.xml" />
+		<!-- trms -->
+		<mapper resource="ak_culture/resource/trms/trmsMapper.xml" />
+		<!-- it -->
+		<mapper resource="ak_culture/resource/it/itMapper.xml" />
+		<!-- web -->
+		<mapper resource="ak_culture/resource/web/webMapper.xml" />
+		<!-- stat -->
+		<mapper resource="ak_culture/resource/stat/statMapper.xml" />
+	</mappers>
+</configuration> 

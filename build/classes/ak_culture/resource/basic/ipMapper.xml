@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/basic/ipMapper">
+	<select id="ipDup" parameterType="hashmap" resultType="int">
+		select count(*) from BAIPMSTB where 1=1 and HQ = #{write_hq} and STORE = #{write_store} and IP_ADDR = #{write_ip} 
+	</select>
+	<select id="getPosnoByIp" parameterType="hashmap" resultType="String">
+		select pos_no from baipmstb where ip_addr = '${ip}' and rownum = 1
+	</select>
+	<select id="getIp" parameterType="hashmap" resultType="hashmap">
+		select
+	X.*
+	from ( 
+	    select rownum as rnum, A.*
+	    from ( 
+	    	select 
+			(select pos_type from baposmtb where store = BAIPMSTB.store and pos_no = BAIPMSTB.pos_no) as pos_type,
+			(select short_name from bacodetb where CODE_FG = '02' and sub_code = BAIPMSTB.store) as store_nm,
+			BAIPMSTB.* 
+			from BAIPMSTB where 1=1
+	    	<if test="!search_name.equals('')">
+	    		and IP_ADDR like '%'||'${search_name}'||'%'
+	    	</if>
+	    	<if test="!store.equals('')">
+		   		and store = '${store}'
+		   	</if>
+		   	
+		   	<if test="!order_by.equals('') and !sort_type.equals('')">
+		   		order by ${sort_type} ${order_by}
+		   	</if>
+	    ) A
+	    where rownum <![CDATA[<=]]> #{e_rownum}) X
+	where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+   <select id="getIpCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as CNT from BAIPMSTB where 1=1
+    	<if test="!search_name.equals('')">
+    		and IP_ADDR like '%'||'${search_name}'||'%'
+    	</if>
+    	<if test="!store.equals('')">
+	   		and store = '${store}'
+	   	</if>
+	</select>
+	<select id="getIp_one" parameterType="Hashmap" resultType="hashmap">
+		select
+		TO_CHAR(TO_DATE(CREATE_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as CREATE_DATE, 
+		TO_CHAR(TO_DATE(UPDATE_DATE, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as UPDATE_DATE, 
+<!-- 		DECODE(POS_PRINT_YN, 'Y', 'O', 'N', 'X') as POS_PRINT_YN, 
+		DECODE(PPCARD_PRINT_YN, 'Y', 'ID-2000ZP(RW)', 'W', 'ZP-2000(W)', 'N', '없음') as PPCARD_PRINT_YN, 
+		DECODE(DELETE_YN, 'Y', '사용중', 'N', '비활성화') as DELETE_YN, 
+		DECODE(STATUS, 'T', '테스트', 'U', '운영') as STATUS, -->
+		HQ, X.STORE, IP_ADDR, X.POS_NO, POS_PRINT_YN, PPCARD_PRINT_YN, PPCARD_PORT, AUTOSIGN_PORT, CREATE_RESI_NO, UPDATE_RESI_NO, DELETE_YN, (select DECODE(POS_TYPE, 'D', 'DESK', 'M', 'MOBILE', 'W', 'WEB') as POS_TYPE from BAPOSMTB where POS_NO = X.POS_NO and STORE = X.STORE)as POS_TYPE, STATUS
+		from BAIPMSTB X where HQ = #{get_hq} and STORE = #{get_store} and IP_ADDR = #{get_ip}
+	</select>
+   <insert id="insIp" parameterType="hashmap">
+    	insert into BAIPMSTB
+    	(HQ, STORE, IP_ADDR, POS_NO, AUTOSIGN_PORT, CREATE_RESI_NO, CREATE_DATE, UPDATE_RESI_NO, UPDATE_DATE, DELETE_YN, STATUS)
+    	values
+    	(#{write_hq}, #{write_store}, #{write_ip}, #{write_pos_no}, #{write_autosign_port}, #{write_create_resi_no}, TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), #{write_update_resi_no}, TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), 'Y', #{write_status})
+	</insert>
+	<update id="upIp" parameterType="hashmap">
+		update BAIPMSTB
+		set
+		HQ = #{modify_hq},
+		STORE = #{modify_store},
+		IP_ADDR = #{modify_ip},
+		POS_NO = #{modify_pos_no},
+		POS_PRINT_YN = #{modify_pos_print_yn},
+		PPCARD_PRINT_YN = #{modify_ppcard_print_yn},
+		PPCARD_PORT = #{modify_ppcard_port},
+		AUTOSIGN_PORT = #{modify_autosign_port},
+		UPDATE_RESI_NO = #{modify_update_resi_no},
+		UPDATE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+		STATUS = #{modify_status}
+		where HQ = #{get_hq} and STORE = #{get_store} and IP_ADDR = #{get_ip}
+	</update>
+	<update id="upIp_delete_yn" parameterType="hashmap">
+		update BAIPMSTB
+		set
+		delete_yn = #{delete_yn}
+		where HQ = #{get_hq} and STORE = #{get_store} and IP_ADDR = #{get_ip}
+	</update>
+	<select id="getPos_no" parameterType="hashmap" resultType="hashmap">
+		select POS_NO from BAPOSMTB where STORE = #{store} group by POS_NO order by POS_NO asc
+	</select>
+	<select id="login_ipCheck" parameterType="Hashmap" resultType="int">
+		select count(*) as cnt from baipmstb where ip_addr = '${ip_addr}'
+	</select>
+</mapper>

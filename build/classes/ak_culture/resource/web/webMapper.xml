@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/web/webMapper">
+
+		
+	<select id="getSeqByWeb" parameterType="hashmap" resultType="int">
+		select NVL(MAX(to_number(seq)),0)+1 as seq from ${table}
+	</select>
+	<select id="getNewsOne" parameterType="hashmap" resultType="hashmap">
+		select banewstb_mu.*,
+		nvl((select short_name from bacodetb where CODE_FG = '02' and sub_code = banewstb_mu.store), '전체') as store_nm,
+		(select name from bamanagertb where seq_no = trim(banewstb_mu.CREATE_RESI_NO)) as CREATE_RESI_NM
+		from banewstb_mu 
+		where seq = '${seq}'
+	</select>
+	<select id="getMBannerOne" parameterType="hashmap" resultType="hashmap">
+		select bambanner_mu.*
+		from bambanner_mu 
+		where seq = '${seq}'
+	</select>
+	<select id="getSBannerOne" parameterType="hashmap" resultType="hashmap">
+		select basbanner_mu.*,
+		decode(banner_pop,'now','현재창','new','새창') as banner_pop_nm
+		from basbanner_mu 
+		where seq = '${seq}'
+	</select>
+	<select id="getPopupOne" parameterType="hashmap" resultType="hashmap">
+		select BAPOPUP_MU.*,
+		decode(popup_pop,'now','현재창','new','새창') as popup_pop_nm
+		from BAPOPUP_MU 
+		where seq = '${seq}'
+	</select>
+	<select id="getNewsList" parameterType="hashmap" resultType="hashmap">
+		select banewstb_mu.*,
+		nvl((select short_name from bacodetb where CODE_FG = '02' and sub_code = banewstb_mu.store), '전체') as store_nm,
+		(select name from bamanagertb where seq_no = trim(banewstb_mu.CREATE_RESI_NO)) as CREATE_RESI_NM
+		from banewstb_mu
+		
+		where 1=1
+		<if test="!search_name.equals('')">
+			<if test="search_type eq '제목'.toString()">
+				and title like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq '내용'.toString()">
+				and contents like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq ''.toString()">
+				and (contents like '%'||'${search_name}'||'%' or title like '%'||'${search_name}'||'%')
+			</if>
+		</if>
+		<if test="search_date_type eq '등록일'.toString()">
+			<if test="!search_start.equals('')">
+				and create_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and create_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="search_date_type eq '수정일'.toString()">
+			<if test="!search_start.equals('')">
+				and update_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and update_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="!search_cate.equals('')">
+			and category in (${search_cate})
+		</if>
+		<if test="!search_store.equals('')">
+			and store in (${search_store}, '00')
+		</if>
+		order by sort
+		
+	</select>
+	<select id="getMBannerList" parameterType="hashmap" resultType="hashmap">
+		select bambanner_mu.*,
+		(select name from bamanagertb where seq_no = trim(bambanner_mu.CREATE_RESI_NO)) as CREATE_RESI_NM
+		from bambanner_mu 
+		
+		where 1=1
+		<if test="!search_name.equals('')">
+			and (main_title like '%'||'${search_name}'||'%' or sub_title like '%'||'${search_name}'||'%' or description like '%'||'${search_name}'||'%')
+		</if>
+		<if test="!search_start.equals('')">
+			and create_date <![CDATA[>=]]> '${search_start}000000'
+		</if>
+		<if test="!search_end.equals('')">
+			and create_date <![CDATA[<=]]> '${search_end}999999'
+		</if>
+		<if test="search_date_type eq '수정일'.toString()">
+			<if test="!search_start.equals('')">
+				and update_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and update_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="!search_show.equals('')">
+			and is_show in (${search_show})
+		</if>
+		order by sort
+		
+	</select>
+	<select id="getSBannerList" parameterType="hashmap" resultType="hashmap">
+		select basbanner_mu.*,
+		(select name from bamanagertb where seq_no = trim(basbanner_mu.CREATE_RESI_NO)) as CREATE_RESI_NM
+		from basbanner_mu 
+		
+		where 1=1
+		<if test="!search_name.equals('')">
+			and (banner_name like '%'||'${search_name}'||'%' or banner_desc like '%'||'${search_name}'||'%')
+		</if>
+		<if test="search_date_type eq '등록일'.toString()">
+			<if test="!search_start.equals('')">
+				and create_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and create_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="search_date_type eq '수정일'.toString()">
+			<if test="!search_start.equals('')">
+				and update_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and update_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="!search_show.equals('')">
+			and is_show in (${search_show})
+		</if>
+		order by sort
+		
+	</select>
+	<select id="getPopupList" parameterType="hashmap" resultType="hashmap">
+		select BAPOPUP_MU.*,
+		(select name from bamanagertb where seq_no = trim(BAPOPUP_MU.CREATE_RESI_NO)) as CREATE_RESI_NM
+		from BAPOPUP_MU 
+		
+		where 1=1
+		<if test="!search_name.equals('')">
+			and popup_title like '%'||'${search_name}'||'%'
+		</if>
+		<if test="search_date_type eq '등록일'.toString()">
+			<if test="!search_start.equals('')">
+				and create_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and create_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="search_date_type eq '수정일'.toString()">
+			<if test="!search_start.equals('')">
+				and update_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and update_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="!search_show.equals('')">
+			and is_show in (${search_show})
+		</if>
+		order by sort
+		
+	</select>
+	<select id="getRecoList" parameterType="hashmap" resultType="hashmap">
+		select rownum, barecotb_mu.*,
+		nvl((select short_name from bacodetb where CODE_FG = '02' and sub_code = barecotb_mu.store), '전체') as store_nm,
+		decode(bapelttb.subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg,
+		bapelttb.subject_nm,
+		bapelttb.start_ymd as pelt_start_ymd,
+		bapelttb.end_ymd as pelt_end_ymd,
+		bapelttb.day_flag,
+		bapelttb.web_lecturer_nm,
+		bapelttb.lect_hour,
+		(case when (bapelttb.CAPACITY_NO - (NVL(bapelttb.WEB_REGIS_NO,0)) - (NVL(bapelttb.REGIS_NO,0))) <![CDATA[<=]]> 0 then '마감' else '모집중'
+		end) as end_state,
+		bapelttb.food_amt,
+		bapelttb.regis_fee
+		from barecotb_mu, bapelttb
+		where
+		barecotb_mu.store = bapelttb.store
+		and barecotb_mu.period = bapelttb.period
+		and barecotb_mu.subject_cd = bapelttb.subject_cd
+		<if test="!search_store.equals('')">
+			and barecotb_mu.store = '${search_store}'
+		</if>
+		<if test="!search_period.equals('')">
+			and barecotb_mu.period = '${search_period}'
+		</if>
+		<if test="!search_tag.equals('')">
+			and barecotb_mu.tag like '%'||'${search_tag}'||'%'
+		</if>
+		<if test="search_date_type eq '등록일'.toString()">
+			<if test="!search_start.equals('')">
+				and barecotb_mu.create_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and barecotb_mu.create_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="search_date_type eq '수정일'.toString()">
+			<if test="!search_start.equals('')">
+				and barecotb_mu.update_date <![CDATA[>=]]> '${search_start}000000'
+			</if>
+			<if test="!search_end.equals('')">
+				and barecotb_mu.update_date <![CDATA[<=]]> '${search_end}999999'
+			</if>
+		</if>
+		<if test="!search_show.equals('')">
+			and is_show in (${search_show})
+		</if>
+		order by sort
+		
+	</select>
+	<select id="getNewsFileName" parameterType="hashmap" resultType="hashmap">
+		select filename, filename_ori from banewstb_mu where seq = '${seq}'
+	</select>
+	<select id="getMBannerFileName" parameterType="hashmap" resultType="hashmap">
+		select banner, m_banner, attach from bambanner_mu where seq = '${seq}'
+	</select>
+	<select id="getSBannerFileName" parameterType="hashmap" resultType="hashmap">
+		select banner, detail from basbanner_mu where seq = '${seq}'
+	</select>
+	<select id="getPopupFileName" parameterType="hashmap" resultType="hashmap">
+		select popup_img from BAPOPUP_MU where seq = '${seq}'
+	</select>
+	<select id="getRecoFileName" parameterType="hashmap" resultType="hashmap">
+		select thumbnail from BARECOTB_MU where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</select>
+	<select id="getRecoCnt" parameterType="hashmap" resultType="int">
+		select count(*) as cnt from barecotb_mu where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</select>
+	<delete id="delNews" parameterType="hashmap">
+		delete from banewstb_mu where seq in (${seq})
+	</delete>
+	<delete id="delMBanner" parameterType="hashmap">
+		delete from bambanner_mu where seq in (${seq})
+	</delete>
+	<delete id="delSBanner" parameterType="hashmap">
+		delete from basbanner_mu where seq in (${seq})
+	</delete>
+	<delete id="delPopup" parameterType="hashmap">
+		delete from BAPOPUP_MU where seq in (${seq})
+	</delete>
+	<delete id="delReco" parameterType="hashmap">
+		delete from barecotb_mu where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</delete>
+
+	<insert id="insNews" parameterType="hashmap">
+		insert into banewstb_mu 
+		(SEQ, HQ, STORE, CATEGORY, TITLE, START_YMD, END_YMD, IS_SHOW, FILENAME, FILENAME_ORI, CONTENTS, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('${seq}', '00', '${store}', '${news_category}', '${news_title}', '${start_ymd}', '${end_ymd}', '${is_show}', '${filename}', '${filename_ori}', '${contents}', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<insert id="insRecomLect" parameterType="hashmap">
+		insert into BARECOTB_MU 
+		(HQ, STORE, PERIOD, SUBJECT_CD, IS_SHOW, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('00', '${store}', '${period}', '${subject_cd}', 'N', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<insert id="insMBanner" parameterType="hashmap">
+		insert into bambanner_mu 
+		(SEQ, MAIN_TITLE, SUB_TITLE, DESCRIPTION, IS_SHOW, START_YMD, END_YMD, BANNER, M_BANNER, CON_TYPE, ATTACH, BANNER_LINK, IS_BTN_SHOW, BTN_NM, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('${seq}', '${main_title}', '${sub_title}', '${description}', '${is_show}', '${start_ymd}', '${end_ymd}', '${banner}', '${m_banner}', '${con_type}', '${attach}', '${banner_link}', '${is_btn_show}', '${btn_nm}', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<insert id="insSBanner" parameterType="hashmap">
+		insert into basbanner_mu 
+		(SEQ, BANNER_NAME, BANNER_DESC, IS_SHOW, START_YMD, END_YMD, BANNER, DETAIL, BANNER_POP, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('${seq}', '${banner_name}', '${banner_desc}', '${is_show}', '${start_ymd}', '${end_ymd}', '${banner}', '${detail}', '${banner_pop}', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<insert id="insPopup" parameterType="hashmap">
+		insert into BAPOPUP_MU 
+		(SEQ, POPUP_TITLE, OPEN_TYPE, START_YMD, END_YMD, IS_SHOW, MARGIN_TOP, MARGIN_LEFT, IS_CENTER, NOT_TODAY, POPUP_POP, POPUP_LINK, POPUP_IMG, CREATE_RESI_NO, CREATE_DATE)
+		VALUES
+		('${seq}', '${popup_title}', '${open_type}', '${start_ymd}', '${end_ymd}', '${is_show}', '${margin_top}', '${margin_left}', '${is_center}', '${not_today}', '${popup_pop}', '${popup_link}', '${popup_img}', '${login_seq}', to_char(sysdate, 'yyyymmddhh24miss'))
+	</insert>
+
+	<update id="upNews" parameterType="hashmap">
+		update banewstb_mu
+		set
+		STORE = '${store}',
+		CATEGORY = '${news_category}',
+		TITLE = '${news_title}',
+		START_YMD = '${start_ymd}',
+		END_YMD = '${end_ymd}',
+		IS_SHOW = '${is_show}',
+		FILENAME = '${filename}',
+		FILENAME_ORI = '${filename_ori}',
+		CONTENTS = '${contents}',
+		UPDATE_RESI_NO = '${login_seq}',
+		UPDATE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		SEQ = '${seq}'
+	</update>
+	<update id="upMBanner" parameterType="hashmap">
+		update bambanner_mu
+		set
+		MAIN_TITLE = '${main_title}',
+		SUB_TITLE = '${sub_title}',
+		DESCRIPTION = '${description}',
+		IS_SHOW = '${is_show}',
+		START_YMD = '${start_ymd}',
+		END_YMD = '${end_ymd}',
+		BANNER = '${banner}',
+		M_BANNER = '${m_banner}',
+		CON_TYPE = '${con_type}',
+		ATTACH = '${attach}',
+		BANNER_LINK = '${banner_link}',
+		IS_BTN_SHOW = '${is_btn_show}',
+		BTN_NM = '${btn_nm}',
+		SORT = '${sort}',
+		UPDATE_RESI_NO = '${login_seq}',
+		UPDATE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		SEQ = '${seq}'
+	</update>
+	<update id="upSBanner" parameterType="hashmap">
+		update basbanner_mu
+		set
+		BANNER_NAME = '${banner_name}',
+		BANNER_DESC = '${banner_desc}',
+		IS_SHOW = '${is_show}',
+		START_YMD = '${start_ymd}',
+		END_YMD = '${end_ymd}',
+		BANNER_POP = '${banner_pop}',
+		BANNER = '${banner}',
+		DETAIL = '${detail}',
+		UPDATE_RESI_NO = '${login_seq}',
+		UPDATE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		SEQ = '${seq}'
+	</update>
+	<update id="upPopup" parameterType="hashmap">
+		update BAPOPUP_MU
+		set
+		POPUP_TITLE = '${popup_title}',
+		OPEN_TYPE = '${open_type}',
+		START_YMD = '${start_ymd}',
+		END_YMD = '${end_ymd}',
+		IS_SHOW = '${is_show}',
+		MARGIN_TOP = '${margin_top}',
+		MARGIN_LEFT = '${margin_left}',
+		IS_CENTER = '${is_center}',
+		NOT_TODAY = '${not_today}',
+		POPUP_LINK = '${popup_link}',
+		POPUP_POP = '${popup_pop}',
+		POPUP_IMG = '${popup_img}',
+		UPDATE_RESI_NO = '${login_seq}',
+		UPDATE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		SEQ = '${seq}'
+	</update>
+	<update id="sortNews" parameterType="hashmap">
+		update banewstb_mu set sort = '${sort}' where seq = '${seq}'
+	</update>
+	<update id="sortMBanner" parameterType="hashmap">
+		update bambanner_mu set sort = '${sort}' where seq = '${seq}'
+	</update>
+	<update id="sortSBanner" parameterType="hashmap">
+		update basbanner_mu set sort = '${sort}' where seq = '${seq}'
+	</update>
+	<update id="sortPopup" parameterType="hashmap">
+		update BAPOPUP_MU set sort = '${sort}' where seq = '${seq}'
+	</update>
+	<update id="sortReco" parameterType="hashmap">
+		update BARECOTB_MU set sort = '${sort}' where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<update id="insTagByReco" parameterType="hashmap">
+		update BARECOTB_MU
+		set
+		tag = concat((select tag from BARECOTB_MU where store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'), '${tag}|')
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<update id="delTagByReco" parameterType="hashmap">
+		update BARECOTB_MU
+		set
+		tag = replace(tag, '${tag}|', '')
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<update id="upReco" parameterType="hashmap">
+		update BARECOTB_MU
+		set
+		is_show = '${change_show}',
+		start_ymd = '${start_ymd}',
+		end_ymd = '${end_ymd}',
+		UPDATE_RESI_NO = '${login_seq}',
+		UPDATE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	
+	<select id="getReviewListCount" parameterType="hashmap" resultType="hashmap">
+	
+		select count(*) as CNT from bareviewtb, bacusttb, bapelttb
+	    where
+	    bareviewtb.cust_no = bacusttb.cust_no
+		and
+		bapelttb.store = bareviewtb.store
+		and
+		bapelttb.period = bareviewtb.period
+		and
+		bapelttb.subject_cd = bareviewtb.subject_cd
+		<if test="!store.equals('')">
+        	and bareviewtb.store ='${store}' 
+        </if>
+        <if test="!period.equals('')">
+        	and bareviewtb.period='${period}' 
+        </if>
+	    <if test="!search_name.equals('')">
+			<if test="search_type eq 'user_id'.toString()">
+				and bacusttb.ptl_id like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'user_name'.toString()">
+				and bacusttb.kor_nm like '%'||'${search_name}'||'%'
+			</if>
+			<if test="search_type eq 'phone'.toString()">
+				and (bacusttb.h_phone_no_2 like '%'||'${search_name}'||'%' or  bacusttb.h_phone_no_3 like '%'||'${search_name}'||'%')
+			</if>
+			<if test="search_type eq 'email'.toString()">
+				and bacusttb.email_addr like '%'||'${search_name}'||'%'
+			</if>
+		</if>
+		<if test="!start_ymd.equals('')">
+			and bareviewtb.create_date <![CDATA[>=]]> '${start_ymd}'
+		</if>
+		<if test="!end_ymd.equals('')">
+			and bareviewtb.create_date <![CDATA[<=]]> '${end_ymd}'
+		</if>
+		<if test="!lecturer_nm.equals('')">
+	   		and bapelttb.web_lecturer_nm like '%'||'${lecturer_nm}'||'%'
+	   	</if>
+	   	<if test="!subject_nm.equals('')">
+	   		and bapelttb.subject_nm like '%'||'${subject_nm}'||'%'
+	   	</if>
+	   	<if test="!is_reco.equals('')">
+	   		and bareviewtb.reco_yn = '${is_reco}' 
+	   	</if>
+	   	<if test="!is_best.equals('')">
+	   		and bareviewtb.best_yn = '${is_best}' 
+	   	</if>
+	</select>
+	<select id="getReviewList" parameterType="hashmap" resultType="hashmap">
+	select
+		X.*
+		from ( 
+		    select rownum as rnum, A.*
+		    from ( 
+		    	select
+		    	bareviewtb.store,
+		    	bareviewtb.period,
+		    	bareviewtb.subject_cd,
+		    	(select web_text from baperitb where store = bareviewtb.store and period = bareviewtb.period) as web_text,
+		    	bapelttb.subject_nm,
+		    	bapelttb.web_lecturer_nm,
+		    	bareviewtb.content,
+		    	bacusttb.ptl_id,
+		    	bareviewtb.create_date,
+		    	bareviewtb.reco_yn,
+		    	bareviewtb.best_yn
+		    	from bareviewtb, bacusttb, bapelttb
+			    where
+			    bareviewtb.cust_no = bacusttb.cust_no
+				and
+				bapelttb.store = bareviewtb.store
+				and
+				bapelttb.period = bareviewtb.period
+				and
+				bapelttb.subject_cd = bareviewtb.subject_cd
+				<if test="!store.equals('')">
+		        	and bareviewtb.store ='${store}' 
+		        </if>
+		        <if test="!period.equals('')">
+		        	and bareviewtb.period='${period}' 
+		        </if>
+			    <if test="!search_name.equals('')">
+					<if test="search_type eq 'user_id'.toString()">
+						and bacusttb.ptl_id like '%'||'${search_name}'||'%'
+					</if>
+					<if test="search_type eq 'user_name'.toString()">
+						and bacusttb.kor_nm like '%'||'${search_name}'||'%'
+					</if>
+					<if test="search_type eq 'phone'.toString()">
+						and (bacusttb.h_phone_no_2 like '%'||'${search_name}'||'%' or  bacusttb.h_phone_no_3 like '%'||'${search_name}'||'%')
+					</if>
+					<if test="search_type eq 'email'.toString()">
+						and bacusttb.email_addr like '%'||'${search_name}'||'%'
+					</if>
+				</if>
+				<if test="!start_ymd.equals('')">
+					and bareviewtb.create_date <![CDATA[>=]]> '${start_ymd}'
+				</if>
+				<if test="!end_ymd.equals('')">
+					and bareviewtb.create_date <![CDATA[<=]]> '${end_ymd}'
+				</if>
+				<if test="!lecturer_nm.equals('')">
+			   		and bapelttb.web_lecturer_nm like '%'||'${lecturer_nm}'||'%'
+			   	</if>
+			   	<if test="!subject_nm.equals('')">
+			   		and bapelttb.subject_nm like '%'||'${subject_nm}'||'%'
+			   	</if>
+			   	<if test="!is_reco.equals('')">
+			   		and bareviewtb.reco_yn = '${is_reco}' 
+			   	</if>
+			   	<if test="!is_best.equals('')">
+			   		and bareviewtb.best_yn = '${is_best}' 
+			   	</if>
+				<if test="!order_by.equals('') and !sort_type.equals('')">
+			   		order by ${sort_type} ${order_by}
+			   	</if>
+		    ) A
+		    where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+	<update id="bestAction" parameterType="hashmap">
+		update bareviewtb
+		set
+		best_yn = '${act}'
+		where
+		store = '${store}' and period = '${period}' and subject_cd = '${subject_cd}'
+	</update>
+	<update id="insCanc" parameterType="hashmap">
+		update BACANCTB set contents = '${contents}'
+	</update>
+	<select id="getCanc" parameterType="hashmap" resultType="string">
+		select contents from bacanctb
+	</select>
+	<select id="getMBannerByPreview" parameterType="hashmap" resultType="hashmap">
+		select * from bambanner_mu where seq in (${seq})
+	</select>
+	<select id="getSBannerByPreview" parameterType="hashmap" resultType="hashmap">
+		select * from basbanner_mu where seq in (${seq})
+	</select>
+	<select id="getPopupByPreview" parameterType="hashmap" resultType="hashmap">
+		select * from bapopup_mu where seq in (${seq})
+	</select>
+</mapper>

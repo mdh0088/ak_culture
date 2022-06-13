@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/akris/akrisMapper">
+	<select id="getTally" parameterType="hashmap" resultType="hashmap">
+	SELECT C.TYPE_S            BA,
+                       C.ENG_NM         BA_NM,
+                       A.CODE_ACCT  ACCT_CODE,
+                       B.END_ACCT_NM  ACCT_NM,
+                       SUM(A.AMT_DR)   AMT_DR,
+                       SUM(A.AMT_CR)   AMT_CR
+                  FROM AXIF02TB@akris A,
+                       (SELECT DISTINCT code_acct END_ACCT_CODE, nm_acct END_ACCT_NM FROM akacsys.acbi001t@akhrac) B,
+                       (SELECT TYPE_S, ENG_NM FROM AZNMMATB@akris WHERE TYPE_L = '710' AND KOR_NM = '00'||'${store}') C
+                 WHERE A.CODE_COMPANY  = (SELECT KOR_NM FROM AZNMMATB@akris WHERE TYPE_L = '740' AND TYPE_S = '00'||'${store}')  
+                   AND A.CODE_AUNT     = (SELECT TYPE_S FROM AZNMMATB@akris WHERE TYPE_L = '710' AND KOR_NM = '00'||'${store}')
+                   AND A.DT_SLIP BETWEEN '${start_ymd}'
+                                     AND '${end_ymd}'
+                   AND A.GBN_SLIP   LIKE '${doc_type}'||'%'
+                   AND A.GBN_UPMU   LIKE '${status_fg}'||'%'
+                   AND A.CODE_ACCT    = B.END_ACCT_CODE
+                GROUP BY C.TYPE_S, C.ENG_NM, A.CODE_ACCT, B.END_ACCT_NM 
+                ORDER BY A.CODE_ACCT      
+</select>
+	<select id="insertBCEPBHTB" statementType="CALLABLE" parameterType="hashmap"> 
+		{ 
+			CALL 
+			AX_INSERT_BCEPBHTB
+			( 
+				'${system_id}',
+				'${view_id}',
+				'${submit_date}',
+				'${subject}',
+				'${content}',
+				'${athority_cnt}',
+				'${ret_call_sp}',
+				#{seq, mode=OUT, jdbcType=VARCHAR, javaType=String}, 
+				#{document_id, mode=OUT, jdbcType=VARCHAR, javaType=String} 
+			) 
+		}
+	
+	</select>
+	<select id="insertBCEPBDTB" statementType="CALLABLE" parameterType="hashmap"> 
+		{ 
+			CALL 
+			AX_INSERT_BCEPBDTB
+			( 
+				'${system_id}',
+				'${view_id}',
+				'${submit_date}',
+				'${seq}',
+				'${resi_no}',
+				'${activity}'
+			) 
+		}
+	
+	</select>
+	<select id="sapcancel" statementType="CALLABLE" parameterType="hashmap"> 
+	{ 
+		CALL 
+		magam_cancel
+		( 
+			TO_CHAR(SYSDATE,'YYYYMMDD'),
+			'${login_seq}',
+			'${store}',
+			'${sale_ymd}',
+			'${sale_ymd}',
+			'VV',
+			'${gbn_upmu}',
+			null,
+			#{o_code, mode=OUT, jdbcType=VARCHAR, javaType=String}, 
+			#{o_message, mode=OUT, jdbcType=VARCHAR, javaType=String} 
+		) 
+	}
+	
+	</select>	
+	<select id="getNamoFileNo" parameterType="hashmap" resultType="string">
+		SELECT AXNAMOTB_SEQ.NEXTVAL AS NAMO_FILE_NO FROM DUAL
+	</select>
+	<select id="issueAttachFileNo" parameterType="hashmap" resultType="string">
+		 SELECT BCFILETB_SEQ.NEXTVAL AS FILE_NO
+                  FROM DUAL
+	</select>
+	<insert id="insNamoFile" parameterType="hashmap">
+		INSERT INTO AXNAMOTB(
+                    NAMO_FILE_NO, FILE_ID, 
+                    FILE_NM, FILE_SIZE, CONTENT_TYPE, 
+                    FILE_OBJ, CREATE_REGI_NO, CREATE_DATE_TIME)
+                VALUES(
+                    #{file_no}, #{file_id}, 
+                    #{file_nm}, #{file_size}, #{content_type},
+                    #{file_obj}, #{login_seq}, TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))        
+                    
+	</insert>
+	<insert id="insertBCFILETB" parameterType="hashmap">
+	
+		INSERT INTO BCFILETB(
+                    FILE_KEY,
+                    FILE_NM, 
+                    FILE_SIZE,
+                    FILE_OBJECT)
+                VALUES( ${file_no}, #{file_nm}, #{file_size}, #{file_obj} )
+	</insert>
+	<insert id="insertBCEPBFTB" parameterType="hashmap">
+	
+		INSERT INTO BCEPBFTB(
+                    SYSTEM_ID, VIEW_ID, SUBMIT_DATE, SEQ, NO,
+                    DOCUMENT_ID, FILE_NAME, FILE_SIZE, FILE_KEY)
+                SELECT SYSTEM_ID,
+                       VIEW_ID,
+                       SUBMIT_DATE,
+                       SEQ,
+                       (SELECT NVL(MAX(NO),0) + 1
+                          FROM BCEPBFTB
+                         WHERE SYSTEM_ID = a.SYSTEM_ID
+                           AND VIEW_ID = a.VIEW_ID
+                           AND SUBMIT_DATE = a.SUBMIT_DATE
+                           AND SEQ = a.SEQ),
+                       DOCUMENT_ID,
+                       '${file_nm}',
+                       '${file_size}',
+                       '${file_no}'           
+                  FROM BCEPBHTB a
+                 WHERE a.SYSTEM_ID = '${system_id}'
+                   AND a.VIEW_ID = '${view_id}'
+                   AND a.SUBMIT_DATE = '${submit_date}'
+                   AND a.SEQ = '${seq}'      
+	</insert>
+</mapper>

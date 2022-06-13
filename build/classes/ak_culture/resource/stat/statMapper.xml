@@ -1,0 +1,1941 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/stat/statMapper">
+	<select id="isInTarget" parameterType="hashmap" resultType="int">
+		select count(*) as cnt from batargettb where year = '${year}' and season = '${season}' and store = '${store}'
+	</select>
+	<insert id="insTarget" parameterType="hashmap">
+		insert into batargettb
+		(year, season, store, regis_no, pay, create_resi_no, create_date)
+		values
+		('${year}', '${season}', '${store}', '${regis_no}', '${pay}', '${login_seq}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+	</insert>
+	<select id="getTarget" parameterType="hashmap" resultType="hashmap">
+		select * from batargettb where year = '${year}' and season = '${season}'
+	</select>
+	<select id="getTargetLong" parameterType="hashmap" resultType="hashmap">
+		select * from batargettb where 
+		year <![CDATA[>=]]> '${selYear1}'
+		and year <![CDATA[<=]]> '${selYear2}'
+		and season <![CDATA[>=]]> '${selSeason1}'
+		and season <![CDATA[<=]]> '${selSeason2}'
+		<if test="!store.equals('')">
+	   		and store = '${store}'
+	   	</if>
+	</select>
+	<select id="getPerfor" parameterType="hashmap" resultType="hashmap">
+	
+		select 
+		count(decode(baperetb.pos_no, '070013', 1)) as web, 
+        count(decode(baperetb.pos_no, '070014', 1)) as mobile, 
+        count(baperetb.regis_fee) as person, nvl(sum(baperetb.regis_fee), 0) as regis_fee 
+		from 
+		baperetb
+		left join
+		bapelttb
+		on
+		baperetb.store = bapelttb.store
+		and baperetb.period = bapelttb.period
+		and baperetb.subject_cd = bapelttb.subject_cd
+		and baperetb.main_cd = bapelttb.main_cd
+		and baperetb.sect_cd = bapelttb.sect_cd
+		where 
+		baperetb.store = '${store}' 
+		and baperetb.period <![CDATA[>=]]> '${start_peri}' 
+		and baperetb.period <![CDATA[<=]]> '${end_peri}' 
+		and baperetb.recpt_no != '*' 
+		and baperetb.regis_cancel_fg != '2'
+		and bapelttb.main_cd = '${main_cd}'
+		and bapelttb.subject_fg = '${subject_fg}'
+	</select>
+	<select id="getPerforUnion" parameterType="hashmap" resultType="hashmap">
+	
+		SELECT
+		    main_cd,
+		    subject_fg,
+		    decode(subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg_nm,
+		    ba_main_nm(main_cd) main_nm,
+		    SUM(b_uprice) b_uprice,
+		    SUM(b_web_uprice) b_web_uprice,
+		    SUM(b_mobile_uprice) b_mobile_uprice,
+		    SUM(b_person) b_person,
+		    SUM(s_uprice) s_uprice,
+		    SUM(s_web_uprice) s_web_uprice,
+		    SUM(s_mobile_uprice) s_mobile_uprice,
+		    SUM(s_person) s_person,
+		    SUM(w_uprice) w_uprice,
+		    SUM(w_web_uprice) w_web_uprice,
+		    SUM(w_mobile_uprice) w_mobile_uprice,
+		    SUM(w_person) w_person,
+		    SUM(p_uprice) p_uprice,
+		    SUM(p_web_uprice) p_web_uprice,
+		    SUM(p_mobile_uprice) p_mobile_uprice,
+		    SUM(p_person) p_person
+		
+		FROM
+		    (
+		        SELECT
+		            main_cd,
+		            subject_fg,
+		            SUM(b_uprice) b_uprice,
+		            SUM(b_web_uprice) b_web_uprice,
+		            SUM(b_mobile_uprice) b_mobile_uprice,
+		            SUM(b_person) b_person,
+		            SUM(s_uprice) s_uprice,
+		            SUM(s_web_uprice) s_web_uprice,
+		            SUM(s_mobile_uprice) s_mobile_uprice,
+		            SUM(s_person) s_person,
+		            SUM(w_uprice) w_uprice,
+		            SUM(w_web_uprice) w_web_uprice,
+		            SUM(w_mobile_uprice) w_mobile_uprice,
+		            SUM(w_person) w_person,
+		            SUM(p_uprice) p_uprice,
+		            SUM(p_web_uprice) p_web_uprice,
+		            SUM(p_mobile_uprice) p_mobile_uprice,
+		            SUM(p_person) p_person
+		        FROM
+		            (
+		                SELECT
+		                    c.main_cd,
+		                    c.subject_fg,
+		                    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) b_uprice,
+		                    decode(a.pos_no, '070013', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) b_web_uprice,
+		                    decode(a.pos_no, '070014', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) b_mobile_uprice,
+		                    nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) b_person,
+		                    0 s_uprice,
+		                    0 s_web_uprice,
+		                    0 s_mobile_uprice,
+		                    0 s_person,
+		                    0 w_uprice,
+		                    0 w_web_uprice,
+		                    0 w_mobile_uprice,
+		                    0 w_person,
+		                    0 p_uprice,
+		                    0 p_web_uprice,
+		                    0 p_mobile_uprice,
+		                    0 p_person
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '03' 
+		                    and a.sale_ymd <![CDATA[>=]]> '${start_ymd}' 
+							and a.sale_ymd <![CDATA[<=]]> '${end_ymd}' 
+							and a.period <![CDATA[>=]]> '${b_start_peri}' 
+							and a.period <![CDATA[<=]]> '${b_end_peri}'
+							<if test="isPerformance eq 'false'.toString()">
+	                            and d.performance = 'ON'
+							</if> 
+		                UNION ALL  
+		                SELECT
+		                    c.main_cd,
+		                    c.subject_fg,
+		                    0 b_uprice,
+		                    0 b_web_uprice,
+		                    0 b_mobile_uprice,
+		                    0 b_person,
+		                    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) s_uprice,
+		                    decode(a.pos_no, '070013', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) s_web_uprice,
+		                    decode(a.pos_no, '070014', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) s_mobile_uprice,
+		                    nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) s_person,
+		                    0 w_uprice,
+		                    0 w_web_uprice,
+		                    0 w_mobile_uprice,
+		                    0 w_person,
+		                    0 p_uprice,
+		                    0 p_web_uprice,
+		                    0 p_mobile_uprice,
+		                    0 p_person
+		                    
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '02' 
+		                    and a.sale_ymd <![CDATA[>=]]> '${start_ymd}' 
+							and a.sale_ymd <![CDATA[<=]]> '${end_ymd}' 
+							and a.period <![CDATA[>=]]> '${s_start_peri}' 
+							and a.period <![CDATA[<=]]> '${s_end_peri}'
+							<if test="isPerformance eq 'false'.toString()">
+	                            and d.performance = 'ON'
+							</if> 
+		                UNION ALL  
+		                SELECT
+		                    c.main_cd,
+		                    c.subject_fg,
+		                    0 b_uprice,
+		                    0 b_web_uprice,
+		                    0 b_mobile_uprice,
+		                    0 b_person,
+		                    0 s_uprice,
+		                    0 s_web_uprice,
+		                    0 s_mobile_uprice,
+		                    0 s_person,
+		                    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) w_uprice,
+		                    decode(a.pos_no, '070013', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) w_web_uprice,
+		                    decode(a.pos_no, '070014', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) w_mobile_uprice,
+		                    nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) w_person,
+		                    0 p_uprice,
+		                    0 p_web_uprice,
+		                    0 p_mobile_uprice,
+		                    0 p_person
+		                    
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '05' 
+		                    and a.sale_ymd <![CDATA[>=]]> '${start_ymd}' 
+							and a.sale_ymd <![CDATA[<=]]> '${end_ymd}' 
+							and a.period <![CDATA[>=]]> '${w_start_peri}' 
+							and a.period <![CDATA[<=]]> '${w_end_peri}'
+							<if test="isPerformance eq 'false'.toString()">
+	                            and d.performance = 'ON'
+							</if> 
+		                UNION ALL  
+		                SELECT
+		                    c.main_cd,
+		                    c.subject_fg,
+		                    0 b_uprice,
+		                    0 b_web_uprice,
+		                    0 b_mobile_uprice,
+		                    0 b_person,
+		                    0 s_uprice,
+		                    0 s_web_uprice,
+		                    0 s_mobile_uprice,
+		                    0 s_person,
+		                    0 w_uprice,
+		                    0 w_web_uprice,
+		                    0 w_mobile_uprice,
+		                    0 w_person,
+		                    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) p_uprice,
+		                    decode(a.pos_no, '070013', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) p_web_uprice,
+		                    decode(a.pos_no, '070014', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) p_mobile_uprice,
+		                    nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) p_person
+		                    
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '04' 
+		                    and a.sale_ymd <![CDATA[>=]]> '${start_ymd}' 
+							and a.sale_ymd <![CDATA[<=]]> '${end_ymd}' 
+							and a.period <![CDATA[>=]]> '${p_start_peri}' 
+							and a.period <![CDATA[<=]]> '${p_end_peri}' 
+                            <if test="isPerformance eq 'false'.toString()">
+	                            and d.performance = 'ON'
+							</if>
+		                UNION ALL  
+		                select
+		                main_cd,
+		                subject_fg,
+		                0 b_uprice,
+		                0 b_web_uprice,
+		                0 b_mobile_uprice,
+		                0 b_person,
+		                0 s_uprice,
+		                0 s_web_uprice,
+		                0 s_mobile_uprice,
+		                0 s_person,
+		                0 w_uprice,
+		                0 w_web_uprice,
+		                0 w_mobile_uprice,
+		                0 w_person,
+		                0 p_uprice,
+		                0 p_web_uprice,
+		                0 p_mobile_uprice,
+		                0 p_person
+		                from (
+		                SELECT
+		                    sub_code as main_cd,
+		                    '1' as subject_fg
+		                FROM
+		                    bacodetb
+		                WHERE
+		                    code_fg = '09' and delete_yn != 'Y'
+		                union all
+		                SELECT
+		                    sub_code as main_cd,
+		                    '2' as subject_fg
+		                FROM
+		                    bacodetb
+		                WHERE
+		                    code_fg = '09' and delete_yn != 'Y'
+		                union all
+		                SELECT
+		                    sub_code as main_cd,
+		                    '3' as subject_fg
+		                FROM
+		                    bacodetb
+		                WHERE
+		                    code_fg = '09' and delete_yn != 'Y'
+		                )
+		                
+		              
+		
+		            )
+		        GROUP BY
+		            main_cd,
+		            subject_fg
+		    )
+		GROUP BY
+		    subject_fg, main_cd
+		ORDER BY
+		    subject_fg, main_cd
+            
+       
+	</select>
+	<select id="getPayment" parameterType="hashmap" resultType="hashmap">
+		
+	select 
+	main_cd,
+	ba_main_nm(main_cd) main_nm,
+	sum(now_lect_pay) now_lect_pay,
+	sum(target_lect_pay) target_lect_pay,
+	sum(now_uprice) now_uprice,
+	sum(target_uprice) target_uprice
+	from
+	(
+	
+	    SELECT
+	        bapelttb.main_cd,
+	        bajrcotb.lect_pay as now_lect_pay,
+	        0 target_lect_pay,
+	        0 now_uprice,
+	        0 target_uprice
+	    FROM
+	        bajrcotb,
+	        bapelttb
+	    WHERE
+	        1 = 1
+	        AND bajrcotb.store = '${store}'
+	        AND bajrcotb.period = '${period}'
+	        AND bajrcotb.hq = bapelttb.hq
+	        AND bajrcotb.store = bapelttb.store
+	        AND bajrcotb.period = bapelttb.period
+	        AND bajrcotb.subject_cd = bapelttb.subject_cd
+	        and bajrcotb.JOURNAL_YN = 'Y'
+	    UNION ALL
+	    SELECT
+	        bapelttb.main_cd,
+	        bajrprtb.lect_pay as now_lect_pay,
+	        0 target_lect_pay,
+	        0 now_uprice,
+	        0 target_uprice
+	    FROM
+	        bajrprtb,
+	        bapelttb
+	    WHERE
+	        1 = 1
+	        AND bajrprtb.store = '${store}'
+	        AND bajrprtb.period = '${period}'
+	        AND bajrprtb.hq = bapelttb.hq
+	        AND bajrprtb.store = bapelttb.store
+	        AND bajrprtb.period = bapelttb.period
+	        AND bajrprtb.subject_cd = bapelttb.subject_cd
+	        and bajrprtb.JOURNAL_YN = 'Y'
+	    UNION ALL
+	    SELECT
+	        c.main_cd,
+	        0 as now_lect_pay,
+	        0 target_lect_pay,
+	        decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) now_uprice,
+	        0 target_uprice
+	        
+	    FROM
+	        batrmstb   a,
+	        batrdetb   b,
+	        bapelttb   c
+	    WHERE
+	        a.hq = b.hq
+	        AND a.store = b.store
+	        AND a.sale_ymd = b.sale_ymd
+	        AND a.pos_no = b.pos_no
+	        AND a.recpt_no = b.recpt_no
+	        AND a.period = c.period
+	        AND b.hq = c.hq
+	        AND b.store = c.store
+	        AND b.subject_cd = c.subject_cd
+	        AND a.hq = '00'
+	        and a.store = '${store}' 
+	        and a.period = '${period}' 
+	    UNION ALL
+	    SELECT
+	        bapelttb.main_cd,
+	        0 now_lect_pay,
+	        bajrcotb.lect_pay as target_lect_pay,
+	        0 now_uprice,
+	        0 target_uprice
+	    FROM
+	        bajrcotb,
+	        bapelttb
+	    WHERE
+	        1 = 1
+	        AND bajrcotb.store = '${target_store}'
+	        AND bajrcotb.period = '${target_period}'
+	        AND bajrcotb.hq = bapelttb.hq
+	        AND bajrcotb.store = bapelttb.store
+	        AND bajrcotb.period = bapelttb.period
+	        AND bajrcotb.subject_cd = bapelttb.subject_cd
+	        and bajrcotb.JOURNAL_YN = 'Y'
+	    UNION ALL
+	    SELECT
+	        bapelttb.main_cd,
+	        0 now_lect_pay,
+	        bajrprtb.lect_pay as target_lect_pay,
+	        0 now_uprice,
+	        0 target_uprice
+	    FROM
+	        bajrprtb,
+	        bapelttb
+	    WHERE
+	        1 = 1
+	        AND bajrprtb.store = '${target_store}'
+	        AND bajrprtb.period = '${target_period}'
+	        AND bajrprtb.hq = bapelttb.hq
+	        AND bajrprtb.store = bapelttb.store
+	        AND bajrprtb.period = bapelttb.period
+	        AND bajrprtb.subject_cd = bapelttb.subject_cd
+	        and bajrprtb.JOURNAL_YN = 'Y'
+	    UNION ALL
+	    SELECT
+	        c.main_cd,
+	        0 as now_lect_pay,
+	        0 target_lect_pay,
+	        0 now_uprice,
+	        decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) as target_uprice
+	        
+	    FROM
+	        batrmstb   a,
+	        batrdetb   b,
+	        bapelttb   c
+	    WHERE
+	        a.hq = b.hq
+	        AND a.store = b.store
+	        AND a.sale_ymd = b.sale_ymd
+	        AND a.pos_no = b.pos_no
+	        AND a.recpt_no = b.recpt_no
+	        AND a.period = c.period
+	        AND b.hq = c.hq
+	        AND b.store = c.store
+	        AND b.subject_cd = c.subject_cd
+	        AND a.hq = '00'
+	        and a.store = '${target_store}' 
+	        and a.period = '${target_period}' 
+	)
+	group by main_cd
+	
+			
+	</select>
+	<select id="getPerforLect" parameterType="hashmap" resultType="hashmap">
+	
+		SELECT
+		    main_cd,
+            sect_cd,
+		    subject_fg,
+		    decode(subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg_nm,
+		    ba_main_nm(main_cd) main_nm,
+		    ba_sect_nm('00', '${store}', main_cd, sect_cd) as sect_nm,
+		    COUNT(now_subject_cd)-1 now_lect_cnt,
+		    SUM(now_uprice) now_uprice,
+		    SUM(now_person) now_person,
+		    COUNT(target_subject_cd)-1 target_lect_cnt,
+		    SUM(target_uprice) target_uprice,
+		    SUM(target_person) target_person
+		
+		FROM
+		    (
+		        SELECT
+		            main_cd,
+                    sect_cd,
+		            subject_fg,
+		            now_subject_cd,
+		            SUM(now_uprice) now_uprice,
+		            SUM(now_person) now_person,
+		            target_subject_cd,
+		            SUM(target_uprice) target_uprice,
+		            SUM(target_person) target_person
+		        FROM
+		            (
+		                SELECT
+		                    c.main_cd,
+                            c.sect_cd,
+		                    c.subject_fg,
+		                    c.subject_cd now_subject_cd,
+		                    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) now_uprice,
+		                    nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) now_person,
+		                    ' ' target_subject_cd,
+		                    0 target_uprice,
+		                    0 target_person
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '${store}' 
+		                    and a.period = '${period}' 
+							
+	                        <if test="isPerformance eq 'false'.toString()">
+	                            and d.performance = 'ON'
+							</if> 
+							 
+		                UNION ALL  
+		                SELECT
+		                    c.main_cd,
+                            c.sect_cd,
+		                    c.subject_fg,
+		                    ' ' now_subject_cd,
+		                    0 now_uprice,
+		                    0 now_person,
+		                    c.subject_cd target_subject_cd,
+		                    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) target_uprice,
+		                    nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) target_person
+		                    
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '${target_store}' 
+		                    and a.period = '${target_period}' 
+							
+	                        <if test="isPerformance eq 'false'.toString()">
+	                            and d.performance = 'ON'
+							</if> 
+							 
+		                UNION ALL  
+		                SELECT
+		                    a.main_cd,
+                            a.sect_cd,
+		                    a.subject_fg,
+		                    a.subject_cd now_subject_cd,
+		                    0 now_uprice,
+		                    0 now_person,
+		                    ' ' target_subject_cd,
+		                    0 target_uprice,
+		                    0 target_person
+		                FROM
+		                    bapelttb# a,
+		                    basecttb  b
+		                WHERE
+		                    (b.store = a.store or b.store is null)
+		                    and b.main_cd = a.main_cd
+                            and b.sect_cd = a.sect_cd
+		                    and b.delete_yn != 'Y'
+		                    and a.hq = '00'
+		                    and a.store = '${store}' 
+		                    and a.period = '${period}' 
+                            
+	                        <if test="isPerformance eq 'false'.toString()">
+	                            and b.performance = 'ON'
+							</if> 
+							
+		                UNION ALL
+		                    SELECT
+		                    a.main_cd,
+                            a.sect_cd,
+		                    a.subject_fg,
+		                    ' ' now_subject_cd,
+		                    0 now_uprice,
+		                    0 now_person,
+		                    a.subject_cd target_subject_cd,
+		                    0 target_uprice,
+		                    0 target_person
+		                FROM
+		                    bapelttb# a,
+		                    basecttb  b
+		                WHERE
+		                    (b.store = a.store or b.store is null)
+		                    and b.main_cd = a.main_cd
+                            and b.sect_cd = a.sect_cd
+		                    and b.delete_yn != 'Y'
+		                    and a.hq = '00'
+		                    and a.store = '${target_store}' 
+		                    and a.period = '${target_period}' 
+                            
+	                        <if test="isPerformance eq 'false'.toString()">
+	                            and b.performance = 'ON'
+							</if> 
+							
+		               
+						
+                        
+                        UNION ALL  
+		                select
+		                main_cd,
+                        sect_cd,
+		                subject_fg,
+		                ' ' as now_subject_cd,
+		                0 now_uprice,
+		                0 now_person,
+		                ' ' as target_subject_cd,
+		                0 target_uprice,
+		                0 target_person
+		                from (
+		                SELECT
+                            bacodetb.sub_code as main_cd,
+		                    basecttb.sect_cd,
+		                    '1' as subject_fg
+		                FROM
+		                    basecttb,
+                            bacodetb
+		                WHERE
+                            trim(basecttb.main_cd) = trim(bacodetb.sub_code)
+                            and bacodetb.code_fg = '09' and bacodetb.delete_yn != 'Y'
+		                    and basecttb.delete_yn != 'Y' and (basecttb.store = '${store}' or basecttb.store is null)
+		                union all
+		                SELECT
+                            bacodetb.sub_code as main_cd,
+		                    basecttb.sect_cd,
+		                    '2' as subject_fg
+		                FROM
+		                    basecttb,
+                            bacodetb
+		                WHERE
+                            trim(basecttb.main_cd) = trim(bacodetb.sub_code)
+                            and bacodetb.code_fg = '09' and bacodetb.delete_yn != 'Y'
+		                    and basecttb.delete_yn != 'Y' and (basecttb.store = '${store}' or basecttb.store is null)
+		                union all
+		               SELECT
+                            bacodetb.sub_code as main_cd,
+		                    basecttb.sect_cd,
+		                    '3' as subject_fg
+		                FROM
+		                    basecttb,
+                            bacodetb
+		                WHERE
+                            trim(basecttb.main_cd) = trim(bacodetb.sub_code)
+                            and bacodetb.code_fg = '09' and bacodetb.delete_yn != 'Y'
+		                    and basecttb.delete_yn != 'Y' and (basecttb.store = '${store}' or basecttb.store is null)
+		                )
+		                
+		              
+		
+		            )
+		        GROUP BY
+		            main_cd,
+                    sect_cd,
+		            subject_fg,
+		            now_subject_cd,
+		            target_subject_cd
+		    )
+		GROUP BY
+		    subject_fg, main_cd, sect_cd
+		ORDER BY
+		    subject_fg, main_cd, sect_cd
+            
+          
+	</select>
+	<select id="getPeltCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as cnt from
+		(
+			select
+				(select short_name from bacodetb where CODE_FG = '02' and sub_code = store) as store_nm,
+				ba_main_nm(main_cd) main_nm,
+				ba_sect_nm('00', store, main_cd, sect_cd) as sect_nm,
+				decode(subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg_nm,
+				store,
+				period,
+				main_cd,
+				sect_cd,
+				subject_cd,
+				subject_nm,
+				regis_fee,
+				sum(uprice) as uprice,
+				sum(enuri_amt) as enuri_amt,
+				sum(part_regis_amt) as part_regis_amt,
+				sum(food_amt) as food_amt,
+				sum(regis_no) as regis_no,
+				sum(new) as new
+				from
+				(    
+				    select
+				    a.store,
+				    a.period,
+				    c.main_cd,
+				    c.sect_cd,
+				    c.subject_cd,
+				    c.subject_nm,
+				    c.subject_fg,
+				    c.regis_fee,
+				    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) uprice,
+				    (nvl(b.enuri_amt1, 0)+nvl(b.enuri_amt2, 0)) as enuri_amt,
+				    c.part_regis_amt,
+				    b.food_amt,
+				    (c.regis_no+c.web_regis_no) as regis_no,
+				    decode
+				    (
+				        ( SELECT MIN(PERIOD)  AS COUNT             
+				        FROM BAPERETB         
+				        WHERE
+				        STORE        =  '${store}' 
+				        AND CUST_NO    =  a.cust_no
+				        AND PERIOD   <![CDATA[<]]>  (select get_web_period('${store}') period from dual)
+				        GROUP BY CUST_NO  ), null, 1, 0
+				    ) as new
+				    
+				    
+				    
+				    from 
+				    batrmstb   a,
+				    batrdetb   b,
+				    bapelttb   c,
+				    basecttb   d
+				    where 
+				    a.hq = b.hq
+				    AND a.store = b.store
+				    AND a.sale_ymd = b.sale_ymd
+				    AND a.pos_no = b.pos_no
+				    AND a.recpt_no = b.recpt_no
+				    AND a.period = c.period
+				    AND b.hq = c.hq
+				    AND b.store = c.store
+				    AND b.subject_cd = c.subject_cd
+				    and (d.store = c.store or d.store is null)
+				    and d.main_cd = c.main_cd
+				    and d.sect_cd = c.sect_cd
+				    and d.delete_yn != 'Y'
+				    AND a.hq = '00'
+				    and a.store = '${store}' 
+				    and a.period = '${period}' 
+				    <if test="!search_start.equals('') and !search_end.equals('')">
+					    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+						and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+				    </if>
+					<if test="!sect_cd.equals('')">
+						and c.sect_cd = ${sect_cd}
+					</if>
+					<if test="!main_cd.equals('')">
+						and c.main_cd = ${main_cd}
+					</if>
+					<if test="!subject_fg.equals('')">
+						and c.subject_fg = '${subject_fg}'
+					</if>
+				    <if test="isPerformance eq 'false'.toString()">
+	                     and d.performance = 'ON'
+					</if> 
+				)
+				group by
+				store,
+				period,
+				main_cd,
+				sect_cd,
+				subject_cd,
+				subject_nm,
+				subject_fg,
+				regis_fee
+		)
+	</select>
+	<select id="getPelt" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+			select rownum as rnum, A.*
+			from (
+				select
+				(select short_name from bacodetb where CODE_FG = '02' and sub_code = store) as store_nm,
+				ba_main_nm(main_cd) main_nm,
+				ba_sect_nm('00', store, main_cd, sect_cd) as sect_nm,
+				decode(subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg_nm,
+				store,
+				period,
+				main_cd,
+				sect_cd,
+				subject_cd,
+				subject_nm,
+				regis_fee,
+				sum(uprice) as uprice,
+				sum(enuri_amt) as enuri_amt,
+				sum(part_regis_amt) as part_regis_amt,
+				sum(food_amt) as food_amt,
+				sum(regis_no) as regis_no,
+				sum(new) as new
+				from
+				(    
+				    select
+				    a.store,
+				    a.period,
+				    c.main_cd,
+				    c.sect_cd,
+				    c.subject_cd,
+				    c.subject_nm,
+				    c.subject_fg,
+				    c.regis_fee,
+				    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) uprice,
+				    (nvl(b.enuri_amt1, 0)+nvl(b.enuri_amt2, 0)) as enuri_amt,
+				    c.part_regis_amt,
+				    b.food_amt,
+				    (c.regis_no+c.web_regis_no) as regis_no,
+				    decode
+				    (
+				        ( SELECT MIN(PERIOD)  AS COUNT             
+				        FROM BAPERETB         
+				        WHERE
+				        STORE        =  '${store}' 
+				        AND CUST_NO    =  a.cust_no
+				        AND PERIOD   <![CDATA[<]]>  (select get_web_period('${store}') period from dual)
+				        GROUP BY CUST_NO  ), null, 1, 0
+				    ) as new
+				    
+				    
+				    
+				    from 
+				    batrmstb   a,
+				    batrdetb   b,
+				    bapelttb   c,
+				    basecttb   d
+				    where 
+				    a.hq = b.hq
+				    AND a.store = b.store
+				    AND a.sale_ymd = b.sale_ymd
+				    AND a.pos_no = b.pos_no
+				    AND a.recpt_no = b.recpt_no
+				    AND a.period = c.period
+				    AND b.hq = c.hq
+				    AND b.store = c.store
+				    AND b.subject_cd = c.subject_cd
+				    and (d.store = c.store or d.store is null)
+				    and d.main_cd = c.main_cd
+				    and d.sect_cd = c.sect_cd
+				    and d.delete_yn != 'Y'
+				    AND a.hq = '00'
+				    and a.store = '${store}' 
+				    and a.period = '${period}' 
+				    <if test="!search_start.equals('') and !search_end.equals('')">
+					    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+						and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+				    </if>
+					<if test="!sect_cd.equals('')">
+						and c.sect_cd = ${sect_cd}
+					</if>
+					<if test="!main_cd.equals('')">
+						and c.main_cd = ${main_cd}
+					</if>
+					<if test="!subject_fg.equals('')">
+						and c.subject_fg = '${subject_fg}'
+					</if>
+				    <if test="isPerformance eq 'false'.toString()">
+	                     and d.performance = 'ON'
+					</if> 
+				)
+				group by
+				store,
+				period,
+				main_cd,
+				sect_cd,
+				subject_cd,
+				subject_nm,
+				subject_fg,
+				regis_fee
+				<if test="!order_by.equals('') and !sort_type.equals('')">
+					order by ${sort_type} ${order_by}
+				</if>
+			) A
+			where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+	<select id="getDetailCount" parameterType="hashmap" resultType="hashmap">
+		select
+		count(*) as cnt
+		
+		from 
+		batrmstb   a,
+		batrdetb   b,
+		bapelttb   c,
+		basecttb   d,
+		bacusttb   e
+		where 
+		a.hq = b.hq
+		AND a.store = b.store
+		AND a.sale_ymd = b.sale_ymd
+		AND a.pos_no = b.pos_no
+		AND a.recpt_no = b.recpt_no
+		AND a.period = c.period
+		AND b.hq = c.hq
+		AND b.store = c.store
+		AND b.subject_cd = c.subject_cd
+		and (d.store = c.store or d.store is null)
+		and d.main_cd = c.main_cd
+		and d.sect_cd = c.sect_cd
+		and e.cust_no = a.cust_no
+		and d.delete_yn != 'Y'
+		AND a.hq = '00'
+	    and a.store = '${store}' 
+	    and a.period = '${period}' 
+	    <if test="!search_start.equals('') and !search_end.equals('')">
+		    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+			and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+	    </if>
+		<if test="!sect_cd.equals('')">
+			and c.sect_cd = ${sect_cd}
+		</if>
+		<if test="!main_cd.equals('')">
+			and c.main_cd = ${main_cd}
+		</if>
+		<if test="!subject_fg.equals('')">
+			and c.subject_fg = '${subject_fg}'
+		</if>
+	    <if test="isPerformance eq 'false'.toString()">
+            and d.performance = 'ON'
+		</if> 
+	</select>
+	<select id="getDetail" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+			select rownum as rnum, A.*
+			from (
+				select
+				(select short_name from bacodetb where CODE_FG = '02' and sub_code = a.store) as store_nm,
+				decode(c.subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg_nm,
+				ba_main_nm(c.main_cd) main_nm,
+				ba_sect_nm('00', c.store, c.main_cd, c.sect_cd) as sect_nm,
+				a.store,
+				a.period,
+				a.sale_ymd,
+				a.pos_no,
+				a.recpt_no,
+				e.kor_nm,
+				e.cus_no,
+				e.birth_ymd,
+				nvl(
+				(select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+				    '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+				  from ams_bz_sect_mbr_grade bb
+				     where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+				),'Entry'
+				) as grade,
+				c.subject_cd,
+				c.subject_nm,
+				decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) uprice,
+				b.food_amt,
+				(nvl(b.enuri_amt1, 0)+nvl(b.enuri_amt2, 0)) as enuri_amt,
+				c.start_ymd,
+				c.end_ymd
+				
+				
+				from 
+				batrmstb   a,
+				batrdetb   b,
+				bapelttb   c,
+				basecttb   d,
+				bacusttb   e
+				where 
+				a.hq = b.hq
+				AND a.store = b.store
+				AND a.sale_ymd = b.sale_ymd
+				AND a.pos_no = b.pos_no
+				AND a.recpt_no = b.recpt_no
+				AND a.period = c.period
+				AND b.hq = c.hq
+				AND b.store = c.store
+				AND b.subject_cd = c.subject_cd
+				and (d.store = c.store or d.store is null)
+				and d.main_cd = c.main_cd
+				and d.sect_cd = c.sect_cd
+				and e.cust_no = a.cust_no
+				and d.delete_yn != 'Y'
+				AND a.hq = '00'
+			    and a.store = '${store}' 
+			    and a.period = '${period}' 
+			    <if test="!search_start.equals('') and !search_end.equals('')">
+				    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+					and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+			    </if>
+				<if test="!sect_cd.equals('')">
+					and c.sect_cd = ${sect_cd}
+				</if>
+				<if test="!main_cd.equals('')">
+					and c.main_cd = ${main_cd}
+				</if>
+				<if test="!subject_fg.equals('')">
+					and c.subject_fg = '${subject_fg}'
+				</if>
+			    <if test="isPerformance eq 'false'.toString()">
+                     and d.performance = 'ON'
+				</if> 
+				<if test="!order_by.equals('') and !sort_type.equals('')">
+					order by ${sort_type} ${order_by}
+				</if>
+			) A
+			where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+	<select id="getDaylist" parameterType="hashmap" resultType="hashmap">
+		SELECT
+		    sale_ymd,
+		    (select short_name from bacodetb where CODE_FG = '02' and sub_code = '${store}') as store_nm,
+            SUM(a_uprice) a_uprice,
+            SUM(a_web_uprice) a_web_uprice,
+            SUM(a_mobile_uprice) a_mobile_uprice,
+            SUM(a_person) a_person,
+            sum(a_new) as a_new,
+            SUM(b_uprice) b_uprice,
+            SUM(b_web_uprice) b_web_uprice,
+            SUM(b_mobile_uprice) b_mobile_uprice,
+            SUM(b_person) b_person,
+            sum(b_new) as b_new,
+            SUM(c_uprice) c_uprice,
+            SUM(c_web_uprice) c_web_uprice,
+            SUM(c_mobile_uprice) c_mobile_uprice,
+            SUM(c_person) c_person,
+            sum(c_new) as c_new
+		
+		FROM
+		    (
+		        SELECT
+                    sale_ymd,
+                    SUM(a_uprice) a_uprice,
+		            SUM(a_web_uprice) a_web_uprice,
+		            SUM(a_mobile_uprice) a_mobile_uprice,
+		            SUM(a_person) a_person,
+		            sum(a_new) as a_new,
+		            SUM(b_uprice) b_uprice,
+		            SUM(b_web_uprice) b_web_uprice,
+		            SUM(b_mobile_uprice) b_mobile_uprice,
+		            SUM(b_person) b_person,
+		            sum(b_new) as b_new,
+		            SUM(c_uprice) c_uprice,
+		            SUM(c_web_uprice) c_web_uprice,
+		            SUM(c_mobile_uprice) c_mobile_uprice,
+		            SUM(c_person) c_person,
+		            sum(c_new) as c_new
+		        FROM
+		            (
+		                SELECT
+                            a.sale_ymd,
+                            decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) a_uprice,
+                            decode(a.pos_no, '070013', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) a_web_uprice,
+                            decode(a.pos_no, '070014', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) a_mobile_uprice,
+                            nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) a_person,
+                            decode
+						    (
+						        ( SELECT MIN(PERIOD)  AS COUNT             
+						        FROM BAPERETB         
+						        WHERE
+						        STORE        =  '${store}' 
+						        AND CUST_NO    =  a.cust_no
+						        AND PERIOD   <![CDATA[<]]>  (select get_web_period('${store}') period from dual)
+						        GROUP BY CUST_NO  ), null, 1, 0
+						    ) as a_new,
+                            0 b_uprice,
+                            0 b_web_uprice,
+                            0 b_mobile_uprice,
+                            0 b_person,
+                            0 b_new,
+                            0 c_uprice,
+                            0 c_web_uprice,
+                            0 c_mobile_uprice,
+                            0 c_person,
+                            0 c_new
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '${store}' 
+				    		and a.period = '${period}' 
+				    		<if test="!search_start.equals('') and !search_end.equals('')">
+							    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+								and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+						    </if>
+						    <if test="isPerformance eq 'false'.toString()">
+			                     and d.performance = 'ON'
+							</if> 
+							and c.subject_fg = '1'
+	                        
+							 
+							 
+                             UNION ALL
+                             
+                             SELECT
+                            a.sale_ymd,
+                            0 a_uprice,
+                            0 a_web_uprice,
+                            0 a_mobile_uprice,
+                            0 a_person,
+                            0 a_new,
+                            decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) b_uprice,
+                            decode(a.pos_no, '070013', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) b_web_uprice,
+                            decode(a.pos_no, '070014', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) b_mobile_uprice,
+                            nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) b_person,
+                            decode
+						    (
+						        ( SELECT MIN(PERIOD)  AS COUNT             
+						        FROM BAPERETB         
+						        WHERE
+						        STORE        =  '${store}' 
+						        AND CUST_NO    =  a.cust_no
+						        AND PERIOD   <![CDATA[<]]>  (select get_web_period('${store}') period from dual)
+						        GROUP BY CUST_NO  ), null, 1, 0
+						    ) as b_new,
+                            
+                            0 c_uprice,
+                            0 c_web_uprice,
+                            0 c_mobile_uprice,
+                            0 c_person,
+                            0 c_new
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '${store}' 
+				   			and a.period = '${period}' 
+				   			<if test="!search_start.equals('') and !search_end.equals('')">
+							    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+								and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+						    </if>
+						    <if test="isPerformance eq 'false'.toString()">
+			                     and d.performance = 'ON'
+							</if>
+							and c.subject_fg = '2'
+	                        
+							 
+                             UNION ALL
+                             
+                             SELECT
+                            a.sale_ymd,
+                            0 a_uprice,
+                            0 a_web_uprice,
+                            0 a_mobile_uprice,
+                            0 a_person,
+                            0 a_new,
+                            0 b_uprice,
+                            0 b_web_uprice,
+                            0 b_mobile_uprice,
+                            0 b_person,
+                            0 b_new,
+                            decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) c_uprice,
+                            decode(a.pos_no, '070013', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) c_web_uprice,
+                            decode(a.pos_no, '070014', decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1), 0) c_mobile_uprice,
+                            nvl(decode(a.sale_fg, '01', decode(a.pay_fg, '3', 0, 1), decode(a.pay_fg, '3', 0, - 1)), 0) c_person,
+                            decode
+						    (
+						        ( SELECT MIN(PERIOD)  AS COUNT             
+						        FROM BAPERETB         
+						        WHERE
+						        STORE        =  '${store}' 
+						        AND CUST_NO    =  a.cust_no
+						        AND PERIOD   <![CDATA[<]]>  (select get_web_period('${store}') period from dual)
+						        GROUP BY CUST_NO  ), null, 1, 0
+						    ) as c_new
+                            
+		                FROM
+		                    batrmstb   a,
+		                    batrdetb   b,
+		                    bapelttb   c,
+		                    basecttb   d
+		                WHERE
+		                    a.hq = b.hq
+		                    AND a.store = b.store
+		                    AND a.sale_ymd = b.sale_ymd
+		                    AND a.pos_no = b.pos_no
+		                    AND a.recpt_no = b.recpt_no
+		                    AND a.period = c.period
+		                    AND b.hq = c.hq
+		                    AND b.store = c.store
+		                    AND b.subject_cd = c.subject_cd
+		                    and (d.store = c.store or d.store is null)
+		                    and d.main_cd = c.main_cd
+		                    and d.sect_cd = c.sect_cd
+		                    and d.delete_yn != 'Y'
+		                    AND a.hq = '00'
+		                    and a.store = '${store}' 
+				   			and a.period = '${period}' 
+				   			<if test="!search_start.equals('') and !search_end.equals('')">
+							    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+								and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+						    </if>
+						    <if test="isPerformance eq 'false'.toString()">
+			                     and d.performance = 'ON'
+							</if>
+							and c.subject_fg = '3'
+	                        
+		            )
+		        GROUP BY
+		            sale_ymd
+		    )
+		GROUP BY
+		    sale_ymd
+		ORDER BY
+		    sale_ymd
+	</select>
+	<select id="getMemberList" parameterType="hashmap" resultType="hashmap">
+		select 
+		age,
+		count(tot_cust) as tot_cust,
+		count(web_cust) as web_cust,
+		count(mobile_cust) as mobile_cust,
+		count(a_cust) as a_cust,
+		count(b_cust) as b_cust,
+		count(c_cust) as c_cust,
+		sum(new) as new
+		from (
+		    select
+		    TRUNC((MONTHS_BETWEEN(TRUNC(SYSDATE,'YEAR'),TRUNC(TO_DATE(e.birth_ymd,'YYYYMMDD'),'YEAR')) /12 +1),-1) as AGE,
+		    a.cust_no as tot_cust,
+		    decode(a.pos_no, '070013', a.cust_no) as web_cust,
+		    decode(a.pos_no, '070014', a.cust_no) as mobile_cust,
+		    decode(c.subject_fg, '1', a.cust_no) as a_cust,
+		    decode(c.subject_fg, '2', a.cust_no) as b_cust,
+		    decode(c.subject_fg, '3', a.cust_no) as c_cust,
+		    decode
+		    (
+		        ( SELECT MIN(PERIOD)  AS COUNT             
+		        FROM BAPERETB         
+		        WHERE
+		        STORE        =  '${store}' 
+		        AND CUST_NO    =  a.cust_no
+		        AND PERIOD   <![CDATA[<]]>  (select get_web_period('${store}') period from dual)
+		        GROUP BY CUST_NO  ), null, 1, 0
+		    ) as new
+		    from 
+		    batrmstb   a,
+		    batrdetb   b,
+		    bapelttb   c,
+		    basecttb   d,
+		    bacusttb   e
+		    where 
+		    a.hq = b.hq
+		    AND a.store = b.store
+		    AND a.sale_ymd = b.sale_ymd
+		    AND a.pos_no = b.pos_no
+		    AND a.recpt_no = b.recpt_no
+		    AND a.period = c.period
+		    AND b.hq = c.hq
+		    AND b.store = c.store
+		    AND b.subject_cd = c.subject_cd
+		    and (d.store = c.store or d.store is null)
+		    and d.main_cd = c.main_cd
+		    and d.sect_cd = c.sect_cd
+		    and e.cust_no = a.cust_no
+		    and d.delete_yn != 'Y'
+		    AND a.hq = '00'
+		    and a.store = '${store}' 
+   			and a.period = '${period}' 
+   			<if test="!search_start.equals('') and !search_end.equals('')">
+			    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+				and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+		    </if>
+		)
+		group by age
+	</select>
+	<select id="getMemberListBest" parameterType="hashmap" resultType="hashmap">
+		select
+		age,
+		count(subject_cd) as cnt,
+		subject_cd,
+		subject_nm,
+		web_lecturer_nm
+		main_cd,
+		sect_cd,
+		ba_main_nm(main_cd) main_nm,
+		ba_sect_nm('00', '${store}', main_cd, sect_cd) as sect_nm,
+		regis_no,
+		sum(uprice) as uprice
+		from
+		(
+		    select
+		    TRUNC((MONTHS_BETWEEN(TRUNC(SYSDATE,'YEAR'),TRUNC(TO_DATE(e.birth_ymd,'YYYYMMDD'),'YEAR')) /12 +1),-1) as AGE,
+		    c.subject_cd,
+		    c.subject_nm,
+		    c.web_lecturer_nm,
+		    c.main_cd,
+		    c.sect_cd,
+		    (c.regis_no+c.web_regis_no) as regis_no,
+		    decode(a.sale_fg, '01', (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)), (b.uprice-nvl(b.enuri_amt1, 0) - nvl(b.enuri_amt2, 0)) * - 1) uprice
+		    from 
+		    batrmstb   a,
+		    batrdetb   b,
+		    bapelttb   c,
+		    basecttb   d,
+		    bacusttb   e
+		    where 
+		    a.hq = b.hq
+		    AND a.store = b.store
+		    AND a.sale_ymd = b.sale_ymd
+		    AND a.pos_no = b.pos_no
+		    AND a.recpt_no = b.recpt_no
+		    AND a.period = c.period
+		    AND b.hq = c.hq
+		    AND b.store = c.store
+		    AND b.subject_cd = c.subject_cd
+		    and (d.store = c.store or d.store is null)
+		    and d.main_cd = c.main_cd
+		    and d.sect_cd = c.sect_cd
+		    and e.cust_no = a.cust_no
+		    and d.delete_yn != 'Y'
+		    AND a.hq = '00'
+		    and a.store = '${store}' 
+   			and a.period = '${period}' 
+   			<if test="!search_start.equals('') and !search_end.equals('')">
+			    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+				and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+		    </if>
+		)
+		group by age, subject_cd, subject_nm, web_lecturer_nm, main_cd, sect_cd, regis_no
+		order by cnt desc
+
+	</select>
+	<select id="getMemberListGender" parameterType="hashmap" resultType="hashmap">
+		select 
+        sex_fg,
+		count(a_cust) as a_cust,
+		count(b_cust) as b_cust,
+        count(c_cust) as c_cust
+		from (
+		    select
+		    e.sex_fg,
+		    decode(c.subject_fg, '1', a.cust_no) as a_cust,
+            decode(c.subject_fg, '2', a.cust_no) as b_cust,
+            decode(c.subject_fg, '3', a.cust_no) as c_cust
+		    from 
+		    batrmstb   a,
+		    batrdetb   b,
+		    bapelttb   c,
+		    basecttb   d,
+		    bacusttb   e
+		    where 
+		    a.hq = b.hq
+		    AND a.store = b.store
+		    AND a.sale_ymd = b.sale_ymd
+		    AND a.pos_no = b.pos_no
+		    AND a.recpt_no = b.recpt_no
+		    AND a.period = c.period
+		    AND b.hq = c.hq
+		    AND b.store = c.store
+		    AND b.subject_cd = c.subject_cd
+		    and (d.store = c.store or d.store is null)
+		    and d.main_cd = c.main_cd
+		    and d.sect_cd = c.sect_cd
+		    and e.cust_no = a.cust_no
+		    and d.delete_yn != 'Y'
+		    AND a.hq = '00'
+		    and a.store = '${store}' 
+   			and a.period = '${period}' 
+   			<if test="!search_start.equals('') and !search_end.equals('')">
+			    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+				and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+		    </if>
+   			
+		)
+		group by sex_fg
+
+	</select>
+	<select id="getMemberLectureCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as cnt from
+		(
+			select
+				(select short_name from bacodetb where CODE_FG = '02' and sub_code = store) as store_nm,
+				decode(subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg_nm,
+				ba_main_nm(main_cd) main_nm,
+				store, 
+				main_cd,
+				subject_fg,
+				sum(new) as new, 
+				sum(aclass) as aclass, 
+				sum(diamond) as diamond, 
+				sum(platinum) as platinum, 
+				sum(crystal) as crystal, 
+				sum(gold) as gold, 
+				count(cust_no) as cust,
+				subject_cd, 
+				subject_nm, 
+				regis_no
+			from
+			(
+			
+			    select			
+			    a.store,
+			    c.main_cd,
+			    c.subject_fg,
+			    decode
+			    (
+			        ( SELECT MIN(PERIOD)  AS COUNT             
+			        FROM BAPERETB         
+			        WHERE
+			        STORE        =  '03' 
+			        AND CUST_NO    =  a.cust_no
+			        AND PERIOD   <![CDATA[<]]>  (select get_web_period('03') period from dual)
+			        GROUP BY CUST_NO  ), null, 1, 0
+			    ) as new,
+			    decode(
+			        nvl(
+			        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+			            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+			          from ams_bz_sect_mbr_grade bb
+			             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+			        ),'Entry'
+			        ), 'E-Diamond', 1, 'Diamond', 1, 'Platinum+', 1, 'Platinum', 1, 'Crystal', 1, 'Gold', 1, 'Silver', 1, 0
+			    )as aclass,
+			    decode(
+			        nvl(
+			        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+			            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+			          from ams_bz_sect_mbr_grade bb
+			             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+			        ),'Entry'
+			        ), 'E-Diamond', 1, 'Diamond', 1, 0
+			    )as diamond,
+			    decode(
+			        nvl(
+			        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+			            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+			          from ams_bz_sect_mbr_grade bb
+			             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+			        ),'Entry'
+			        ), 'Platinum+', 1, 'Platinum', 1, 0
+			    )as platinum,
+			    decode(
+			        nvl(
+			        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+			            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+			          from ams_bz_sect_mbr_grade bb
+			             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+			        ),'Entry'
+			        ), 'Crystal', 1, 0
+			    )as crystal,
+			    decode(
+			        nvl(
+			        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+			            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+			          from ams_bz_sect_mbr_grade bb
+			             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+			        ),'Entry'
+			        ),  'Gold', 1, 0
+			    )as gold,
+			    a.cust_no,
+			    c.subject_cd,
+			    c.subject_nm,
+			    (c.regis_no+c.web_regis_no) as regis_no
+			    
+			    
+			    from 
+			    batrmstb   a,
+			    batrdetb   b,
+			    bapelttb   c,
+			    basecttb   d,
+			    bacusttb   e
+			    where 
+			    a.hq = b.hq
+			    AND a.store = b.store
+			    AND a.sale_ymd = b.sale_ymd
+			    AND a.pos_no = b.pos_no
+			    AND a.recpt_no = b.recpt_no
+			    AND a.period = c.period
+			    AND b.hq = c.hq
+			    AND b.store = c.store
+			    AND b.subject_cd = c.subject_cd
+			    and (d.store = c.store or d.store is null)
+			    and d.main_cd = c.main_cd
+			    and d.sect_cd = c.sect_cd
+			    and e.cust_no = a.cust_no
+			    and d.delete_yn != 'Y'
+			    AND a.hq = '00'
+			    and a.store = '${store}' 
+			    and a.period = '${period}' 
+			    <if test="!search_start.equals('') and !search_end.equals('')">
+				    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+					and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+			    </if>
+				<if test="!sect_cd.equals('')">
+					and c.sect_cd = ${sect_cd}
+				</if>
+				<if test="!main_cd.equals('')">
+					and c.main_cd = ${main_cd}
+				</if>
+				<if test="!subject_fg.equals('')">
+					and c.subject_fg = '${subject_fg}'
+				</if>
+			)
+			group by 
+			store, 
+			main_cd,
+			subject_fg,
+			subject_cd, 
+			subject_nm, 
+			regis_no
+		)
+	</select>
+	<select id="getMemberLecture" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+			select rownum as rnum, A.*
+			from (
+				select
+				(select short_name from bacodetb where CODE_FG = '02' and sub_code = store) as store_nm,
+				decode(subject_fg, '1', '정규', '2', '단기', '3', '특강') as subject_fg_nm,
+				ba_main_nm(main_cd) main_nm,
+				store, 
+				main_cd,
+				subject_fg,
+				sum(new) as new, 
+				sum(aclass) as aclass, 
+				sum(diamond) as diamond, 
+				sum(platinum) as platinum, 
+				sum(crystal) as crystal, 
+				sum(gold) as gold, 
+				count(cust_no) as cust,
+				subject_cd, 
+				subject_nm, 
+				regis_no
+				
+				from
+				(
+				
+				    select			
+				    a.store,
+				    c.main_cd,
+				    c.subject_fg,
+				    decode
+				    (
+				        ( SELECT MIN(PERIOD)  AS COUNT             
+				        FROM BAPERETB         
+				        WHERE
+				        STORE        =  '03' 
+				        AND CUST_NO    =  a.cust_no
+				        AND PERIOD   <![CDATA[<]]>  (select get_web_period('03') period from dual)
+				        GROUP BY CUST_NO  ), null, 1, 0
+				    ) as new,
+				    decode(
+				        nvl(
+				        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+				            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+				          from ams_bz_sect_mbr_grade bb
+				             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+				        ),'Entry'
+				        ), 'E-Diamond', 1, 'Diamond', 1, 'Platinum+', 1, 'Platinum', 1, 'Crystal', 1, 'Gold', 1, 'Silver', 1, 0
+				    )as aclass,
+				    decode(
+				        nvl(
+				        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+				            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+				          from ams_bz_sect_mbr_grade bb
+				             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+				        ),'Entry'
+				        ), 'E-Diamond', 1, 'Diamond', 1, 0
+				    )as diamond,
+				    decode(
+				        nvl(
+				        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+				            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+				          from ams_bz_sect_mbr_grade bb
+				             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+				        ),'Entry'
+				        ), 'Platinum+', 1, 'Platinum', 1, 0
+				    )as platinum,
+				    decode(
+				        nvl(
+				        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+				            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+				          from ams_bz_sect_mbr_grade bb
+				             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+				        ),'Entry'
+				        ), 'Crystal', 1, 0
+				    )as crystal,
+				    decode(
+				        nvl(
+				        (select decode(bb.mbr_gdc, '109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum',
+				            '112', 'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry')
+				          from ams_bz_sect_mbr_grade bb
+				             where bb.cus_no = (select cus_no from bacusttb where cust_no = e.cust_no)
+				        ),'Entry'
+				        ),  'Gold', 1, 0
+				    )as gold,
+				    a.cust_no,
+				    c.subject_cd,
+				    c.subject_nm,
+				    (c.regis_no+c.web_regis_no) as regis_no
+				    
+				    
+				    from 
+				    batrmstb   a,
+				    batrdetb   b,
+				    bapelttb   c,
+				    basecttb   d,
+				    bacusttb   e
+				    where 
+				    a.hq = b.hq
+				    AND a.store = b.store
+				    AND a.sale_ymd = b.sale_ymd
+				    AND a.pos_no = b.pos_no
+				    AND a.recpt_no = b.recpt_no
+				    AND a.period = c.period
+				    AND b.hq = c.hq
+				    AND b.store = c.store
+				    AND b.subject_cd = c.subject_cd
+				    and (d.store = c.store or d.store is null)
+				    and d.main_cd = c.main_cd
+				    and d.sect_cd = c.sect_cd
+				    and e.cust_no = a.cust_no
+				    and d.delete_yn != 'Y'
+				    AND a.hq = '00'
+				    and a.store = '${store}' 
+				    and a.period = '${period}' 
+				    <if test="!search_start.equals('') and !search_end.equals('')">
+					    and a.sale_ymd <![CDATA[>=]]> '${search_start}' 
+						and a.sale_ymd <![CDATA[<=]]> '${search_end}' 
+				    </if>
+					<if test="!sect_cd.equals('')">
+						and c.sect_cd = ${sect_cd}
+					</if>
+					<if test="!main_cd.equals('')">
+						and c.main_cd = ${main_cd}
+					</if>
+					<if test="!subject_fg.equals('')">
+						and c.subject_fg = '${subject_fg}'
+					</if>
+					<if test="!order_by.equals('') and !sort_type.equals('')">
+						order by ${sort_type} ${order_by}
+					</if>
+				)
+				group by 
+				store, 
+				main_cd,
+				subject_fg,
+				subject_cd, 
+				subject_nm, 
+				regis_no
+			) A
+			where rownum <![CDATA[<=]]> #{e_rownum}) X
+		where X.rnum <![CDATA[>]]> #{s_rownum}
+	</select>
+	<select id="getAttendCount" parameterType="hashmap" resultType="hashmap">
+		select count(*) as cnt from
+		(
+			select
+			    sum(s_store) as s_store,
+			    sum(b_store) as b_store,
+			    sum(p_store) as p_store,
+			    sum(w_store) as w_store,
+			    cus_pn,
+			    bmd,
+			    lecr_point,
+			    grade,
+			    count(subject_cd) as lect_cnt
+			from
+			    (
+			    
+			    select
+			        bapelttb.store,
+			        decode(bapelttb.store, '02', 1, 0) as s_store,
+			        decode(bapelttb.store, '03', 1, 0) as b_store,
+			        decode(bapelttb.store, '04', 1, 0) as p_store,
+			        decode(bapelttb.store, '05', 1, 0) as w_store,
+			        ams_cus.cus_pn,
+			        ams_cus.bmd,
+			        NVL(balecture_mu.point, 0) as lecr_point,
+			        (
+			            CASE 
+			            WHEN balecture_mu.point is null THEN '미평가'
+			            WHEN balecture_mu.point <![CDATA[>=]]> 90 THEN 'A'
+			            WHEN balecture_mu.point <![CDATA[>=]]> 80 THEN 'B'
+			            WHEN balecture_mu.point <![CDATA[>=]]> 70 THEN 'C'
+			            WHEN balecture_mu.point <![CDATA[>=]]> 60 THEN 'D'
+			            WHEN balecture_mu.point <![CDATA[>=]]> 50 THEN 'E'
+			            WHEN balecture_mu.point <![CDATA[>=]]> 40 THEN 'F'
+			            END
+			        ) as grade,
+			        bapelttb.subject_cd
+			    from 
+			        balecture_mu, ams_cus, bapelttb 
+			    where 1=1
+			        and balecture_mu.cus_no = ams_cus.cus_no
+			        and balecture_mu.cus_no = bapelttb.cus_no
+			        <if test="!search_name.equals('')">
+				    	and 
+				    	(
+				    		ams_cus.cus_no like '%'||'${search_name}'||'%'
+				    		or
+				    		ams_cus.cus_pn like '%'||'${search_name}'||'%'
+				    		or
+				    		(ams_cus.mmt_ex_no like '%'||'${search_name}'||'%' or ams_cus.mtel_uniq_no like '%'||'${search_name}'||'%')
+				    		or
+				    		bapelttb.subject_nm like '%'||'${search_name}'||'%'
+				    	)
+					</if>
+			        and 
+			        (
+			        	(bapelttb.store = '02' and bapelttb.period = '${s_peri}') 
+			        	or 
+			        	(bapelttb.store = '03' and bapelttb.period = '${b_peri}')
+			        	or 
+			        	(bapelttb.store = '04' and bapelttb.period = '${p_peri}')
+			        	or 
+			        	(bapelttb.store = '05' and bapelttb.period = '${w_peri}')
+			        )
+			        <if test="!subject_fg.equals('')">
+				    	and bapelttb.subject_fg = '${subject_fg}' 
+			    	</if>
+			    	<if test="!main_cd.equals('')">
+						and bapelttb.main_cd = ${main_cd}
+					</if>
+			
+					<if test="!sect_cd.equals('')">
+						and bapelttb.sect_cd = ${sect_cd}
+					</if>
+			    	
+			    )
+			group by 
+			    cus_pn,
+			    bmd,
+			    lecr_point,
+			    grade
+		   
+		)	
+	
+	</select>
+	<select id="getAttend" parameterType="hashmap" resultType="hashmap">
+		select
+		X.*
+		from (
+			select rownum as rnum, A.*
+			from (
+				select
+				    sum(s_store) as s_store,
+				    sum(b_store) as b_store,
+				    sum(p_store) as p_store,
+				    sum(w_store) as w_store,
+				    cus_pn,
+				    bmd,
+				    lecr_point,
+				    grade,
+				    count(subject_cd) as lect_cnt
+				from
+				    (
+				    
+				    select
+				        bapelttb.store,
+				        decode(bapelttb.store, '02', 1, 0) as s_store,
+				        decode(bapelttb.store, '03', 1, 0) as b_store,
+				        decode(bapelttb.store, '04', 1, 0) as p_store,
+				        decode(bapelttb.store, '05', 1, 0) as w_store,
+				        ams_cus.cus_pn,
+				        ams_cus.bmd,
+				        NVL(balecture_mu.point, 0) as lecr_point,
+				        (
+				            CASE 
+				            WHEN balecture_mu.point is null THEN '미평가'
+				            WHEN balecture_mu.point <![CDATA[>=]]> 90 THEN 'A'
+				            WHEN balecture_mu.point <![CDATA[>=]]> 80 THEN 'B'
+				            WHEN balecture_mu.point <![CDATA[>=]]> 70 THEN 'C'
+				            WHEN balecture_mu.point <![CDATA[>=]]> 60 THEN 'D'
+				            WHEN balecture_mu.point <![CDATA[>=]]> 50 THEN 'E'
+				            WHEN balecture_mu.point <![CDATA[>=]]> 40 THEN 'F'
+				            END
+				        ) as grade,
+				        bapelttb.subject_cd
+				    from 
+				        balecture_mu, ams_cus, bapelttb 
+				    where 1=1
+				        and balecture_mu.cus_no = ams_cus.cus_no
+				        and balecture_mu.cus_no = bapelttb.cus_no
+				        <if test="!search_name.equals('')">
+					    	and 
+					    	(
+					    		ams_cus.cus_no like '%'||'${search_name}'||'%'
+					    		or
+					    		ams_cus.cus_pn like '%'||'${search_name}'||'%'
+					    		or
+					    		(ams_cus.mmt_ex_no like '%'||'${search_name}'||'%' or ams_cus.mtel_uniq_no like '%'||'${search_name}'||'%')
+					    		or
+					    		bapelttb.subject_nm like '%'||'${search_name}'||'%'
+					    	)
+						</if>
+				        and 
+				        (
+				        	(bapelttb.store = '02' and bapelttb.period = '${s_peri}') 
+				        	or 
+				        	(bapelttb.store = '03' and bapelttb.period = '${b_peri}')
+				        	or 
+				        	(bapelttb.store = '04' and bapelttb.period = '${p_peri}')
+				        	or 
+				        	(bapelttb.store = '05' and bapelttb.period = '${w_peri}')
+				        )
+				        <if test="!subject_fg.equals('')">
+					    	and bapelttb.subject_fg = '${subject_fg}' 
+				    	</if>
+				    	<if test="!main_cd.equals('')">
+							and bapelttb.main_cd = ${main_cd}
+						</if>
+				
+						<if test="!sect_cd.equals('')">
+							and bapelttb.sect_cd = ${sect_cd}
+						</if>
+				    	
+				    )
+				group by 
+				    cus_pn,
+				    bmd,
+				    lecr_point,
+				    grade
+				    
+					<if test="!order_by.equals('') and !sort_type.equals('')">
+						order by ${sort_type} ${order_by}
+					</if>
+				) A
+				where rownum <![CDATA[<=]]> #{e_rownum}) X
+			where X.rnum <![CDATA[>]]> #{s_rownum}
+				
+	
+	</select>
+	<select id="getRoomList" parameterType="hashmap" resultType="hashmap">
+		select 
+		    room_nm,
+		    count(subject_cd) as lect_cnt,
+		    sum(end_yn) as end_cnt,
+		    sum(capacity_no) as capacity_no,
+		    sum(regis_no) as regis_no
+		from
+		(
+		    select
+		        a.room_nm,
+		        b.subject_cd,
+		        b.capacity_no,
+		        decode(b.end_yn, 'Y', 1, 0) as end_yn,
+		        (b.regis_no+b.web_regis_no) as regis_no
+		    from 
+		        baroomtb a, 
+		        bapelttb b
+		    where 
+		        a.hq = b.hq
+		        AND a.store = b.store
+		        and a.seq_no = b.classroom
+		        and b.store = '${store}' 
+				and b.period = '${period}' 
+		        <if test="!subject_fg.equals('')">
+					and c.subject_fg = '${subject_fg}'
+				</if>
+		)
+		group by room_nm
+				
+	</select>
+</mapper>

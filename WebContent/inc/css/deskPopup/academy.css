@@ -1,0 +1,85 @@
+@charset "UTF-8";
+/**  문화아카데미 **/
+.ak-academy-01 .container { padding-top: 54px; padding-bottom: 420px; }
+
+.ak-academy-01 .section-title { font-size: 28px; margin-bottom: 0; }
+
+.ak-academy-01 .form-row { margin-top: 12px; }
+
+.course-list { /* 20190521 수정 */ margin: 0 0 35px; list-style: none; }
+
+.course-list-item + .course-list-item { margin-top: 15px; }
+
+/* 20190612 수정 */
+.ak-academy-06 { padding-top: 116px; }
+
+.ak-academy-06 .container, .ak-academy-06 .section, .ak-academy-06 .header { max-width: inherit; }
+
+.ak-academy-06 .header { height: auto; padding: 32px; text-align: left; }
+
+.ak-academy-06 .header .input-radio-wrap { display: inline-block; width: auto; font-size: 20px; vertical-align: middle; }
+
+.btn-print { width: 127px; min-height: 50px; font-size: 26px; line-height: 48px; vertical-align: middle; border-color: #3b3b3b; background-color: #fff; text-align:Center; color:#000;}
+.btn-print:hover{
+	background:#fff;
+	
+}
+.btn-print:before { content: ''; display: inline-block; width: 26px; height: 27px; margin: -2px 4px 0 0; vertical-align: middle; background: url("/img/deskPopup/ba/icon_print.png") no-repeat 0 0; background-size: contain; }
+
+
+.ak-academy-06 .header .btn-print { margin: 0 0 0 7%; }
+
+.ak-academy-06 .page-title { font-size: 35px; }
+
+.ak-academy-06 .printable-container { display: none; }
+
+.ak-academy-06 #document1:checked ~ .header label[for="document1"] .icon { border: 8px solid #111a3b; }
+
+.ak-academy-06 #document1:checked ~ #print-document1 { display: block; }
+
+.ak-academy-06 #document2:checked ~ .header label[for="document2"] .icon { border: 8px solid #c9171c; }
+
+.ak-academy-06 #document2:checked ~ #print-document2 { display: block; }
+
+.modal-select-list .ak-modal-container { width: 100%; max-width: 768px; border-radius: 0; }
+
+.modal-select-list .ak-modal-header { -webkit-box-shadow: 0 5px 5px rgba(0, 0, 0, 0.18); box-shadow: 0 5px 5px rgba(0, 0, 0, 0.18); }
+
+.modal-select-list .ak-modal-title { font-size: 35px; }
+
+.select-list { position: relative; border-radius: 5px; border: 1px solid #dbdbdb; overflow: hidden; }
+
+.select-list-header { padding: 22px 32px; font-size: 24px; color: #fff; background: #3e3e3e; }
+
+.select-list-body { padding: 10px 32px; background: #fff; }
+
+.select-list .input-checkbox-wrap { padding: 0; border: 0; background: none; }
+
+.select-list-body .input-checkbox-label { width: 50%; padding-top: 20px; padding-bottom: 20px; }
+
+/* 20190614 수정 */
+
+.ak-academy-01 { background:url("../img/ak_academy_01_bg.jpg") no-repeat 0 0; }
+
+.ak-academy-01 .form-row:first-child { padding-top: 42px; }
+
+.ak-academy-01 .input-group .input-wrap { border: 0; background: none; }
+
+.ak-academy-01 .input-pick-label { width: 344px; height: 71px; border: 0; background-repeat: no-repeat; background-position: 0 0; -webkit-box-shadow: none!important; box-shadow: none!important; }
+
+.ak-academy-01 .section:first-child .input-group-left .input-pick-label { background-image: url("../img/ba/ak_academy_otp1_1_off.jpg"); }
+
+.ak-academy-01 .section:first-child .input-group-left input:checked + .input-pick-label { background-image: url("../../img/ba/ak_academy_otp1_1_on.jpg"); }
+
+.ak-academy-01 .section:first-child .input-group-right .input-pick-label { background-image: url("../../img/ba/ak_academy_otp1_2_off.jpg"); }
+
+.ak-academy-01 .section:first-child .input-group-right input:checked + .input-pick-label { background-image: url("../../img/ba/ak_academy_otp1_2_on.jpg"); }
+
+.ak-academy-01 .section:nth-child(2) .input-group-left .input-pick-label { background-image: url("../../img/ba/ak_academy_otp2_1_off.jpg"); }
+
+.ak-academy-01 .section:nth-child(2) .input-group-left input:checked + .input-pick-label { background-image: url("../../img/ba/ak_academy_otp2_1_on.jpg"); }
+
+.ak-academy-01 .section:nth-child(2) .input-group-right .input-pick-label { background-image: url("../../img/ba/ak_academy_otp2_2_off.jpg"); }
+
+.ak-academy-01 .section:nth-child(2) .input-group-right input:checked + .input-pick-label { background-image: url("../../img/ba/ak_academy_otp2_2_on.jpg"); }
+

@@ -1,0 +1,208 @@
+.cal-input{
+	position:Relative;	
+	width:200px;
+	max-width:100%;
+}
+
+
+
+.cal-input input{
+	padding-right:40px;
+	width:100%;
+}
+
+
+
+.cal-input i{
+	position:Absolute;
+	right:10px;
+	top:50%;
+    margin-top: -9px;
+    font-size: 19px;
+}
+
+
+
+.cal-dash{
+	width:30px;
+	text-align:center;
+	position:relative;
+	font-size:0;
+	height: 34px;
+}
+.cal-dash:before{
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 15px;
+    background: #000;
+    width: 10px;
+    height: 1px;
+    margin: 0 auto;
+}
+.cal-input, .cal-dash{
+	display:inline-block ;
+	vertical-align:middle;
+}
+
+
+.cal-row {
+	/*margin-top:14px;*/
+	margin-top:0;
+	
+}
+.date-day{
+	max-width:94px;
+	text-align:center;
+}
+.peri-list .bor-div{
+	padding:20px 0;
+}
+.h3-stit{
+	font-size:14px;
+	color:#000;
+	font-weight:700;
+	margin-bottom:10px;
+}
+.sear-tit02{
+	font-weight:400;
+}
+.bg01{
+	background-color: #edf1f6;
+}
+.peri-edit .table-top{
+	padding:10px 0;
+	width:100%;
+	margin-bottom:12px;
+}
+.peri-edit .table{
+	margin-bottom:0;	
+}
+.peri-edit .sear-tit{
+	padding: 0 30px;
+	width:auto;
+	position:relative;
+}
+.peri-edit .sear-tit02:before{
+	height: 14px;
+	opacity: 0.42;
+	background:#707070;
+	width:1px;
+	content:"";
+	display:block;
+	position:Absolute;
+	left:0;
+	top:50%;
+	margin-top:-7px;
+}
+.peri-edit .h3-stit{
+	padding:0 30px;
+}
+.peri-ul > li{
+	color:#555555;
+	padding:10px 30px;
+	border-bottom:1px solid #dfe5ee;
+	position:relative;
+}
+.peri-ul > li:last-child{
+	border-bottom:0;
+}
+.peri-ul > li.active{
+	background:#111a3b url(/img/arrow-right_w.png) no-repeat  95% center;
+	border-radius:29px;
+	border-bottom:1px solid Transparent;
+	color:#fff;
+	    background-size: 28px;
+}
+div.td-chk{
+    width: 20px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 15px;
+}
+.peri-edit .wid-5{
+	padding:25px 0;
+	border-radius:29px;
+	width:49.5%;
+}
+.peri-edit .wid-5.peri-1dep{
+	padding-right:30px;
+}
+.peri-edit .wid-5.peri-2dep{
+	padding-left:15px;
+	padding-right:15px;
+
+	
+}
+.scr-over{
+	overflow-y:scroll;
+	height:350px;
+	display:block;
+	padding-right:10px;
+}
+.peri-edit .wid-5.peri-2dep li, .peri-edit .wid-5.peri-2dep .h3-stit{
+	padding-lefT:5px;
+}
+.peri-edit .wid-5 + .wid-5{
+	margin-left:1%;
+}
+.peri-2dep{
+	box-shadow: 2px 3px 20px 0 rgba(193, 193, 193, 0.16);
+	-webkit-box-shadow: 2px 3px 20px 0 rgba(193, 193, 193, 0.16);
+}
+.peri-ulsel{
+	position:Absolute;
+	right:0;
+	top:6px;
+}
+.peri-ulsel .select-ul li{
+	padding-lefT: 15px !important;
+}
+.sear-wr .cal-row{
+	margin-top:0;
+}
+.view-page.peri-list .h3-tit{
+    margin-bottom: 5px;
+}
+.wid-rt_park{
+    padding-left: 7px;
+    position:relative;
+}
+.wid-rt_park:before{
+	content: '';
+    position: absolute;
+    left: -15px;
+    top: 8px;
+    width: 1px;
+    height: 15px;
+    background: #e2e2e2;
+}
+.cal-input.cal-input02.cal-input_park{
+	width:40%;
+}
+.cal-input.cal-input02.cal-input_gift{
+	width:40%;	
+}
+.cal-input_165{
+	width:165px;
+}
+
+.sear-smtit02{
+	padding-left:24px;
+}
+.time-input .select-box{
+	min-width:50px;
+}
+.chk-ul-3 > li+li{
+	margin-left:0;
+}
+.cal-dash02:before{
+	display:none;
+}
+
+
+
+
+
+

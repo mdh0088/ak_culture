@@ -1,0 +1,1914 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/member/custMapper">
+
+
+<select id="getUserListByMembers" parameterType="hashmap" resultType="hashmap">
+	 select 
+       	aa.* 
+     from AMS_CUS aa where 1=1
+        and aa.MTEL_UNIQ_NO = '${phone}'
+        and aa.cus_no not in((select bb.cus_no from bacusttb bb where bb.cus_no = aa.cus_no ))
+</select>
+
+<select id="getLectList" parameterType="hashmap" resultType="hashmap">
+SELECT
+    subject_cd,
+    day_flag,
+    cancled_list,
+    lect_cnt,
+    start_ymd
+FROM
+   bapelttb
+WHERE
+    store = '${store}'
+    AND period = '${period}'
+ORDER BY
+    subject_cd,
+    day_flag
+</select>
+
+<select id="getCustForAttend" parameterType="hashmap" resultType="hashmap">
+SELECT
+    cust_no
+FROM
+    baperetb
+WHERE
+    store = '${store}'
+    AND period = '${period}'
+    AND subject_cd ='${subject_cd}'
+    AND regis_cancel_fg != '2'
+    AND recpt_no <![CDATA[<>]]> '*'
+     AND cust_no not in (select cust_no from baattendtb where store='${store}' and period='${period}' and subject_cd='${subject_cd}' and is_lec='N')
+</select>
+
+
+<select id="getAddr_si" parameterType="hashmap" resultType="hashmap">
+	select distinct(addr_l) from baposttb
+</select>
+
+
+<select id="getAddr" parameterType="hashmap" resultType="hashmap">
+	select distinct(${start}) as addr from baposttb where ${start} is not null and ${end} = '${addr}'
+</select>
+
+
+<select id="getUserByMembers" parameterType="hashmap" resultType="hashmap">
+	select 
+            aa.cus_no as cus_no,
+            aa.cus_pn as cus_pn,
+            aa.eng_pn as eng_pn,
+            aa.bmd as bmd,
+            aa.email_addr as email_addr,
+            decode(aa.mtel_ident_no,'10','010')||'-'||aa.mmt_ex_no||'-'||aa.mtel_uniq_no as phone_no,
+            aa.ptl_id as ptl_id,
+            aa.ptl_pw as ptl_pw,
+            aa.rg_dtm as rg_dtm,
+            aa.ntr_dc as ntr_dc,
+            aa.di as di,
+            aa.ci as ci,
+            (select bb.card_no from ams_card bb where bb.cus_no = aa.cus_no) as mem_card_no,
+            (select bb.psno from ams_cus_addr bb where bb.cus_no = aa.cus_no) as psno,
+            (select bb.pnadd from ams_cus_addr bb where bb.cus_no = aa.cus_no) as pnadd,
+            (select bb.dts_addr from ams_cus_addr bb where bb.cus_no = aa.cus_no) as dts_addr
+        from AMS_CUS aa where 1=1
+            and aa.cus_no = '${cus_no}'
+</select>
+
+<select id="getUser_byPhone_Last" parameterType="hashmap" resultType="hashmap">
+	select * from BACUSTTB where  h_phone_no_3 = '${phone}'
+</select>
+	
+<select id="getCustCount" parameterType="hashmap" resultType="hashmap">
+	select count(*) as CNT from BACUSTTB where 1=1
+   	<if test="!search_name.equals('')">
+   		<!-- and id like CONCAT(CONCAT('%', #{search_name}), '%') -->
+   	</if>
+</select>
+
+<select id="getCust" parameterType="hashmap" resultType="hashmap">
+	select
+	CUST_NO, KOR_NM, ENG_NM, RESI_NO, ID, PASSWORD, HQ, STORE, BIRTH_YMD, S_L_FG, MARRY_FG, MARRY_YMD, SEX_FG, DM_DISPH_PLACE_FG, POST_NO1, POST_NO2, ADDR_TX, ADDR_TX1, ADDR_TX2, PHONE_NO1, PHONE_NO2, PHONE_NO3, MEM_FEE, JOB_CD, HOBBY_CD, C_NM, DEPT_NM, POSI, C_POST_NO1, C_POST_NO2, C_ADDR_TX1, C_ADDR_TX2, C_PHONE_NO_1, C_PHONE_NO_2, C_PHONE_NO_3, H_PHONE_NO_1, H_PHONE_NO_2, H_PHONE_NO_3, EMAIL_ADDR, CONFIRM_YN, CONFIRM_DATE, ACCEPT_YMD, CREATE_RESI_NO, CREATE_DATE, EMAIL_YN, SMS_YN, LEAVE_YN, PERIOD, PWD_FG, POINT_NO, UPDATE_RESI_NO, UPDATE_DATE, PTL_ID, CUS_NO, MS_FG, BEG_ENT_DT, PTL_PW, RESI_NO6, H_NEW_ADDR_YN, C_NEW_ADDR_YN, DI, CLUB_1, HOM_ADDR_IN_FG, RSP_CD, OFF_ADDR_IN_FG, OFF_RSP_CD, MEMO, SYNC_NEW_YN, CI, CAR_NO
+	from ( 
+	    select rownum as rnum, CUST_NO, KOR_NM, ENG_NM, RESI_NO, ID, PASSWORD, HQ, STORE, BIRTH_YMD, S_L_FG, MARRY_FG, MARRY_YMD, SEX_FG, DM_DISPH_PLACE_FG, POST_NO1, POST_NO2, ADDR_TX, ADDR_TX1, ADDR_TX2, PHONE_NO1, PHONE_NO2, PHONE_NO3, MEM_FEE, JOB_CD, HOBBY_CD, C_NM, DEPT_NM, POSI, C_POST_NO1, C_POST_NO2, C_ADDR_TX1, C_ADDR_TX2, C_PHONE_NO_1, C_PHONE_NO_2, C_PHONE_NO_3, H_PHONE_NO_1, H_PHONE_NO_2, H_PHONE_NO_3, EMAIL_ADDR, CONFIRM_YN, CONFIRM_DATE, ACCEPT_YMD, CREATE_RESI_NO, CREATE_DATE, EMAIL_YN, SMS_YN, LEAVE_YN, PERIOD, PWD_FG, POINT_NO, UPDATE_RESI_NO, UPDATE_DATE, PTL_ID, CUS_NO, MS_FG, BEG_ENT_DT, PTL_PW, RESI_NO6, H_NEW_ADDR_YN, C_NEW_ADDR_YN, DI, CLUB_1, HOM_ADDR_IN_FG, RSP_CD, OFF_ADDR_IN_FG, OFF_RSP_CD, MEMO, SYNC_NEW_YN, CI, CAR_NO
+	    from ( 
+	    	select * from BACUSTTB where 1=1
+	    	<if test="!search_name.equals('')">
+	    		<!-- and id like CONCAT(CONCAT('%', #{search_name}), '%') -->
+	    	</if>
+	    	<if test="!order_by.equals('') and !sort_type.equals('')">
+	    		order by ${sort_type} ${order_by}
+	    	</if>
+	    ) A
+	    where rownum <![CDATA[<=]]> #{e_rownum}) X
+	where X.rnum <![CDATA[>]]> #{s_rownum}
+</select>
+
+<select id="getCustListCount" parameterType="hashmap" resultType="hashmap">
+    select 
+       count(distinct aa.cust_no) as cnt
+    from baperetb aa, bacusttb bb, batrmstb cc, bapelttb ee ,
+   		(select 
+            min(mbr_gdc) as grade ,
+            cus_no 
+         from ams_bz_sect_mbr_grade
+         where
+         bz_sect = '1'
+         and to_char(sysdate,'yyyymmdd') between apy_bgng_dt and apy_ed_dt
+         
+          group by cus_no) dd
+    	where
+    		aa.hq=00
+        	and aa.store='${selBranch}'
+	       	and aa.period <![CDATA[>=]]> '${start_peri}'
+	        and aa.period <![CDATA[<=]]> '${end_peri}'
+        <if test="!dupl_cus_no.equals('')">
+        	and bb.cus_no not in(${dupl_cus_no})
+        </if>
+        
+        	and aa.regis_cancel_fg !='2'
+		    and aa.recpt_no <![CDATA[<>]]> '*'
+        	and aa.cust_no = bb.cust_no(+)
+	        and aa.sale_ymd = cc.sale_ymd(+)
+	        and aa.pos_no = cc.pos_no(+)
+	        and aa.recpt_no = cc.recpt_no(+) 
+	        and aa.subject_cd = ee.subject_cd(+)
+	        and bb.store = '${selBranch}'	        
+	        and bb.cus_no = dd.cus_no(+) 
+	        and bb.leave_yn ='N'
+	        and cc.hq= '00'
+	      	and cc.store = '${selBranch}'
+            and cc.period <![CDATA[>=]]> '${start_peri}'
+            and cc.period <![CDATA[<=]]> '${end_peri}'
+            and ee.hq = '00'
+		    and ee.store = '${selBranch}'
+		    and ee.period  <![CDATA[>=]]> '${start_peri}'
+		    and ee.period  <![CDATA[<=]]> '${end_peri}'
+		
+        <if test="!main_cd.equals('')">
+        	and ee.main_cd = '${main_cd}'
+        </if>
+        
+        <if test="!sect_cd.equals('')">
+        	and ee.sect_cd = '${sect_cd}'
+        </if>
+        
+        <if test="!subject_cd.equals('')">
+        	and ee.subject_cd = '${subject_cd}'
+        </if>
+   
+        <if test="!last_amt_start.equals('')">
+        	and aa.sale_ymd  <![CDATA[>=]]> replace('${last_amt_start}','-','')  --최종결제일
+        </if>
+        
+        <if test="!last_amt_end.equals('')">
+        	and aa.sale_ymd  <![CDATA[<=]]> replace('${last_amt_end}','-','') 
+        </if>
+        
+        <if test="!cust_fg.equals('')">
+        and ( SELECT MIN(PERIOD)  AS COUNT              --회원구분 (신규/정규 null값으로 구분 null이면 신규)
+                  FROM BAPERETB         
+                 WHERE
+                    STORE        =  '${selBranch}'   
+                   AND CUST_NO    =  aa.cust_no
+                   AND PERIOD   <![CDATA[<]]>  (select get_web_period(aa.store) period from dual)
+                   
+                   GROUP BY CUST_NO  ) is<if test="cust_fg eq '2'.toString()"> not </if>null
+         </if>  
+                   
+         <if test="!sign_start_ymd.equals('')">
+         	and bb.create_date <![CDATA[>=]]> replace('${sign_start_ymd}','-','')||'000000'  --가입일
+         </if>
+         
+         <if test="!sign_end_ymd.equals('')">
+         	and bb.create_date <![CDATA[<=]]> replace('${sign_end_ymd}','-','')||'999999'
+         </if>
+         
+         <if test="!si.equals('')">
+        	and (bb.addr_tx1 like ('%${si}%') or bb.addr_tx1 like ('%${si2}%')) --지역
+         </if>
+         <if test="!gun.equals('')">
+         	and bb.addr_tx1 like ('%${gun}%')
+         </if>
+         <if test="!ri.equals('')">
+         	and bb.addr_tx1 like ('%${ri}%')
+         </if>
+         
+         
+         <if test="!sms_chk.equals('')">
+          	and bb.sms_yn like '${sms_chk}'||'%'  
+          </if>
+		                                  
+		                                  
+         <if test="!marriage_chk.equals('')">
+         	and (nvl(bb.marry_fg,'1')) = '${marriage_chk}' --성별
+         </if>
+         <if test="!lect_cnt.equals('')">
+          	and (	--수강강좌
+          		select count(*) from baperetb where 
+          			regis_cancel_fg != '2'
+          		and RECPT_NO <![CDATA[<>]]> '*' 
+          		and store='${selBranch}'
+          		and cust_no =aa.cust_no 
+          		and period <![CDATA[>=]]> ${start_peri}
+          		and period <![CDATA[<=]]> ${end_peri}
+          		
+          		) <if test="lect_way.equals('up')"><![CDATA[>=]]></if><if test="lect_way.equals('down')"><![CDATA[<=]]></if>${lect_cnt}
+         </if>
+         <if test="!continue_cnt.equals('')">
+	        and (  --연속수강
+	         select count(distinct d.period) as cnt from baperetb d 
+	             where period in(
+	                           select period from(                           
+	                            SELECT store,period,
+	                            RANK() OVER (ORDER BY period DESC) rank
+	                            FROM baperitb where store=${selBranch} 
+	                            --	and period <![CDATA[>=]]> ${start_peri}
+	                                and period <![CDATA[<=]]> ${end_peri}) where rank<![CDATA[<=]]> ${continue_cnt} 
+	                    ) and d.cust_no = aa.cust_no and d.regis_cancel_fg != '2' and d.recpt_no <![CDATA[<>]]> '*' 
+	            ) <if test="continue_way.equals('up')"><![CDATA[>=]]></if> 
+	              <if test="continue_way.equals('down')"><![CDATA[<=]]></if> ${continue_cnt}
+         </if>
+        	
+        
+        <if test="!yoil.equals('0000000')">	
+	        and ( 
+                1=2
+                 or (substr(ee.day_flag,'1','1')=1 and substr('${yoil}','1','1')=1)
+                 or (substr(ee.day_flag,'2','1')=1 and substr('${yoil}','2','1')=1)
+                 or (substr(ee.day_flag,'3','1')=1 and substr('${yoil}','3','1')=1)
+                 or (substr(ee.day_flag,'4','1')=1 and substr('${yoil}','4','1')=1)
+                 or (substr(ee.day_flag,'5','1')=1 and substr('${yoil}','5','1')=1)
+                 or (substr(ee.day_flag,'6','1')=1 and substr('${yoil}','6','1')=1)
+                 or (substr(ee.day_flag,'7','1')=1 and substr('${yoil}','7','1')=1)	
+             )
+         </if>
+         
+        <if test="!cust_age_start.equals('')">
+       		and (select FLOOR(MONTHS_BETWEEN(SYSDATE,TO_DATE(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[>=]]> ${cust_age_start}--연령대
+       	</if>
+       	
+        <if test="!cust_age_end.equals('')">
+       		and (select FLOOR(MONTHS_BETWEEN(SYSDATE,TO_DATE(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[<=]]>  ${cust_age_end}--연령대
+       	</if>
+       	
+       	<if test="!start_month.equals('')">
+        	and substr(bb.birth_ymd,5,8) <![CDATA[>=]]> '${start_month}${start_day}' --생일
+        </if>
+        
+       	<if test="!end_month.equals('')">
+        	and substr(bb.birth_ymd,5,8) <![CDATA[<=]]> '${end_month}${end_day}'
+        </if>
+        
+	       <if test="!amt_start.equals('')">
+	          and cc.net_sale_amt <![CDATA[>=]]> ${amt_start}
+	       </if>
+	       
+	       <if test="!amt_end.equals('')">
+	          and cc.net_sale_amt <![CDATA[<=]]> ${amt_end}
+	       </if>
+            
+         <if test="!car_chk.equals('')">   
+         	and bb.car_no is <if test="car_chk eq '2'.toString()">not</if> null --차량유무
+         </if>
+          
+          
+         <if test="!subejct_fg.equals('')">
+	        and ee.subject_fg =${subejct_fg} --수강 형태
+	      </if>
+        
+        <if test="!lect_chk.equals('')">
+	        and (1=2
+                    <if test="!lect_time_a.equals('')">
+                    	or ee.lect_hour <![CDATA[<=]]> 10000000 
+                   	</if>
+                    <if test="!lect_time_b.equals('')">
+                    	or ee.lect_hour between 10000000 and 12000000
+                    </if>
+                    <if test="!lect_time_c.equals('')">
+                    	or ee.lect_hour between 12000000 and 14000000
+                    </if>
+                    <if test="!lect_time_d.equals('')">
+                    	or ee.lect_hour between 14000000 and 16000000
+                    </if>
+                    <if test="!lect_time_e.equals('')">
+                    	or ee.lect_hour between 16000000 and 18000000
+                    </if>
+                    <if test="!lect_time_f.equals('')">
+                    	or ee.lect_hour <![CDATA[>=]]> 18000000
+                    </if> 
+	            )
+        </if>
+			          
+			          
+			    group by aa.store, aa.cust_no
+		             ,bb.cus_no, bb.ptl_id, bb.kor_nm, bb.sex_fg, bb.birth_ymd, bb.create_date
+		             ,dd.grade
+        
+          <if test="!order_by.equals('') and !sort_type.equals('')">
+              order by ${sort_type} ${order_by}
+          </if>
+          <if test="order_by.equals('') and sort_type.equals('')">
+          	  order by aa.cust_no
+          </if>
+        
+        
+       
+</select>
+
+<select id="getCustList" parameterType="hashmap" resultType="hashmap">
+
+		select 
+        	CUST_NO,
+	        PTL_ID,
+	        KOR_NM,
+	        GRADE,
+	        cust_fg,
+	         SMS_YN,
+	         PHONE_NO,
+	         SUB_CNT,
+	         ACCEPT_YMD,
+	         create_date,
+	         direct_sub_cnt
+		from (
+		            select kor_nm,
+		                    cust_fg,
+		                    ptl_id,
+		                     cust_no,
+		                     sms_yn,
+		                     sub_cnt, 
+		                     accept_ymd,
+		                     create_date,
+		                     trim(h_phone_no_1)||'-'||h_phone_no_2||'-'||h_phone_no_3 as phone_no,
+		                      nvl(replace((select acm_codename_fn('MS36', mbr_gdc) as mbr_gdc_nm
+		                                         from ams_bz_sect_mbr_grade
+		                                       where cus_no = trim(tt1.cust_no) and bz_sect = '1'
+		                                          and to_char(sysdate,'yyyymmdd') between apy_bgng_dt and apy_ed_dt
+		                                          and rownum = 1),'백화점 ',null),'Entry') grade,             
+		                    direct_sub_cnt  
+		            from (
+		                     select 
+			                     		t1.kor_nm,
+			                            t1.ptl_id,
+			                            t1.sex_fg,
+			                            t1.birth_ymd,
+			                            nvl(trim(t1.accept_ymd),substr(t1.create_date,0,9)) as ACCEPT_YMD,
+			                            t1.create_date,
+	                                    t1.cust_no,
+	                                    t1.sms_yn,
+	                                    <!-- t1.period ,  -->
+	                                    t1.h_phone_no_1,
+	                                    t1.h_phone_no_2,
+	                                    t1.h_phone_no_3,                  
+	                                    count(t1.subject_cd) sub_cnt,     
+		                              	decode((select MIN(PERIOD) AS COUNT
+		                                  from BAPEREtb where store= t1.store and cust_no = t1.cust_no
+		                                   and period <![CDATA[<=]]> '${end_peri}' and period <![CDATA[>=]]> '${start_peri}'  GROUP BY CUST_NO),'','신규','기존') as cust_fg,
+		                                   
+		                                (case when count(distinct t1.period) = 
+                                         (select count(period) period_tot_cnt
+                                            from neocult.baperitb
+                                          where hq = '00'
+                                             and store = '${selBranch}'
+                                             and period <![CDATA[>=]]> '${start_peri}'
+                                             and period <![CDATA[<=]]> '${end_peri}') then 'Y' else 'N' end) direct_sub_cnt   
+		                     from (
+		                     		
+		                     			select
+                                            aa.hq,
+                                            aa.store,
+                                            aa.period,
+                                            bb.kor_nm,
+                                            bb.ptl_id,
+                                            bb.sex_fg,
+                                            bb.birth_ymd,
+                                            bb.accept_ymd,
+                                            bb.create_date,
+                                            bb.cust_no,
+                                            bb.sms_yn,
+                                            bb.h_phone_no_1,
+                                            bb.h_phone_no_2,
+                                            bb.h_phone_no_3,                  
+                                            aa.subject_cd,
+                                            aa.sale_ymd,
+                                            aa.recpt_no,
+                                            aa.pos_no,
+                                            aa.regis_cancel_fg
+                                            
+                                        from baperetb aa, bacusttb bb where 1=1
+                                            and aa.store = '${selBranch}'
+                                            and aa.period <![CDATA[<=]]> '${end_peri}'
+                                            and aa.period <![CDATA[>=]]> '${start_peri}'
+                                            and aa.cust_no = bb.cust_no
+                                            and nvl((select mem_fg from bawbtrtb where sale_ymd = aa.sale_ymd and hq=aa.hq and store =aa.store and period = aa.period and subject_cd = aa.subject_cd and cust_no =aa.cust_no and send_recpt_no = aa.recpt_no and rownum = 1),'0') != 'C'
+                                            
+		                     			<if test="!sign_start_ymd.equals('')">
+		                                    and nvl(trim(bb.accept_ymd),substr(bb.create_date,0,9)) <![CDATA[>=]]> replace('${sign_start_ymd}','-','')
+		                                </if>
+		                                
+		                                <if test="!sign_end_ymd.equals('')">
+		                                    and nvl(trim(bb.accept_ymd),substr(bb.create_date,0,9)) <![CDATA[<=]]> replace('${sign_end_ymd}','-','')
+		                                </if>
+		                                
+		                                <if test="!si.equals('')">
+		                                    and (bb.addr_tx1 like '%'||'${si}'||'%'  or  bb.addr_tx1 like '%'||'${si2}'||'%')
+		                                </if>
+		                                
+		                                <if test="!gun.equals('')">
+		                                    and bb.addr_tx1 like '%'||'%${gun}%'||'%' 
+		                                </if>
+		                                
+		                                <if test="!ri.equals('')">
+		                                    and bb.addr_tx1 like '%'||'%${ri}%'||'%'  --주소
+		                                </if>
+		                                
+		                                <if test="!marriage_chk.equals('')">
+		                                    and nvl(bb.marry_fg,'1') = '${marriage_chk}'   --결혼유무
+		                                </if>
+		                                
+		                                <if test="!cust_age_start.equals('')">
+		                                    and (select floor(months_between(sysdate,to_date(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[>=]]> ${cust_age_start}     --연령대
+		                                </if>
+		                                
+		                                <if test="!cust_age_end.equals('')">
+		                                    and (select floor(months_between(sysdate,to_date(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[<=]]> ${cust_age_end}
+		                                </if>
+		                                
+		                                <if test="!start_month.equals('')">
+		                                    and substr(bb.birth_ymd,5,8) <![CDATA[>=]]> '${start_month}${start_day}' 
+		                                </if>
+		                                
+		                                <if test="!end_month.equals('')">
+		                                    and substr(bb.birth_ymd,5,8) <![CDATA[<=]]> '${end_month}${end_day}' --생일
+		                                </if>
+		                                
+		                                <if test="!car_chk.equals('')">   
+		                                    and bb.car_no is <if test="car_chk eq '2'.toString()">not</if> null --차량유무
+		                                 </if>
+		                                 
+		                                 
+		                                 
+		                                 <if test="!sms_chk.equals('')">
+		                                  	and bb.sms_yn like '${sms_chk}'||'%'  
+		                                  </if>
+		                     		) t1 ,
+		                            (
+		                            select *
+		                            from BAPELTTB
+		                            where hq = '00'
+		                               and store = '${selBranch}'
+		                               and period <![CDATA[<=]]> '${end_peri}'
+		                               and period <![CDATA[>=]]> '${start_peri}'
+		                               
+	                                <if test="end_yn eq 'N'.toString()">
+	                              	  and end_yn!='Y'
+	                                </if>
+	                                
+	                                 <if test="end_yn eq 'Y'.toString()">
+	                              	  and end_yn='Y'
+	                                </if>
+	                                
+	                                
+		                               
+		                       	 	<if test="!main_cd.equals('')">
+		                                and main_cd  like '${main_cd}'||'%'  -- 대분류
+		                            </if>
+		                            
+		                            <if test="!sect_cd.equals('')">
+		                                and sect_cd like '${sect_cd}'||'%'  --중분류
+		                            </if>
+		                            
+		                            <if test="!subject_cd.equals('')">
+		                                and subject_cd like '${subject_cd}'||'%'  --강좌코드
+		                            </if>
+		                                
+		                            <if test="!subejct_fg.equals('')">
+		                                and subject_fg like '${subejct_fg}'||'%' --수강 형태 전체 정규 단기 특강
+		                            </if>
+		                            
+		                           <if test="!lect_chk.equals('')"> 
+		                                and (1=2
+		                                        <if test="!lect_time_a.equals('')">
+		                                            ((substr(lect_hour,1,4) <![CDATA[<=]]> 1000 and substr(lect_hour,5,4) <![CDATA[<=]]> 1000)) or  --수강시간
+		                                        </if>
+		                                        <if test="!lect_time_b.equals('')">
+		                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1000 and substr(lect_hour,5,4) <![CDATA[<=]]> 1200)) or
+		                                        </if>
+		                                        <if test="!lect_time_c.equals('')">
+		                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1200 and substr(lect_hour,5,4) <![CDATA[<=]]> 1400)) or
+		                                        </if>
+		                                        <if test="!lect_time_d.equals('')">
+		                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1400 and substr(lect_hour,5,4) <![CDATA[<=]]> 1600)) or
+		                                        </if>
+		                                        <if test="!lect_time_e.equals('')">
+		                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1600 and substr(lect_hour,5,4) <![CDATA[<=]]> 1800)) or
+		                                        </if>
+		                                        <if test="!lect_time_f.equals('')">
+		                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1800 and substr(lect_hour,5,4) <![CDATA[>=]]> 1800))
+		                                        </if>
+		                                      )
+		                            </if>
+		                            
+		                            <if test="!yoil.equals('0000000')">	    
+		                                and (
+		                                      (substr(day_flag,1,1)='1' and substr('${yoil}',1,1)=1) or  --수강 요일
+		                                      (substr(day_flag,2,1)='1' and substr('${yoil}',2,1)=1) or
+		                                      (substr(day_flag,3,1)='1' and substr('${yoil}',3,1)=1) or
+		                                      (substr(day_flag,4,1)='1' and substr('${yoil}',4,1)=1) or
+		                                      (substr(day_flag,5,1)='1' and substr('${yoil}',5,1)=1) or
+		                                      (substr(day_flag,6,1)='1' and substr('${yoil}',6,1)=1) or
+		                                      (substr(day_flag,7,1)='1' and substr('${yoil}',7,1)=1)
+		                                    )
+		                            </if>
+		                             ) t3,
+		                            (
+		                                select *
+		                                from batrmstb
+		                                where hq = '00'
+		                                and store = '${selBranch}'
+		                               
+		                           ) t4
+		                    where 
+		                    t1.hq = t3.hq          
+		                    and t1.store = t3.store           
+		                    and t1.period = t3.period           
+		                    and t1.subject_cd = t3.subject_cd
+		                    and t1.hq = t4.hq          
+		                    and t1.store = t4.store           
+		                    and t1.sale_ymd = t4.sale_ymd           
+		                    and t1.pos_no = t4.pos_no           
+		                    and t1.recpt_no = t4.recpt_no
+		                    and t1.hq ='00'
+		                    and t1.regis_cancel_fg <![CDATA[<>]]> '2'  -- 3아닌 취소인 2만 제거로 변경
+		                    and t1.RECPT_NO <![CDATA[<>]]> '*'
+		                    and t1.store = '${selBranch}'
+		                    and t1.period <![CDATA[<=]]> '${end_peri}'     
+		  					and t1.period <![CDATA[>=]]> '${start_peri}'
+		  					
+		                    group by t1.store,  t1.kor_nm,       t1.ptl_id,       t1.cust_no,
+                                     t1.sms_yn, t1.h_phone_no_1, t1.h_phone_no_2, t1.h_phone_no_3,  t1.accept_ymd,  t1.create_date,
+                                     t1.sex_fg, t1.birth_ymd
+                                     
+		                ) tt1    
+		    )
+		where 1=1
+		
+		<if test="!lect_cnt.equals('')">
+		    and sub_cnt <if test="lect_way.equals('up')"><![CDATA[>=]]></if><if test="lect_way.equals('down')"><![CDATA[<=]]></if>${lect_cnt}  --수강건수
+		</if>
+		
+		<if test="!continue_chk.equals('')">
+		    and direct_sub_cnt = '${continue_chk}'   -- 연속수강수     
+		</if>
+		
+		
+		
+</select>
+
+<select id="getCustListCount02" parameterType="hashmap" resultType="hashmap">
+       select 
+                count(*) as cnt
+            from (
+                        select   store,
+                                 kor_nm,
+                                 cust_fg,
+                                 ptl_id,
+                                 cust_no,
+                                 sex_fg,
+                                 birth_ymd,
+                                 sms_yn,
+                                 lect_cnt, 
+                                 accept_ymd,
+                                 create_date,
+                                 trim(h_phone_no_1)||'-'||h_phone_no_2||'-'||h_phone_no_3 as phone_no,
+                                  nvl(replace((select acm_codename_fn('MS36', mbr_gdc) as mbr_gdc_nm
+                                                     from ams_bz_sect_mbr_grade
+                                                   where cus_no = trim(tt1.cust_no) and bz_sect = '1'
+                                                      and to_char(sysdate,'yyyymmdd') between apy_bgng_dt and apy_ed_dt
+                                                      and rownum = 1),'백화점 ',null),'Entry') grade,             
+                                
+                                sum_amt,
+                                last_sale_ymd
+                        from (
+                                 select 
+                                            t1.store,
+                                            t1.kor_nm,
+                                            t1.ptl_id,
+                                            t1.sex_fg,
+                                            t1.birth_ymd,
+                                            nvl(trim(t1.accept_ymd),substr(t1.create_date,0,9)) as ACCEPT_YMD,
+                                            t1.create_date,
+                                            t1.cust_no,
+                                            t1.sms_yn,
+                                            t1.period,
+                                            t1.h_phone_no_1,
+                                            t1.h_phone_no_2,
+                                            t1.h_phone_no_3,                  
+                                            count(t1.subject_cd) lect_cnt,     
+                                            decode((select MIN(PERIOD) AS COUNT
+                                              from BAPEREtb where store= t1.store and cust_no = t1.cust_no
+                                               and period <![CDATA[<]]>  t1.period GROUP BY CUST_NO),'','신규','기존') as cust_fg,
+                                            sum(t4.net_sale_amt) as sum_amt,
+                                            TO_CHAR(TO_DATE(max(t4.sale_ymd), 'YYYYMMDD'), 'YYYY-MM-DD') as last_sale_ymd,
+                                            (case when count(distinct t1.period) = 
+	                                         (select count(period) period_tot_cnt
+	                                            from neocult.baperitb
+	                                          where hq = '00'
+	                                             and store = '${selBranch}'
+	                                             and period <![CDATA[>=]]> '${start_peri}'
+	                                             and period <![CDATA[<=]]> '${end_peri}') then 'Y' else 'N' end) direct_sub_cnt 
+                                 from (
+                                        
+                                            select
+                                                aa.hq,
+                                                aa.store,
+                                                aa.period,
+                                                bb.kor_nm,
+                                                bb.ptl_id,
+                                                bb.sex_fg,
+                                                bb.birth_ymd,
+                                                bb.accept_ymd,
+                                                bb.create_date,
+                                                bb.cust_no,
+                                                bb.sms_yn,
+                                                bb.h_phone_no_1,
+                                                bb.h_phone_no_2,
+                                                bb.h_phone_no_3,                  
+                                                aa.subject_cd,
+                                                aa.sale_ymd,
+                                                aa.recpt_no,
+                                                aa.pos_no,
+                                                aa.regis_cancel_fg
+                                                
+                                            from baperetb aa, bacusttb bb where 1=1
+                                                and aa.store = '${selBranch}'
+                                                and aa.period= '${selPeri}'
+                                                and aa.cust_no = bb.cust_no
+                                                and nvl((select mem_fg from bawbtrtb where sale_ymd = aa.sale_ymd and hq=aa.hq and store =aa.store and period = aa.period and subject_cd = aa.subject_cd and cust_no =aa.cust_no and send_recpt_no = aa.recpt_no and rownum = 1),'0') != 'C'
+                                                <if test="!last_amt_start.equals('')">
+                                                    and sale_ymd <![CDATA[>=]]> replace('${last_amt_start}','-','')
+                                                </if>
+                                                
+                                                <if test="!last_amt_end.equals('')">
+                                                    and sale_ymd <![CDATA[<=]]> replace('${last_amt_end}','-','') 
+                                                </if>
+                                                <if test="!cust_fg.equals('')">
+                                                    and ( SELECT MIN(PERIOD)  AS COUNT              --회원구분 (신규/정규 null값으로 구분 null이면 신규)
+                                                              FROM BAPERETB         
+                                                             WHERE
+                                                                STORE        =  '${selBranch}' 
+                                                               AND CUST_NO    =  aa.cust_no
+                                                               AND PERIOD   <![CDATA[<]]>  (select get_web_period('${selBranch}') period from dual)
+                                                               
+                                                               GROUP BY CUST_NO  ) is<if test="cust_fg eq '2'.toString()"> not </if>null
+                                                </if>
+                                                
+                                                <if test="!sign_start_ymd.equals('')">
+                                                    and nvl(trim(bb.accept_ymd),substr(bb.create_date,0,9)) <![CDATA[>=]]> replace('${sign_start_ymd}','-','')
+                                                </if>
+                                                
+                                                <if test="!sign_end_ymd.equals('')">
+                                                    and nvl(trim(bb.accept_ymd),substr(bb.create_date,0,9)) <![CDATA[<=]]> replace('${sign_end_ymd}','-','')
+                                                </if>
+                                            
+                                            
+                                                <if test="!si.equals('')">
+                                                    and (bb.addr_tx1 like '%'||'${si}'||'%'  or  bb.addr_tx1 like '%'||'${si2}'||'%')
+                                                </if>
+                                                
+                                                <if test="!gun.equals('')">
+                                                    and bb.addr_tx1 like '%'||'%${gun}%'||'%' 
+                                                </if>
+                                                
+                                                <if test="!ri.equals('')">
+                                                    and bb.addr_tx1 like '%'||'%${ri}%'||'%'  --주소
+                                                </if>
+                                                
+                                                <if test="!marriage_chk.equals('')">
+                                                    and nvl(bb.marry_fg,'1') = '${marriage_chk}'   --결혼유무
+                                                </if>
+                                                
+                                                <if test="!cust_age_start.equals('')">
+                                                    and (select floor(months_between(sysdate,to_date(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[>=]]> ${cust_age_start}     --연령대
+                                                </if>
+                                                
+                                                <if test="!cust_age_end.equals('')">
+                                                    and (select floor(months_between(sysdate,to_date(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[<=]]> ${cust_age_end}
+                                                </if>
+                                                
+                                                <if test="!start_month.equals('')">
+                                                    and substr(bb.birth_ymd,5,8) <![CDATA[>=]]> '${start_month}${start_day}' 
+                                                </if>
+                                                
+                                                <if test="!end_month.equals('')">
+                                                    and substr(bb.birth_ymd,5,8) <![CDATA[<=]]> '${end_month}${end_day}' --생일
+                                                </if>
+                                                
+                                                <if test="!car_chk.equals('')">   
+                                                    and bb.car_no is <if test="car_chk eq '2'.toString()">not</if> null --차량유무
+                                                 </if>
+                                                
+                                        ) t1 ,
+                                        (
+                                        select *
+                                        from BAPELTtb
+                                        where hq = '00'
+                                           and store = '${selBranch}'
+                                           and period = '${selPeri}'
+                                           
+                                           <if test="!main_cd.equals('')">
+                                                and main_cd  like '${main_cd}'||'%'  -- 대분류
+                                           </if>
+                                        
+                                           <if test="!sect_cd.equals('')">
+                                                and sect_cd like '${sect_cd}'||'%'  --중분류
+                                           </if>
+                                           
+                                           <if test="!subject_cd.equals('')">
+                                               and subject_cd like '${subject_cd}'||'%'  --강좌코드
+                                           </if>
+                                           
+                                           <if test="!subejct_fg.equals('')">
+                                                and subject_fg like '${subejct_fg}'||'%' --수강 형태 전체 정규 단기 특강
+                                            </if>
+                                            
+                                             <if test="!lect_chk.equals('')"> 
+                                                and (1=2
+                                                        <if test="!lect_time_a.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[<=]]> 1000 and substr(lect_hour,5,4) <![CDATA[<=]]> 1000)) or  --수강시간
+                                                        </if>
+                                                        <if test="!lect_time_b.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1000 and substr(lect_hour,5,4) <![CDATA[<=]]> 1200)) or
+                                                        </if>
+                                                        <if test="!lect_time_c.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1200 and substr(lect_hour,5,4) <![CDATA[<=]]> 1400)) or
+                                                        </if>
+                                                        <if test="!lect_time_d.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1400 and substr(lect_hour,5,4) <![CDATA[<=]]> 1600)) or
+                                                        </if>
+                                                        <if test="!lect_time_e.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1600 and substr(lect_hour,5,4) <![CDATA[<=]]> 1800)) or
+                                                        </if>
+                                                        <if test="!lect_time_f.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1800 and substr(lect_hour,5,4) <![CDATA[>=]]> 1800))
+                                                        </if>
+                                                      )
+                                            </if>
+                                           
+                                           <if test="!yoil.equals('0000000')">	    
+                                                and (
+                                                      (substr(day_flag,1,1)='1' and substr('${yoil}',1,1)=1) or  --수강 요일
+                                                      (substr(day_flag,2,1)='1' and substr('${yoil}',2,1)=1) or
+                                                      (substr(day_flag,3,1)='1' and substr('${yoil}',3,1)=1) or
+                                                      (substr(day_flag,4,1)='1' and substr('${yoil}',4,1)=1) or
+                                                      (substr(day_flag,5,1)='1' and substr('${yoil}',5,1)=1) or
+                                                      (substr(day_flag,6,1)='1' and substr('${yoil}',6,1)=1) or
+                                                      (substr(day_flag,7,1)='1' and substr('${yoil}',7,1)=1)
+                                                    )
+                                            </if>
+                                     
+                                         ) t3,
+                                        (
+                                            select *
+                                            from batrmstb
+                                            where hq = '00'
+                                            and store = '${selBranch}'
+                                            
+                                            <if test="!amt_start.equals('')">
+                                                and net_sale_amt <![CDATA[>=]]> ${amt_start}
+                                            </if>
+                                            <if test="!amt_end.equals('')">
+                                                and net_sale_amt <![CDATA[<=]]> ${amt_end}
+                                            </if>
+                                            
+                                         
+                                       ) t4
+                                where 
+                                t1.hq = t3.hq          
+                                and t1.store = t3.store           
+                                and t1.period = t3.period           
+                                and t1.subject_cd = t3.subject_cd
+                                and t1.hq = t4.hq          
+                                and t1.store = t4.store           
+                                and t1.sale_ymd = t4.sale_ymd           
+                                and t1.pos_no = t4.pos_no           
+                                and t1.recpt_no = t4.recpt_no
+                                and t1.hq ='00'
+                                and t1.regis_cancel_fg <![CDATA[<>]]> '2'  -- 3아닌 취소인 2만 제거로 변경
+                                and t1.RECPT_NO <![CDATA[<>]]> '*'
+                                and t1.store = '${selBranch}'
+                                and t1.period = '${selPeri}'     
+              
+                                group by t1.store,      t1.period,       t1.kor_nm,       t1.ptl_id,       t1.cust_no,      t1.sex_fg,
+                                         t1.sms_yn,     t1.h_phone_no_1, t1.h_phone_no_2, t1.h_phone_no_3,  t1.accept_ymd,  t1.create_date,
+                                         t1.birth_ymd
+                                         
+                            ) tt1    
+	                )
+	            where 1=1
+                <if test="!lect_cnt.equals('')">
+                    and lect_cnt <if test="lect_way.equals('up')"><![CDATA[>=]]></if><if test="lect_way.equals('down')"><![CDATA[<=]]></if>${lect_cnt}  --수강건수
+                </if>
+                
+                <if test="!continue_cnt.equals('')">
+                    and direct_lect_cnt <if test="continue_way.equals('up')"><![CDATA[>=]]></if><if test="continue_way.equals('down')"><![CDATA[<=]]></if> ${continue_cnt}   -- 연속수강수     
+                </if>
+</select>
+
+<select id="getCustList02" parameterType="hashmap" resultType="hashmap">
+select
+    X.*
+    from ( 
+        select rownum as rnum, A.*
+        from (    
+            select 
+                decode(store,'03','분당점','02','수원점','04','평택점','05','원주점') as store_nm,
+                CUST_NO,
+                store,
+                PTL_ID,
+                KOR_NM,
+                GRADE,
+                decode(sex_fg,'M','남','F','여') as sex_fg,
+                TO_CHAR(TO_DATE(birth_ymd, 'YYYYMMDD'), 'YYYY-MM-DD') as birth_ymd,
+                create_date,
+                sum_amt,
+                last_sale_ymd,
+                lect_cnt,
+                direct_lect_cnt,
+                cust_fg
+                -- SMS_YN,
+                -- PHONE_NO,
+                 
+                -- ACCEPT_YMD,
+                -- create_date
+            from (
+                        select   store,
+                                 kor_nm,
+                                 cust_fg,
+                                 ptl_id,
+                                 cust_no,
+                                 sex_fg,
+                                 birth_ymd,
+                                 sms_yn,
+                                 lect_cnt, 
+                                 accept_ymd,
+                                 create_date,
+                                 trim(h_phone_no_1)||'-'||h_phone_no_2||'-'||h_phone_no_3 as phone_no,
+                                  nvl(replace((select acm_codename_fn('MS36', mbr_gdc) as mbr_gdc_nm
+                                                     from ams_bz_sect_mbr_grade
+                                                   where cus_no = trim(tt1.cust_no) and bz_sect = '1'
+                                                      and to_char(sysdate,'yyyymmdd') between apy_bgng_dt and apy_ed_dt
+                                                      and rownum = 1),'백화점 ',null),'Entry') grade,             
+                                (select count(distinct d.period) as cnt 
+                                from baperetb d where 
+                                                    period in(
+                                                       select period from(
+                                                        SELECT store,period,
+                                                        RANK() OVER (ORDER BY period DESC) rank
+                                                        FROM baperitb where store= '${selBranch}'                                   
+                                                        and period <![CDATA[<=]]> '${selPeri}') 
+                                                ) and d.cust_no = tt1.cust_no and d.regis_cancel_fg <![CDATA[<>]]> '2' and d.recpt_no <![CDATA[<>]]> '*') direct_lect_cnt,
+                                sum_amt,
+                                last_sale_ymd
+                        from (
+                                 select 
+                                            t1.store,
+                                            t1.kor_nm,
+                                            t1.ptl_id,
+                                            t1.sex_fg,
+                                            t1.birth_ymd,
+                                            nvl(trim(t1.accept_ymd),substr(t1.create_date,0,9)) as ACCEPT_YMD,
+                                            t1.create_date,
+                                            t1.cust_no,
+                                            t1.sms_yn,
+                                            t1.period,
+                                            t1.h_phone_no_1,
+                                            t1.h_phone_no_2,
+                                            t1.h_phone_no_3,                  
+                                            count(t1.subject_cd) lect_cnt,     
+                                            decode((select MIN(PERIOD) AS COUNT
+                                              from BAPEREtb where store= t1.store and cust_no = t1.cust_no
+                                               and period <![CDATA[<]]>  t1.period GROUP BY CUST_NO),'','신규','기존') as cust_fg,
+                                            sum(t4.net_sale_amt) as sum_amt,
+                                            TO_CHAR(TO_DATE(max(t4.sale_ymd), 'YYYYMMDD'), 'YYYY-MM-DD') as last_sale_ymd
+                                 from (
+                                        
+                                            select
+                                                aa.hq,
+                                                aa.store,
+                                                aa.period,
+                                                bb.kor_nm,
+                                                bb.ptl_id,
+                                                bb.sex_fg,
+                                                bb.birth_ymd,
+                                                bb.accept_ymd,
+                                                bb.create_date,
+                                                bb.cust_no,
+                                                bb.sms_yn,
+                                                bb.h_phone_no_1,
+                                                bb.h_phone_no_2,
+                                                bb.h_phone_no_3,                  
+                                                aa.subject_cd,
+                                                aa.sale_ymd,
+                                                aa.recpt_no,
+                                                aa.pos_no,
+                                                aa.regis_cancel_fg
+                                                
+                                            from baperetb aa, bacusttb bb where 1=1
+                                                and aa.store = '${selBranch}'
+                                                and aa.period= '${selPeri}'
+                                                and aa.cust_no = bb.cust_no
+                                                 and nvl((select mem_fg from bawbtrtb where sale_ymd = aa.sale_ymd and hq=aa.hq and store =aa.store and period = aa.period and subject_cd = aa.subject_cd and cust_no =aa.cust_no and send_recpt_no = aa.recpt_no and rownum = 1),'0') != 'C'
+                                                <if test="!last_amt_start.equals('')">
+                                                    and sale_ymd <![CDATA[>=]]> replace('${last_amt_start}','-','')
+                                                </if>
+                                                
+                                                <if test="!last_amt_end.equals('')">
+                                                    and sale_ymd <![CDATA[<=]]> replace('${last_amt_end}','-','') 
+                                                </if>
+                                                <if test="!cust_fg.equals('')">
+                                                    and ( SELECT MIN(PERIOD)  AS COUNT              --회원구분 (신규/정규 null값으로 구분 null이면 신규)
+                                                              FROM BAPERETB         
+                                                             WHERE
+                                                                STORE        =  '${selBranch}' 
+                                                               AND CUST_NO    =  aa.cust_no
+                                                               AND PERIOD   <![CDATA[<]]>  (select get_web_period('${selBranch}') period from dual)
+                                                               
+                                                               GROUP BY CUST_NO  ) is<if test="cust_fg eq '2'.toString()"> not </if>null
+                                                </if>
+                                                
+                                                <if test="!sign_start_ymd.equals('')">
+                                                    and nvl(trim(bb.accept_ymd),substr(bb.create_date,0,9)) <![CDATA[>=]]> replace('${sign_start_ymd}','-','')
+                                                </if>
+                                                
+                                                <if test="!sign_end_ymd.equals('')">
+                                                    and nvl(trim(bb.accept_ymd),substr(bb.create_date,0,9)) <![CDATA[<=]]> replace('${sign_end_ymd}','-','')
+                                                </if>
+                                            
+                                            
+                                                <if test="!si.equals('')">
+                                                    and (bb.addr_tx1 like '%'||'${si}'||'%'  or  bb.addr_tx1 like '%'||'${si2}'||'%')
+                                                </if>
+                                                
+                                                <if test="!gun.equals('')">
+                                                    and bb.addr_tx1 like '%'||'%${gun}%'||'%' 
+                                                </if>
+                                                
+                                                <if test="!ri.equals('')">
+                                                    and bb.addr_tx1 like '%'||'%${ri}%'||'%'  --주소
+                                                </if>
+                                                
+                                                <if test="!marriage_chk.equals('')">
+                                                    and nvl(bb.marry_fg,'1') = '${marriage_chk}'   --결혼유무
+                                                </if>
+                                                
+                                                <if test="!cust_age_start.equals('')">
+                                                    and (select floor(months_between(sysdate,to_date(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[>=]]> ${cust_age_start}     --연령대
+                                                </if>
+                                                
+                                                <if test="!cust_age_end.equals('')">
+                                                    and (select floor(months_between(sysdate,to_date(bb.birth_ymd,'YYYYMMDD'))/12) from dual) <![CDATA[<=]]> ${cust_age_end}
+                                                </if>
+                                                
+                                                <if test="!start_month.equals('')">
+                                                    and substr(bb.birth_ymd,5,8) <![CDATA[>=]]> '${start_month}${start_day}' 
+                                                </if>
+                                                
+                                                <if test="!end_month.equals('')">
+                                                    and substr(bb.birth_ymd,5,8) <![CDATA[<=]]> '${end_month}${end_day}' --생일
+                                                </if>
+                                                
+                                                <if test="!car_chk.equals('')">   
+                                                    and bb.car_no is <if test="car_chk eq '2'.toString()">not</if> null --차량유무
+                                                 </if>
+                                                
+                                        ) t1 ,
+                                        (
+                                        select *
+                                        from BAPELTtb
+                                        where hq = '00'
+                                           and store = '${selBranch}'
+                                           and period = '${selPeri}'
+                                           
+                                           <if test="!main_cd.equals('')">
+                                                and main_cd  like '${main_cd}'||'%'  -- 대분류
+                                           </if>
+                                        
+                                           <if test="!sect_cd.equals('')">
+                                                and sect_cd like '${sect_cd}'||'%'  --중분류
+                                           </if>
+                                           
+                                           <if test="!subject_cd.equals('')">
+                                               and subject_cd like '${subject_cd}'||'%'  --강좌코드
+                                           </if>
+                                           
+                                           <if test="!subejct_fg.equals('')">
+                                                and subject_fg like '${subejct_fg}'||'%' --수강 형태 전체 정규 단기 특강
+                                            </if>
+                                            
+                                             <if test="!lect_chk.equals('')"> 
+                                                and (1=2
+                                                        <if test="!lect_time_a.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[<=]]> 1000 and substr(lect_hour,5,4) <![CDATA[<=]]> 1000)) or  --수강시간
+                                                        </if>
+                                                        <if test="!lect_time_b.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1000 and substr(lect_hour,5,4) <![CDATA[<=]]> 1200)) or
+                                                        </if>
+                                                        <if test="!lect_time_c.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1200 and substr(lect_hour,5,4) <![CDATA[<=]]> 1400)) or
+                                                        </if>
+                                                        <if test="!lect_time_d.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1400 and substr(lect_hour,5,4) <![CDATA[<=]]> 1600)) or
+                                                        </if>
+                                                        <if test="!lect_time_e.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1600 and substr(lect_hour,5,4) <![CDATA[<=]]> 1800)) or
+                                                        </if>
+                                                        <if test="!lect_time_f.equals('')">
+                                                            ((substr(lect_hour,1,4) <![CDATA[>=]]> 1800 and substr(lect_hour,5,4) <![CDATA[>=]]> 1800))
+                                                        </if>
+                                                      )
+                                            </if>
+                                           
+                                           <if test="!yoil.equals('0000000')">	    
+                                                and (
+                                                      (substr(day_flag,1,1)='1' and substr('${yoil}',1,1)=1) or  --수강 요일
+                                                      (substr(day_flag,2,1)='1' and substr('${yoil}',2,1)=1) or
+                                                      (substr(day_flag,3,1)='1' and substr('${yoil}',3,1)=1) or
+                                                      (substr(day_flag,4,1)='1' and substr('${yoil}',4,1)=1) or
+                                                      (substr(day_flag,5,1)='1' and substr('${yoil}',5,1)=1) or
+                                                      (substr(day_flag,6,1)='1' and substr('${yoil}',6,1)=1) or
+                                                      (substr(day_flag,7,1)='1' and substr('${yoil}',7,1)=1)
+                                                    )
+                                            </if>
+                                     
+                                         ) t3,
+                                        (
+                                            select *
+                                            from batrmstb
+                                            where hq = '00'
+                                            and store = '${selBranch}'
+                                            
+                                            <if test="!amt_start.equals('')">
+                                                and net_sale_amt <![CDATA[>=]]> ${amt_start}
+                                            </if>
+                                            <if test="!amt_end.equals('')">
+                                                and net_sale_amt <![CDATA[<=]]> ${amt_end}
+                                            </if>
+                                            
+                                         
+                                       ) t4
+                                where 
+                                t1.hq = t3.hq          
+                                and t1.store = t3.store           
+                                and t1.period = t3.period           
+                                and t1.subject_cd = t3.subject_cd
+                                and t1.hq = t4.hq          
+                                and t1.store = t4.store           
+                                and t1.sale_ymd = t4.sale_ymd           
+                                and t1.pos_no = t4.pos_no           
+                                and t1.recpt_no = t4.recpt_no
+                                and t1.hq ='00'
+                                and t1.regis_cancel_fg <![CDATA[<>]]> '2'  -- 3아닌 취소인 2만 제거로 변경
+                                and t1.RECPT_NO <![CDATA[<>]]> '*'
+                                and t1.store = '${selBranch}'
+                                and t1.period = '${selPeri}'     
+              
+                                group by t1.store,      t1.period,       t1.kor_nm,       t1.ptl_id,       t1.cust_no,      t1.sex_fg,
+                                         t1.sms_yn,     t1.h_phone_no_1, t1.h_phone_no_2, t1.h_phone_no_3,  t1.accept_ymd,  t1.create_date,
+                                         t1.birth_ymd
+                                         
+                            ) tt1    
+	                )
+	            where 1=1
+                <if test="!lect_cnt.equals('')">
+                    and lect_cnt <if test="lect_way.equals('up')"><![CDATA[>=]]></if><if test="lect_way.equals('down')"><![CDATA[<=]]></if>${lect_cnt}  --수강건수
+                </if>
+                
+                <if test="!continue_cnt.equals('')">
+                    and direct_lect_cnt <if test="continue_way.equals('up')"><![CDATA[>=]]></if><if test="continue_way.equals('down')"><![CDATA[<=]]></if> ${continue_cnt}   -- 연속수강수     
+                </if>
+            
+            <if test="!order_by.equals('') and !sort_type.equals('')">
+              order by ${sort_type} ${order_by}
+          </if>
+
+        
+    ) A
+    where rownum <![CDATA[<=]]> #{e_rownum}) X
+where X.rnum <![CDATA[>]]> #{s_rownum}     
+            
+              
+</select>
+
+<select id="getCustList03" parameterType="hashmap" resultType="hashmap">
+select 
+        	CUST_NO,
+	        PTL_ID,
+	        KOR_NM,
+	        LECT_CNT,
+            GRADE,
+	        SMS_YN,
+            cust_fg,
+	         PHONE_NO,
+	         
+	         ACCEPT_YMD,
+	         create_date
+		from (
+	            select kor_nm,
+	                    cust_fg,
+	                    ptl_id,
+	                     cust_no,
+	                     sms_yn,
+	                     LECT_CNT, 
+	                     accept_ymd,
+	                     create_date,
+	                     trim(h_phone_no_1)||'-'||h_phone_no_2||'-'||h_phone_no_3 as phone_no,
+	                      nvl(replace((select acm_codename_fn('MS36', mbr_gdc) as mbr_gdc_nm
+	                                         from ams_bz_sect_mbr_grade
+	                                       where cus_no = trim(tt1.cust_no) and bz_sect = '1'
+	                                          and to_char(sysdate,'yyyymmdd') between apy_bgng_dt and apy_ed_dt
+	                                          and rownum = 1),'백화점 ',null),'Entry') grade,             
+	                    (select count(distinct d.period) as cnt 
+	            from baperetb d where 
+	                                period in(
+	                                   select period from(
+	                                    SELECT store,period,
+	                                    RANK() OVER (ORDER BY period DESC) rank
+	                                    FROM baperitb where store= '${selBranch}'                                   
+	                                    and period <![CDATA[<=]]> '${selPeri}') 
+	                            ) and d.cust_no = tt1.cust_no and d.regis_cancel_fg <![CDATA[<>]]> '2' and d.recpt_no <![CDATA[<>]]> '*') direct_LECT_CNT  
+	            from (
+	                     select 
+		                     		t1.kor_nm,
+		                            t1.ptl_id,
+		                            t1.sex_fg,
+		                            t1.birth_ymd,
+		                            nvl(trim(t1.accept_ymd),substr(t1.create_date,0,9)) as ACCEPT_YMD,
+		                            t1.create_date,
+                                    t1.cust_no,
+                                    t1.sms_yn,
+                                    t1.period,
+                                    t1.h_phone_no_1,
+                                    t1.h_phone_no_2,
+                                    t1.h_phone_no_3,                  
+                                    count(t1.subject_cd) LECT_CNT,     
+	                              	decode((select MIN(PERIOD) AS COUNT
+	                                  from BAPEREtb where store= t1.store and cust_no = t1.cust_no
+	                                   and period <![CDATA[<]]>  t1.period GROUP BY CUST_NO),'','신규','기존') as cust_fg
+	                     from (
+	                     		
+	                     			select
+                                           aa.hq,
+                                           aa.store,
+                                           aa.period,
+                                           bb.kor_nm,
+                                           bb.ptl_id,
+                                           bb.sex_fg,
+                                           bb.birth_ymd,
+                                           bb.accept_ymd,
+                                           bb.create_date,
+                                           bb.cust_no,
+                                           bb.sms_yn,
+                                           bb.h_phone_no_1,
+                                           bb.h_phone_no_2,
+                                           bb.h_phone_no_3,                  
+                                           aa.subject_cd,
+                                           aa.sale_ymd,
+                                           aa.recpt_no,
+                                           aa.pos_no,
+                                           aa.regis_cancel_fg
+                                           
+                                       from baperetb aa, bacusttb bb where 1=1
+                                           and aa.store = '${selBranch}'
+                                           and aa.period= '${selPeri}'
+                                           and aa.cust_no = bb.cust_no
+	                     				   and nvl((select mem_fg from bawbtrtb where sale_ymd = aa.sale_ymd and hq=aa.hq and store =aa.store and period = aa.period and subject_cd = aa.subject_cd and cust_no =aa.cust_no and send_recpt_no = aa.recpt_no and rownum = 1),'0') != 'C'
+	                                 
+	                                 /*
+	                                  and bb.sms_yn like :p_sms_yn||'%'   --sms 수신여부
+	                                 */
+	                     		) t1 ,
+	                            (
+	                            select *
+	                            from BAPELTtb
+	                            where hq = '00'
+	                               and store = '${selBranch}'
+	                               and period = '${selPeri}'
+                                      <if test="!main_cd.equals('')">
+                                           and main_cd  like '${main_cd}'||'%'  -- 대분류
+                                       </if>
+                                       
+                                       <if test="!sect_cd.equals('')">
+                                           and sect_cd like '${sect_cd}'||'%'  --중분류
+                                       </if>
+                                       
+                                       <if test="!subject_cd.equals('')">
+                                           and subject_cd like '${subject_cd}'||'%'  --강좌코드
+                                       </if>
+	                          
+	                             ) t3,
+	                            (
+	                                select *
+	                                from batrmstb
+	                                where hq = '00'
+	                                and store = '${selBranch}'
+	                                
+	                              
+	                           ) t4
+	                    where 
+	                    t1.hq = t3.hq          
+	                    and t1.store = t3.store           
+	                    and t1.period = t3.period           
+	                    and t1.subject_cd = t3.subject_cd
+	                    and t1.hq = t4.hq          
+	                    and t1.store = t4.store           
+	                    and t1.sale_ymd = t4.sale_ymd           
+	                    and t1.pos_no = t4.pos_no           
+	                    and t1.recpt_no = t4.recpt_no
+	                    and t1.hq ='00'
+	                    and t1.regis_cancel_fg <![CDATA[<>]]> '2'  -- 3아닌 취소인 2만 제거로 변경
+	                    and t1.RECPT_NO <![CDATA[<>]]> '*'
+	                    and t1.store = '${selBranch}'
+	                    and t1.period = '${selPeri}'     
+	  
+	                    group by t1.store,  t1.period,       t1.kor_nm,       t1.ptl_id,       t1.cust_no,
+                                    t1.sms_yn, t1.h_phone_no_1, t1.h_phone_no_2, t1.h_phone_no_3,  t1.accept_ymd,  t1.create_date
+                                    
+	                ) tt1    
+		    )
+		where 1=1
+</select>
+
+<select id="getLecr" parameterType="hashmap" resultType="hashmap">
+   	select
+	        ams_cus.cus_pn,
+	        ams_cus.cus_no as cus_no,
+	        ( SELECT  nvl(decode((MIN(MBR_GDC) ),'109', 'E-Diamond','110','Diamond', '120', 'Platinum+', '111', 'Platinum','112',
+	          'Crystal', '114', 'Gold', '115', 'Silver', '116', 'Bronze', '117', 'Ace', '118', 'Friends', '119', 'Entry'),'Entry')
+	          FROM ams_bz_sect_mbr_grade
+	          WHERE CUS_NO = ams_cus.cus_no
+	          and bz_sect = '1'
+                and to_char(sysdate,'yyyymmdd') between apy_bgng_dt and apy_ed_dt and rownum = 1
+	           ) as grade,
+	        ams_cus.sms_rcvr_yn as sms_yn
+	    from BALECTURETB, ams_cus, bapelttb 
+	    where 1=1
+	    and BALECTURETB.cus_no = ams_cus.cus_no
+	    and BALECTURETB.cus_no = bapelttb.cus_no
+	    and bapelttb.subject_nm not like '폐강%' and bapelttb.end_yn != 'Y'
+	    <if test="!search_name.equals('')">
+	    	and 
+	    	(
+	    		ams_cus.cus_no like '%'||'${search_name}'||'%'
+	    		or
+	    		ams_cus.cus_pn like '%'||'${search_name}'||'%'
+	    		or
+	    		(ams_cus.mmt_ex_no like '%'||'${search_name}'||'%' or ams_cus.mtel_uniq_no like '%'||'${search_name}'||'%')
+	    		or
+	    		bapelttb.subject_nm like '%'||'${search_name}'||'%'
+	    	)
+		</if>
+	
+		<if test="!start_point.equals('') and !end_point.equals('')">
+			and BALECTURETB.point <![CDATA[>=]]> ${start_point}
+			and BALECTURETB.point <![CDATA[<]]> ${end_point}
+		</if>
+	    <if test="!store.equals('')">
+	    	and bapelttb.store = '${store}'
+	   	</if>
+		<if test="!start_peri.equals('')">
+	    	and bapelttb.period <![CDATA[>=]]> '${start_peri}' 
+	   	</if>
+
+	   	<if test="!subject_fg.equals('')">
+	    	and bapelttb.subject_fg = '${subject_fg}' 
+	   	</if>
+	   	
+	   	group by ams_cus.cus_pn,ams_cus.cus_no,ams_cus.sms_rcvr_yn
+</select>
+	
+	
+
+
+<insert id="insCust" parameterType="hashmap">
+	insert into BACUSTTB
+	(
+		CUST_NO,		HQ,				STORE, 			KOR_NM, 		ENG_NM, 			BIRTH_YMD,			MARRY_FG, 			MARRY_YMD,		SEX_FG, 	POST_NO1,
+		POST_NO2,		ADDR_TX1,		ADDR_TX2,		ADDR_TX,		h_phone_no_1,			h_phone_no_2,			h_phone_no_3,			EMAIL_ADDR,		EMAIL_YN,	SMS_YN,
+		PTL_ID,			PTL_PW,			CUS_NO,			MS_FG,			DI,					CI,					CREATE_RESI_NO,		CREATE_DATE,	CAR_NO,
+		H_PHONE_NO_1,	H_PHONE_NO_2,	H_PHONE_NO_3,	POINT_NO
+	)
+	VALUES
+	(
+		'${cust_no}',	'00',			'03', 			'${kor_nm}', 	'${eng_nm}', 		'${birth_ymd}', 	'${marry_fg}', 		'${marry_ymd}', '${sex_fg}','${post_no1}',
+		'${post_no2}',	'${addr_tx1}',	'${addr_tx2}',	'${addr_tx}',	'${phone_no1}',		'${phone_no2}',		'${phone_no3}',		'${email_addr}','${email_yn}','${sms_yn}',
+		'${ptl_id}',	'${ptl_pw}',	'${cus_no}',	'${ms_fg}',		'${di}','${ci}',	'${create_resi_no}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),	'${car_no}',
+		'${h_phone_no_1}',	'${h_phone_no_2}',	'${h_phone_no_3}',		'${point_no}'
+	)
+</insert>
+
+<select id="getCust_seq" parameterType="hashmap" resultType="hashmap">
+	select 
+		substr(cust_no_result, 6, 4) as cust_no 
+	from( select cust_no as cust_no_result from bacusttb where (cust_no like '77${period}%' or cust_no like '88${period}%') order by to_number(cust_no) desc) where
+		 rownum<![CDATA[<=]]>1
+</select>
+
+<select id="getMemo" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from ( 
+				SELECT 
+					aa.contents as contents,
+					TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as memo_create_date,
+					(select bb.name from bamanagertb bb where seq_no = trim(aa.create_resi_no)) as memo_manager_nm,
+					aa.create_date
+				FROM BAMANAGERTB_MEMO aa WHERE aa.CUST_NO = ${cust_no}
+			<if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+		    <if test="order_by.equals('') and sort_type.equals('')">
+		   		 order by aa.create_date desc
+		    </if>
+		    
+         ) A
+where rownum <![CDATA[<=]]> ${listSize}) X
+</select>
+
+<select id="getChildInfo" parameterType="hashmap" resultType="hashmap">
+	SELECT 
+		(select kor_nm from bacusttb where cust_no = '${cust_no}') as cust_nm,
+		BAKIDSTB.*	
+	FROM BAKIDSTB  WHERE CUST_NO = '${cust_no}' and USE_YN='Y'
+</select>
+
+
+<select id="getPeri_no" parameterType="hashmap" resultType="hashmap">
+	select * from (select period from baperitb where HQ = '00' and STORE = '03' order by period desc)where rownum<![CDATA[<=]]>1
+</select>
+	
+<insert id="insChildByCust" parameterType="hashmap">
+insert into BAKIDSTB
+(cust_no, child_no, gender, birth, child_nm, use_yn, create_date, store)
+values
+('${cust_no}', '${child_no}', '${gender}', '${birth}', '${child_nm}', 'Y', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), '${store}')
+</insert>
+
+<insert id="ins_memo" parameterType="hashmap">
+  insert into bamanagertb_memo
+     (CUST_NO,CONTENTS,CREATE_RESI_NO,CREATE_DATE)
+  VALUES
+     ('${cust_no}','${memo_cont}','${create_resi_no}',TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+</insert>
+
+
+<update id="remove_child" parameterType="hashmap">
+        update BAKIDSTB set 
+			USE_YN='N'
+		where cust_no=${cust_no}
+           and child_no='${child_num}'
+</update>
+<update id="uptCarNo" parameterType="hashmap">
+        update bacusttb set 
+            car_no='${car_no}',
+            update_resi_no='${update_resi_no}',
+            update_date=TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+		where cust_no=${cust_no}
+</update>
+
+
+<delete id="delChild" parameterType="hashmap">
+        update BAKIDSTB set
+        	use_yn = 'N'
+		where cust_no = '${cust_no}'
+		and child_no = '${child_no}'
+</delete>
+
+
+<delete id="delMemo" parameterType="hashmap">
+		delete from bamanagertb_memo where
+			create_date ='${memo_date}'
+			and contents = '${memo}'
+</delete>
+
+
+
+<select id="getLectInfo" parameterType="hashmap" resultType="hashmap">
+
+    
+                SELECT
+				    (select short_name from bacodetb where CODE_FG = '02' and sub_code = bapelttb.store) as store_nm,
+				    bapelttb.period,
+				    TO_CHAR(TO_DATE(batrmstb.sale_ymd, 'YYYYMMDD'), 'YYYY-MM-DD') as sale_ymd,
+				    decode(batrmstb.pos_no,'070013','WEB','070014','MOBILE','DESK') sale_fg,
+				    batrmstb.pos_no,
+				    batrmstb.recpt_no,
+				    
+				    
+				    batrmstb.card_amt,
+				    batrmstb.cash_amt,
+				    batrmstb.point_amt,
+				    (
+				        select nvl(sum(face_amt), 0) from batrcntb where store = baperetb.store and sale_ymd = baperetb.sale_ymd and pos_no = baperetb.pos_no and recpt_no = baperetb.recpt_no and coupon_fg in('0', '7')
+				    ) as my_face_amt,
+				    (
+				        select nvl(sum(face_amt), 0) from batrcntb where store = baperetb.store and sale_ymd = baperetb.sale_ymd and pos_no = baperetb.pos_no and recpt_no = baperetb.recpt_no and coupon_fg in('5')
+				    ) as your_face_amt,
+				    bapelttb.subject_cd,
+				    bapelttb.subject_nm,
+				    bapelttb.web_lecturer_nm,
+				    (select kor_nm from bacusttb where cust_no = '${cust_no}')||
+				    nvl2((select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust1),'/'||(select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust1),'')||
+				    nvl2((select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust2),'/'||(select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust2),'')
+				    as cust_nm,
+
+				    batrmstb.food_fee,
+				    (batrmstb.enuri_amt1 + batrmstb.enuri_amt2) as enuri_amt,
+				    batrmstb.regis_fee,
+				     batrmstb.net_sale_amt 
+				FROM
+				    baperetb,
+				    bapelttb,
+				    baattendtb,
+				    batrmstb
+				WHERE 1=1
+				    and baperetb.store = bapelttb.store
+				    AND baperetb.period = bapelttb.period
+				    AND baperetb.subject_cd = bapelttb.subject_cd
+				    and baattendtb.store(+) = bapelttb.store
+				    AND baattendtb.period(+) = bapelttb.period
+				    AND baattendtb.subject_cd(+) = bapelttb.subject_cd
+				    and batrmstb.sale_ymd = baperetb.sale_ymd
+				    and batrmstb.recpt_no = baperetb.recpt_no
+				    and batrmstb.pos_no = baperetb.pos_no
+				    and batrmstb.store = baperetb.store
+				    and batrmstb.period = baperetb.period
+				    and batrmstb.cust_no = baperetb.cust_no
+				    and baattendtb.cust_no(+) = '${cust_no}'
+				    --AND baperetb.store = '${store}'
+				    AND baperetb.cust_no = '${cust_no}'
+				    
+				    <if test="!period.equals('')">
+				    	AND baperetb.period = '${period}'
+				    </if>
+				    
+				    and baperetb.recpt_no != '*'
+				    and baperetb.cancel_ymd is null
+			        <if test="listener eq '2'.toString()">
+					    and (baattendtb.c_cust1 is not null or baattendtb.c_cust2 is not null)
+			        </if>    
+				    
+				
+				
+             <if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+
+	
+</select>
+<select id="getLectInfo_mem" parameterType="hashmap" resultType="hashmap">
+
+    
+                SELECT
+				    (select short_name from bacodetb where CODE_FG = '02' and sub_code = bapelttb.store) as store_nm,
+				    bapelttb.period,
+				    TO_CHAR(TO_DATE(batrmstb.sale_ymd, 'YYYYMMDD'), 'YYYY-MM-DD') as sale_ymd,
+				    decode(batrmstb.pos_no,'070013','WEB','070014','MOBILE','DESK') sale_fg,
+				    batrmstb.pos_no,
+				    batrmstb.recpt_no,
+				    
+				    
+				    batrmstb.card_amt,
+				    batrmstb.cash_amt,
+				    batrmstb.point_amt,
+				    (
+				        select nvl(sum(face_amt), 0) from batrcntb where store = baperetb.store and sale_ymd = baperetb.sale_ymd and pos_no = baperetb.pos_no and recpt_no = baperetb.recpt_no and coupon_fg in('0', '7')
+				    ) as my_face_amt,
+				    (
+				        select nvl(sum(face_amt), 0) from batrcntb where store = baperetb.store and sale_ymd = baperetb.sale_ymd and pos_no = baperetb.pos_no and recpt_no = baperetb.recpt_no and coupon_fg in('5')
+				    ) as your_face_amt,
+				    bapelttb.subject_cd,
+				    bapelttb.subject_nm,
+				    bapelttb.web_lecturer_nm,
+				    (select kor_nm from bacusttb where cust_no = '${cust_no}')||
+				    nvl2((select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust1),'/'||(select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust1),'')||
+				    nvl2((select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust2),'/'||(select child_nm from BAKIDSTB where cust_no = '${cust_no}' and child_no = baattendtb.c_cust2),'')
+				    as cust_nm,
+
+				    batrmstb.food_fee,
+				    (batrmstb.enuri_amt1 + batrmstb.enuri_amt2) as enuri_amt,
+				    batrmstb.regis_fee,
+				     batrmstb.net_sale_amt 
+				FROM
+				    baperetb,
+				    bapelttb,
+				    baattendtb,
+				    batrmstb
+				WHERE 1=1
+				    and baperetb.store = bapelttb.store
+				    AND baperetb.period = bapelttb.period
+				    AND baperetb.subject_cd = bapelttb.subject_cd
+				    and baattendtb.store(+) = bapelttb.store
+				    AND baattendtb.period(+) = bapelttb.period
+				    AND baattendtb.subject_cd(+) = bapelttb.subject_cd
+				    and batrmstb.sale_ymd = baperetb.sale_ymd
+				    and batrmstb.recpt_no = baperetb.recpt_no
+				    and batrmstb.pos_no = baperetb.pos_no
+				    and batrmstb.store = baperetb.store
+				    and batrmstb.period = baperetb.period
+				    and batrmstb.cust_no = baperetb.cust_no
+				    and baattendtb.cust_no(+) = '${cust_no}'
+				    AND baperetb.cust_no = '${cust_no}'
+				    <if test="!store.equals('')">
+					    AND baperetb.store = '${store}'
+			    	</if>
+				    <if test="!start_peri.equals('')">
+				    	and baperetb.period <![CDATA[>=]]> '${start_peri}' 
+				   	</if>
+				   	<if test="!end_peri.equals('')">
+				    	and baperetb.period <![CDATA[<=]]> '${end_peri}' 
+				   	</if>
+				    
+				    and baperetb.recpt_no != '*'
+				    and baperetb.cancel_ymd is null
+			        <if test="listener eq '2'.toString()">
+					    and (baattendtb.c_cust1 is not null or baattendtb.c_cust2 is not null)
+			        </if>    
+				    
+				
+				
+             <if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+
+	
+</select>
+<select id="getSmsInfo" parameterType="hashmap" resultType="hashmap">
+		select 
+            (select '-' from dual) as type,
+            decode((select bb.send_type from basmsmtb bb where bb.sms_seq = aa.sms_seq ),'1','알림톡','2','SMS','3','LMS','1|2','알림톡|SMS','1|3','알림톡|LMS') as send_type,
+            (select bb.cont_title from basmsmtb bb where bb.sms_seq = aa.sms_seq ) as sms_title,
+            (select bb.name from bamanagertb bb where bb.seq_no = aa.create_resi_no) as manager_nm,
+            TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as create_date,
+            aa.send_result as send_result
+        from BASMSCTTB aa
+            where cust_no = '${cust_no}'
+	
+</select>
+
+
+<select id="getTmList" parameterType="hashmap" resultType="hashmap">
+
+               select
+			    bb.phone,
+			    cc.memo as title,
+			    decode(aa.receiver,'1','본인','2','배우자','3','자녀','기타') as receiver,
+			    TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as tm_date,
+			    bb.name as manager_nm,
+			    aa.recall_yn
+			from batmltb aa, bamanagertb bb, batm_memotb cc where
+			    aa.cust_no = '${cust_no}'
+			    and aa.create_resi_no = bb.seq_no
+			    and cc.store = aa.store
+			    and cc.period =aa.period
+			    and cc.tm_seq =aa.tm_seq
+			    <if test="!kor_nm.equals('')">
+			       and bb.name like '%${kor_nm}%'
+			    </if>
+			     <if test="!start_day.equals('')">
+			        and aa.create_date <![CDATA[>=]]> replace('${start_day}','-','')||'000000'
+			    </if>
+			    <if test="!end_day.equals('')">
+			        and aa.create_date <![CDATA[<=]]> replace('${end_day}','-','')||'999999'
+			     </if>
+			     <if test="!recall_yn.equals('')">
+			       and REGEXP_LIKE(aa.recall_yn,'${recall_yn}') 
+			    </if>
+			    <if test="!chk_myself.equals('')">
+			       and REGEXP_LIKE(aa.receiver,'${chk_myself}') 
+			    </if>
+                    
+             <if test="!order_by.equals('') and !sort_type.equals('')">
+		    	order by ${sort_type} ${order_by}
+		    </if>
+
+	 
+</select>
+
+
+
+<select id="userSearch" parameterType="hashmap" resultType="hashmap">
+	select bacusttb.*, ams_card.card_no from bacusttb 
+	left join
+	ams_card
+	on
+	trim(bacusttb.cust_no) = ams_card.cus_no
+	where 1=1 
+	and id = 'mi0889'
+	<!-- 
+ 		<if test="searchType.equals('tel')">
+	   		and H_PHONE_NO_3 = '${searchVal}'
+	   	</if>
+	   	<if test="searchType.equals('members')">
+	   		and bacusttb.CUST_NO like CONCAT(CONCAT('%', '${searchVal}'), '%')
+	   	</if>
+	   	<if test="searchType.equals('card')">
+	   		and ams_card.CARD_NO like CONCAT(CONCAT('%', '${searchVal}'), '%')
+	   	</if>
+   	<if test="!user_name.equals('')">
+   		and kor_nm like CONCAT(CONCAT('%', '${user_name}'), '%')
+   	</if>
+   	<if test="!birth.equals('')">
+   		and birth_ymd like CONCAT(CONCAT('%', '${birth}'), '%')
+   	</if>
+  	and rownum <![CDATA[<=]]> 150
+  	 -->
+</select>
+
+
+
+<insert id="addChangeHistory" parameterType="hashmap">
+  insert into bacust_historytb
+     (CUST_NO,CREATE_RESI_NO,CREATE_DATE,IP)
+  VALUES
+     ('${cust_no}','${create_resi_no}',TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),'${ip}')
+</insert>
+
+
+
+<select id="getCustHistory" parameterType="hashmap" resultType="hashmap">
+select
+    X.* 
+      from ( 
+          select rownum as rnum, A.*
+          from (
+                select 
+                    TO_CHAR(TO_DATE(aa.create_date, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD HH24:MI') as create_date,
+                    (select name from bamanagertb where seq_no = aa.create_resi_no) as manager_nm,
+                    aa.ip as ip
+                from bacust_historytb aa where 1=1
+                        and aa.cust_no = '${cust_no}'
+                        <if test="!order_by.equals('') and !sort_type.equals('')">
+                            order by ${sort_type} ${order_by}
+                        </if> 
+            ) A
+	where rownum <![CDATA[<=]]> ${listSize}) X
+	
+</select>
+<select id="getSmsList" parameterType="hashmap" resultType="hashmap">
+
+     select 
+	    replace(replace(replace(replace(aa.send_type,'1','알림톡'),'2','SMS'),'3','LMS'),'|',',') as send_type,
+	    aa.title,
+	    (select name from bamanagertb  where seq_no = aa.create_resi_no ) as manager_nm,
+	    TO_CHAR(TO_DATE(aa.reserve_time, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD') as reserve_time,
+	    aa.send_result
+	from BASMSCTTB aa where 
+      	aa.cust_no = '${cust_no}'
+         <if test="!kor_nm.equals('')">
+         	and (select bb.name from bamanagertb bb where bb.seq_no = aa.create_resi_no) like '%${kor_nm}%'
+         </if>
+         
+         <if test="!start_day.equals('')">
+	        and aa.reserve_time <![CDATA[>=]]> replace('${start_day}','-','')||'000000'
+	    </if>
+	    
+	    <if test="!end_day.equals('')">
+	        and aa.reserve_time <![CDATA[<=]]> replace('${end_day}','-','')||'999999'
+	     </if>
+                 
+         <if test="!send_type.equals('')">
+	    	 and aa.send_type='${send_type}'
+	     </if> 
+                  
+          <if test="!send_state.equals('')">
+          	and aa.send_state = '${send_state}'
+          </if>
+                 
+   <if test="!order_by.equals('') and !sort_type.equals('')">
+   	order by ${sort_type} ${order_by}
+   </if> 
+	
+</select>
+<select id="getCusnoByChild" parameterType="hashmap" resultType="hashmap">
+select 
+bachldtb.p_cust_no, 
+bachldtb.c_cust_no,
+bachldtb.relation,
+bacusttb.birth_ymd,
+bacusttb.kor_nm,
+bacusttb.store
+from bachldtb, bacusttb, baperetb
+where 1=1
+and bachldtb.store = bacusttb.store
+and bachldtb.c_cust_no = bacusttb.cust_no
+and baperetb.cust_no = bacusttb.cust_no
+and baperetb.store = bacusttb.store
+and baperetb.sale_ymd <![CDATA[>=]]> '20200101'
+group by
+bachldtb.p_cust_no, 
+bachldtb.c_cust_no,
+bachldtb.relation,
+bacusttb.birth_ymd,
+bacusttb.kor_nm,
+bacusttb.store
+order by bachldtb.p_cust_no
+	
+</select>
+<select id="getCusnoAll" parameterType="hashmap" resultType="hashmap">
+select 
+cus_no 
+from 
+bacusttb, baperetb 
+where 1=1
+and bacusttb.cust_no = baperetb.cust_no
+and bacusttb.cus_no is not null 
+and bacusttb.cus_no != ' '
+and bacusttb.store = baperetb.store
+and baperetb.sale_ymd <![CDATA[>=]]> '20200101'
+group by cus_no
+order by cus_no
+</select>
+<select id="getCustnoByCusno" parameterType="hashmap" resultType="hashmap">
+	select cust_no, store from bacusttb where cus_no = '${cus_no}' and length(trim(cust_no)) > 9
+</select>
+<update id="updateCust_pere" parameterType="hashmap">
+update baperetb
+set
+cust_no = '${cus_no}'
+where
+cust_no = '${cust_no}'
+and store = '${store}'
+</update>
+<update id="updateCust_sign" parameterType="hashmap">
+	update basigntb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_temp" parameterType="hashmap">
+	update batemptb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_smsl" parameterType="hashmap">
+	update BASMSCTTB
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_wait" parameterType="hashmap">
+	update bawaittb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_free" parameterType="hashmap">
+	update bafreetb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_wbtr" parameterType="hashmap">
+	update bawbtrtb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_mail" parameterType="hashmap">
+	update bamailtb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_trms" parameterType="hashmap">
+	update batrmstb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_deci" parameterType="hashmap">
+	update badecitb
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_park" parameterType="hashmap">
+	update baparktb
+	set
+	mgmt_no = '${cus_no}'
+	where
+	mgmt_no = '${cust_no}'
+	and store = '${store}'
+</update>
+<update id="updateCust_kids" parameterType="hashmap">
+	update BAKIDSTB
+	set
+	cust_no = '${cus_no}'
+	where
+	cust_no = '${cust_no}'
+	and store = '${store}'
+</update>
+
+<insert id="insNewCust" parameterType="hashmap">
+insert into bacusttb 
+select
+cus_no, kor_nm, eng_nm, resi_no, id, password, hq, store, birth_ymd, s_l_fg, marry_fg, marry_ymd, sex_fg, dm_disph_place_fg, post_no1, post_no2, addr_tx, addr_tx1, addr_tx2, phone_no1, phone_no2, phone_no3, mem_fee, job_cd, hobby_cd, c_nm, dept_nm, posi, c_post_no1, c_post_no2, c_addr_tx1, c_addr_tx2, c_phone_no_1, c_phone_no_2, c_phone_no_3, h_phone_no_1, h_phone_no_2, h_phone_no_3, email_addr, confirm_yn, confirm_date, accept_ymd, create_resi_no, create_date, email_yn, sms_yn, leave_yn, period, pwd_fg, point_no, update_resi_no, update_date, ptl_id, cus_no, ms_fg, beg_ent_dt, ptl_pw, resi_no6, h_new_addr_yn, c_new_addr_yn, di, club_1, hom_addr_in_fg, rsp_cd, off_addr_in_fg, off_rsp_cd, memo, sync_new_yn, ci, car_no, sns_url 
+from bacusttb where cus_no = '${cus_no}' and substr(cust_no, -1) = '1' and store != '01' and rownum = 1
+</insert>
+<update id="updateChild_pere" parameterType="hashmap">
+update baperetb
+set
+cust_no = '${p_cust_no}', child_no = '${child_no}'
+where
+cust_no = '${c_cust_no}' and store = '${store}'
+</update>
+<update id="updateChild_wbtr" parameterType="hashmap">
+	update bawbtrtb
+	set
+	cust_no = '${p_cust_no}', child_no = '${child_no}'
+	where
+	cust_no = '${c_cust_no}' and store = '${store}'
+</update>
+
+<update id="updateChild_wait" parameterType="hashmap">
+	update bawaittb
+	set
+	cust_no = '${p_cust_no}', child_no = '${child_no}'
+	where
+	cust_no = '${c_cust_no}' and store = '${store}'
+</update>
+
+<update id="updateChild_free" parameterType="hashmap">
+	update bafreetb
+	set
+	cust_no = '${p_cust_no}', child_no = '${child_no}'
+	where
+	cust_no = '${c_cust_no}' and store = '${store}'
+</update>
+
+<update id="updateChild_deci" parameterType="hashmap">
+	update badecitb
+	set
+	cust_no = '${p_cust_no}', child_no = '${child_no}'
+	where
+	cust_no = '${c_cust_no}' and store = '${store}'
+</update>
+
+<update id="upCusByCust" parameterType="hashmap">
+	update bacusttb
+	set
+	cus_no = '${cus_no}'
+	where cust_no = '${cust_no}' and store = '${store}'
+</update>
+<select id="getCustListOld" parameterType="hashmap" resultType="hashmap">
+	select * from bacusttb where 1=1
+	and cust_no not like '1%'
+	and cus_no is null
+	and h_phone_no_3 = '${searchPhone}'
+	<if test="!order_by.equals('') and !sort_type.equals('')">
+	    order by ${sort_type} ${order_by}
+	</if>
+</select>
+<select id="getAmsListOld" parameterType="hashmap" resultType="hashmap">
+	select * from ams_cus where 1=1
+	and MTEL_UNIQ_NO = '${searchPhone}'
+	<if test="!order_by.equals('') and !sort_type.equals('')">
+	    order by ${sort_type} ${order_by}
+	</if>
+</select>
+<select id="cust_pere_list" parameterType="hashmap" resultType="hashmap">
+	select
+	(select short_name from bacodetb where CODE_FG = '02' and sub_code = baperetb.store) as store_nm,
+	(select subject_nm from bapelttb where store = baperetb.store and period = baperetb.period and subject_cd = baperetb.subject_cd) as subject_nm, 
+	baperetb.* 
+	from baperetb where store = '${store}' and cust_no = '${cust_no}'
+</select>
+<select id="getPereByChild" parameterType="hashmap" resultType="int">
+	select count(*) as cnt from baperetb where cust_no = '${cust_no}' and (child_no = '${child_no}' or child_no1 = '${child_no}')
+</select>
+
+</mapper>

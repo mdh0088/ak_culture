@@ -1,0 +1,41 @@
+html, body, .header{
+	min-width:1366px;
+}
+@media only screen and (max-width:1800px) {
+	.msli-sns{
+		left:46px;
+	}
+	.main-slide .swiper-pagination{
+		left:64px;
+	}
+	.msli-p:before{
+		top:10px;
+	}
+	.right-line{
+		right:46px;
+	}
+	.main-search{
+		margin-left:0;
+		left:5%;
+		width:90%;
+	}
+	.msear-bar > div{
+		padding:35px 20px 20px;
+	}
+}
+@media only screen and (max-width:1366px) {
+  /* Add your Mobile Styles here */
+	body{
+		overflow-x:scroll;
+	}
+}
+
+
+
+
+
+@media only screen and (max-height:900px) {
+	.myaca-wrap{
+		overflow-y:scroll;
+	}
+}

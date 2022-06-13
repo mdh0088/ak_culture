@@ -1,0 +1,892 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/trms/trmsMapper">
+
+<insert id="insItde" parameterType="hashmap">
+insert into baitdetb 
+(HQ, STORE, SALE_YMD, POS_NO, ADJUST_ITEM, TOT_AMT, TOT_CNT)
+VALUES
+('00', '${store}', TO_CHAR(SYSDATE, 'YYYYMMDD'), '${pos}', '${adjust_item}', '${tot_amt}', '1')
+</insert>
+<insert id="insItem" parameterType="hashmap">
+insert into baitemtb 
+(HQ, STORE, SALE_YMD, POS_NO, SOD_DATE, RECPT_NO, CHARGE_RESI_NO, SEND_YN)
+VALUES
+('00', '${store}', TO_CHAR(SYSDATE, 'YYYYMMDD'), '${pos}', TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'), '0000', '${login_seq}', 'N')
+</insert>
+<update id="upItde" parameterType="hashmap">
+update baitdetb
+set
+TOT_AMT = '${tot_amt}'
+WHERE
+STORE = '${store}' AND SALE_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND POS_NO = '${pos}' AND ADJUST_ITEM = '${adjust_item}'
+</update>
+
+<update id="updateBASale0101" parameterType="hashmap">
+UPDATE BAITDETB 
+                set TOT_AMT = '${tot_amt}'
+                WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND POS_NO        = '${pos}'
+                   AND SALE_YMD      = TO_CHAR(SYSDATE, 'YYYYMMDD')                 
+                   AND ADJUST_ITEM   = '074'
+</update>
+<insert id="insertBASale0101" parameterType="hashmap">
+INSERT INTO BAITDETB 
+                ( HQ    , STORE    , POS_NO     , SALE_YMD    , ADJUST_ITEM , TOT_AMT , TOT_CNT  )	 
+				VALUES  ('00' , '${store}' , '${pos}' , TO_CHAR(SYSDATE, 'YYYYMMDD') , '074' , '${tot_amt}'  , 1  )
+</insert>
+<insert id="insertBASale0103" parameterType="hashmap">
+insert into BAITEMTB
+                    (hq, store, pos_no, sale_ymd, sod_date, adjust_date, 
+                    recpt_no, charge_resi_no, cvt_sale_ymd, send_yn, slip_dt, slip_no, slip_seq)
+                 values
+                    ('00', '${store}', '${pos}', TO_CHAR(SYSDATE, 'YYYYMMDD'), to_char(sysdate,'yyyymmddhh24miss'), NULL,
+                     '0000', '${login_seq}', NULL, 'N', NULL, NULL, NULL)
+</insert>
+<select id="checkBASale0103" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM BAITEMTB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND POS_NO        = '${pos}'
+                   AND SALE_YMD      = TO_CHAR(SYSDATE, 'YYYYMMDD') 
+	</select>
+
+<select id="selTodayIt" parameterType="hashmap" resultType="hashmap">
+	select baitemtb.*,
+	(select tot_amt from baitdetb where pos_no = '${pos}' and store = '${store}' and sale_ymd = TO_CHAR(SYSDATE, 'YYYYMMDD') and adjust_item = '${adjust_item}') as tot_amt
+	from baitemtb where pos_no = '${pos}' and store = '${store}' and sale_ymd = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	and
+	(select tot_amt from baitdetb where pos_no = '${pos}' and store = '${store}' and sale_ymd = TO_CHAR(SYSDATE, 'YYYYMMDD') and adjust_item = '${adjust_item}') is not null
+</select>
+
+<select id="getRecpt" parameterType="hashmap" resultType="String">
+	SELECT SUBSTR(TO_CHAR(NVL(MAX(RECPT_NO),0)+1,'0000'),2,4) AS RECPT_NO
+                  FROM BATRMSTB
+                 WHERE HQ         = '00'
+                   AND STORE      = '${store}'
+                   AND SALE_YMD   = TO_CHAR(SYSDATE, 'YYYYMMDD')
+                   AND POS_NO     = '${pos_no}'
+</select>
+
+
+<select id="getCloseStatus" parameterType="hashmap" resultType="String">
+	select close_stat
+             from axclostb
+            where hq         = '00'
+              and store      = '${store}'
+              and close_fg   = '${close_fg}'
+              and close_ymd = '${sale_ymd}'
+              and create_end_time = '${pos_no}'
+</select>
+<select id="checkIt" parameterType="hashmap" resultType="int">
+	SELECT count(*) as count
+                  FROM BAITEMTB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND SALE_YMD      = '${sale_ymd}'
+                   AND POS_NO        = '${pos_no}'
+                   AND SEND_YN       = 'Y'
+</select>
+<insert id="insClos" parameterType="hashmap">
+INSERT INTO AXCLOSTB
+            (HQ, STORE, CLOSE_FG, CLOSE_YMD, CLOSE_STAT, CREATE_YMD, CREATE_START_TIME, CREATE_END_TIME, CREATE_RESI_NO)
+            values
+            ('00' , '${store}', '${close_fg}', '${sale_ymd}', 'I',
+             TO_CHAR(SYSDATE,'YYYYMMDD'),
+             TO_CHAR(SYSDATE, 'HH24MISS'),
+             '${pos_no}',
+             '${login_seq}'
+            )
+</insert>
+<insert id="insSend" parameterType="hashmap">
+INSERT INTO AXCLOSTB
+            (HQ, STORE, CLOSE_FG, CLOSE_YMD, CLOSE_STAT, CREATE_YMD, CREATE_START_TIME, CREATE_END_TIME, CREATE_RESI_NO)
+            values
+            ('00' , '${store}',   '${close_fg}', '${sale_ymd}', 'I',
+             TO_CHAR(SYSDATE,'YYYYMMDD'),
+             TO_CHAR(SYSDATE, 'HH24MISS'),
+             NULL,
+             '${login_seq}'
+            )
+</insert>
+<select id="getItdeList" parameterType="hashmap" resultType="hashmap">
+select * from (
+SELECT
+    short_name AS adjust_nm,
+    SUM(tot_amt) AS adjust_amt,
+    SUM(tot_cnt) AS adjust_cnt,
+    substr(long_name, 1, 3) AS seq
+FROM
+    bacodetb   a,
+    baitdetb   b
+WHERE
+    code_fg = '18'
+    AND sub_code = adjust_item
+    AND hq = '00'
+    and   store  = '${store}'
+    and   sale_ymd <![CDATA[>=]]> '${start_ymd}' and sale_ymd <![CDATA[<=]]> '${end_ymd}'
+    and   pos_no like '${pos_no}'||'%'
+    AND long_name LIKE '0%'
+GROUP BY
+    short_name,
+    long_name
+  ORDER BY
+    long_name
+)    
+union all
+    
+    select
+    '외상 현금매출' as adjust_nm,
+    nvl(SUM(tot_sale_amt), 0) AS adjust_amt,
+   count(tot_sale_amt) AS adjust_cnt,
+    '43' AS seq
+    from bacashtb 
+    where credit_yn = 'Y'
+    AND hq = '00'
+    and   store  = '${store}'
+    and   sale_ymd <![CDATA[>=]]> '${start_ymd}' and sale_ymd <![CDATA[<=]]> '${end_ymd}'
+    and   pos_no like '${pos_no}'||'%'
+
+union all
+
+SELECT
+    '상품권 과세제외' AS adjust_nm, 
+    nvl(SUM(NVL(DECODE(IN_TYPE,
+       '01',
+       (
+              SELECT SUM(AA.CPN_ENURI_AMT)
+              FROM   BATRCNTB AA
+              WHERE  BB.HQ = AA.HQ
+              AND    BB.STORE = AA.STORE
+              AND    BB.POS_NO = AA.POS_NO
+              AND    BB.SALE_YMD = AA.SALE_YMD
+              AND    BB.RECPT_NO = AA.RECPT_NO
+              AND    AA.COUPON_FG = '7'),
+       '02',
+       (
+              SELECT SUM(AA.CPN_ENURI_AMT)*(-1)
+              FROM   BATRCNTB AA
+              WHERE  BB.HQ = AA.HQ
+              AND    BB.STORE = AA.STORE
+              AND    BB.ORI_POS_NO = AA.POS_NO
+              AND    BB.ORI_SALE_YMD = AA.SALE_YMD
+              AND    BB.ORI_RECPT_NO = AA.RECPT_NO
+              AND    AA.COUPON_FG = '7') ), 0)),0) adjust_amt,
+    COUNT(*) AS adjust_cnt,
+    '' AS seq
+FROM (
+     SELECT A.HQ, A.STORE, A.POS_NO, A.RECPT_NO, A.SALE_YMD, A.CUST_NO,
+            A.ORI_POS_NO, A.ORI_RECPT_NO, A.ORI_SALE_YMD,
+            '0'||A.IN_TYPE AS IN_TYPE,
+            A.SALE_FG,
+            A.PAY_FG,
+            DECODE(A.FOOD_FEE, 0, 0, 1) AS FOOD_FEE,
+            NVL(A.CASH_AMT,0) AS CASH_AMT,
+            NVL(A.CHANGE,0) AS REPAY_AMT,
+            NVL(A.COUPON_AMT,0) AS COUPON_AMT,
+            NVL(DECODE(B.CARD_FG,'4',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'822',B.CARD_AMT),0),0) SHIN_AMT,
+            NVL(DECODE(B.CARD_FG,'8',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'042',B.CARD_AMT),0),0) KB_AMT,
+            NVL(DECODE(B.CARD_FG,'W',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'034',B.CARD_AMT),0),0) WB_AMT,
+            NVL(DECODE(B.CARD_FG,'2',B.CARD_AMT,'6',B.CARD_AMT,'Q',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'042',0,'822',0,'034',0,B.CARD_AMT),0),0) TASA_AMT,
+            DECODE(B.CARD_FG,'M',B.CARD_AMT,0) SAMPAY_AMT,
+            DECODE(B.CARD_FG,'G',B.CARD_AMT,0) MC_AMT,
+            DECODE(B.CARD_FG,'5',B.CARD_AMT,0) AKGIFT_AMT,
+            NVL(A.POINT_AMT,0)    POINT_AMT,   
+            NVL(A.NET_SALE_AMT,0) SALE_AMT,
+            DECODE(B.CARD_FG,'M','Y','N') SAMPAY_FG
+       FROM BATRMSTB A, BATRCATB# B, BACASHTB C
+      WHERE A.HQ        = B.HQ(+)
+        AND A.STORE     = B.STORE(+)
+        AND A.POS_NO    = B.POS_NO(+)
+        AND A.SALE_YMD  = B.SALE_YMD(+)
+        AND A.RECPT_NO  = B.RECPT_NO(+)
+        AND A.HQ        = C.HQ(+)
+        AND A.STORE     = C.STORE(+)
+        AND A.POS_NO    = C.POS_NO(+)
+        AND A.SALE_YMD  = C.SALE_YMD(+)
+        AND A.RECPT_NO  = C.RECPT_NO(+)                           
+        AND A.PAY_FG     <![CDATA[<>]]> '9'
+        AND A.hq = '00'
+	    and   A.store  = '${store}'
+	    and   A.sale_ymd <![CDATA[>=]]> '${start_ymd}' and A.sale_ymd <![CDATA[<=]]> '${end_ymd}'
+	    and   A.pos_no like '${pos_no}'||'%'
+     
+) BB
+
+union all
+
+
+SELECT
+    '적립금 과세제외' AS adjust_nm, 
+    nvl(SUM(NVL(DECODE(IN_TYPE,
+       '01',
+       (
+              SELECT SUM(AA.VAT_CAL_EXT_USE_PT)
+              FROM   BAPTCATB AA
+              WHERE  BB.HQ = AA.HQ
+              AND    BB.STORE = AA.STORE
+              AND    BB.POS_NO = AA.POS_NO
+              AND    BB.SALE_YMD = AA.SALE_YMD
+              AND    BB.RECPT_NO = AA.RECPT_NO),
+       '02',
+       (
+              SELECT SUM(AA.VAT_CAL_EXT_USE_PT)*(-1)
+              FROM   BAPTCATB AA
+              WHERE  BB.HQ = AA.HQ
+              AND    BB.STORE = AA.STORE
+              AND    BB.ORI_POS_NO = AA.POS_NO
+              AND    BB.ORI_SALE_YMD = AA.SALE_YMD
+              AND    BB.ORI_RECPT_NO = AA.RECPT_NO) ), 0)),0) adjust_amt,
+    COUNT(*) AS adjust_cnt,
+    '' AS seq
+FROM (
+     SELECT A.HQ, A.STORE, A.POS_NO, A.RECPT_NO, A.SALE_YMD, A.CUST_NO,
+            A.ORI_POS_NO, A.ORI_RECPT_NO, A.ORI_SALE_YMD,
+            '0'||A.IN_TYPE AS IN_TYPE,
+            A.SALE_FG,
+            A.PAY_FG,
+            DECODE(A.FOOD_FEE, 0, 0, 1) AS FOOD_FEE,
+            NVL(A.CASH_AMT,0) AS CASH_AMT,
+            NVL(A.CHANGE,0) AS REPAY_AMT,
+            NVL(A.COUPON_AMT,0) AS COUPON_AMT,
+            NVL(DECODE(B.CARD_FG,'4',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'822',B.CARD_AMT),0),0) SHIN_AMT,
+            NVL(DECODE(B.CARD_FG,'8',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'042',B.CARD_AMT),0),0) KB_AMT,
+            NVL(DECODE(B.CARD_FG,'W',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'034',B.CARD_AMT),0),0) WB_AMT,
+        	NVL(DECODE(B.CARD_FG,'2',B.CARD_AMT,'6',B.CARD_AMT,'Q',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'042',0,'822',0,'034',0,B.CARD_AMT),0),0) TASA_AMT,
+            DECODE(B.CARD_FG,'M',B.CARD_AMT,0) SAMPAY_AMT,
+            DECODE(B.CARD_FG,'G',B.CARD_AMT,0) MC_AMT,
+            DECODE(B.CARD_FG,'5',B.CARD_AMT,0) AKGIFT_AMT,
+            NVL(A.POINT_AMT,0)    POINT_AMT,   
+            NVL(A.NET_SALE_AMT,0) SALE_AMT,
+            DECODE(B.CARD_FG,'M','Y','N') SAMPAY_FG
+       FROM BATRMSTB A, BATRCATB# B, BACASHTB C
+      WHERE A.HQ        = B.HQ(+)
+        AND A.STORE     = B.STORE(+)
+        AND A.POS_NO    = B.POS_NO(+)
+        AND A.SALE_YMD  = B.SALE_YMD(+)
+        AND A.RECPT_NO  = B.RECPT_NO(+)
+        AND A.HQ        = C.HQ(+)
+        AND A.STORE     = C.STORE(+)
+        AND A.POS_NO    = C.POS_NO(+)
+        AND A.SALE_YMD  = C.SALE_YMD(+)
+        AND A.RECPT_NO  = C.RECPT_NO(+)                           
+        AND A.PAY_FG     <![CDATA[<>]]> '9'
+        AND A.hq = '00'
+	    and   A.store  = '${store}'
+	    and   A.sale_ymd <![CDATA[>=]]> '${start_ymd}' and A.sale_ymd <![CDATA[<=]]> '${end_ymd}'
+	    and   A.pos_no like '${pos_no}'||'%'
+     
+) BB
+
+
+</select>
+<select id="getItTypeList1" parameterType="hashmap" resultType="hashmap">
+SELECT POS_NO,
+        				   RECPT_NO,
+        				   SALE_YMD,
+        				   CUST_NO,
+                           (select CUS_NO from bacusttb where cust_no = BB.CUST_NO and rownum = 1) as CUS_NO,
+                           (select KOR_NM from bacusttb where cust_no = BB.CUST_NO and rownum = 1) as KOR_NM,
+        				   IN_TYPE,
+        				   SALE_FG,
+        				   PAY_FG,
+                           DECODE(BB.PAY_FG, '1', '입회비', '2', '수강료', '3', '부분입금', '4', '수강료+입회비', '5', '카드재발급', '6', '재료비', '7', '재료비+수강료') AS PAY_FG_TXT,
+        				   SUM( CASE WHEN REPAY_AMT = 0 THEN
+        							 DECODE(IN_TYPE,'02',CASH_AMT*(-1),CASH_AMT)
+        						ELSE DECODE(IN_TYPE,'02',CASH_AMT*(-1),0) END ) CASH_AMT,
+        				   SUM(DECODE(IN_TYPE,'02',0,REPAY_AMT*(-1))) REPAY_AMT,
+        				   SUM(DECODE(IN_TYPE,'02',COUPON_AMT*(-1),COUPON_AMT)) COUPON_AMT,
+                           SUM(DECODE(IN_TYPE,'02',JASA_COUPON_AMT*(-1),JASA_COUPON_AMT)) JASA_COUPON_AMT,
+                           SUM(DECODE(IN_TYPE,'02',TASA_COUPON_AMT*(-1),TASA_COUPON_AMT)) TASA_COUPON_AMT,
+        				   SUM(DECODE(IN_TYPE,'02',SHIN_AMT*(-1),SHIN_AMT)) SHIN_AMT,
+        				   SUM(DECODE(IN_TYPE,'02',KB_AMT*(-1),KB_AMT)) KB_AMT,
+                           SUM(DECODE(IN_TYPE,'02',WB_AMT*(-1),WB_AMT)) WB_AMT,
+        				   SUM(DECODE(IN_TYPE,'02',TASA_AMT*(-1),TASA_AMT)) TASA_AMT,
+                           SUM(DECODE(IN_TYPE,'02',ENURI_AMT*(-1),ENURI_AMT)) ENURI_AMT,
+        				   SAMPAY_FG,
+        				   SUM(DECODE(IN_TYPE,'02',MC_AMT*(-1),MC_AMT)) MC_AMT,
+        				   SUM(DECODE(IN_TYPE,'02',AKGIFT_AMT*(-1),AKGIFT_AMT)) AKGIFT_AMT,
+        				   SUM(DECODE(IN_TYPE,'02',POINT_AMT*(-1),POINT_AMT)) POINT_AMT, -- 2019.03.21 LJS 마일리지추가
+        				   DECODE(IN_TYPE,'02',SALE_AMT*(-1),SALE_AMT) SALE_AMT,
+        				   NVL(DECODE(IN_TYPE,
+        					   '01',
+        					   (
+        							  SELECT SUM(AA.CPN_ENURI_AMT)
+        							  FROM   BATRCNTB AA
+        							  WHERE  BB.HQ = AA.HQ
+        							  AND    BB.STORE = AA.STORE
+        							  AND    BB.POS_NO = AA.POS_NO
+        							  AND    BB.SALE_YMD = AA.SALE_YMD
+        							  AND    BB.RECPT_NO = AA.RECPT_NO
+                                      AND    AA.COUPON_FG = '7'),
+        					   '02',
+        					   (
+        							  SELECT SUM(AA.CPN_ENURI_AMT)*(-1)
+        							  FROM   BATRCNTB AA
+        							  WHERE  BB.HQ = AA.HQ
+        							  AND    BB.STORE = AA.STORE
+        							  AND    BB.ORI_POS_NO = AA.POS_NO
+        							  AND    BB.ORI_SALE_YMD = AA.SALE_YMD
+        							  AND    BB.ORI_RECPT_NO = AA.RECPT_NO
+                                      AND    AA.COUPON_FG = '7') ), 0) VAT_EXT_AMT,
+        				   NVL(DECODE(IN_TYPE,
+        					   '01',
+        					   (
+        							  SELECT SUM(AA.VAT_CAL_EXT_USE_PT)
+        							  FROM   BAPTCATB AA
+        							  WHERE  BB.HQ = AA.HQ
+        							  AND    BB.STORE = AA.STORE
+        							  AND    BB.POS_NO = AA.POS_NO
+        							  AND    BB.SALE_YMD = AA.SALE_YMD
+        							  AND    BB.RECPT_NO = AA.RECPT_NO),
+        					   '02',
+        					   (
+        							  SELECT SUM(AA.VAT_CAL_EXT_USE_PT)*(-1)
+        							  FROM   BAPTCATB AA
+        							  WHERE  BB.HQ = AA.HQ
+        							  AND    BB.STORE = AA.STORE
+        							  AND    BB.ORI_POS_NO = AA.POS_NO
+        							  AND    BB.ORI_SALE_YMD = AA.SALE_YMD
+        							  AND    BB.ORI_RECPT_NO = AA.RECPT_NO) ), 0) VAT_EXT_MIL
+        			  FROM (
+        					 SELECT A.HQ, A.STORE, A.POS_NO, A.RECPT_NO, A.SALE_YMD, A.CUST_NO,
+        							A.ORI_POS_NO, A.ORI_RECPT_NO, A.ORI_SALE_YMD,
+        							'0'||A.IN_TYPE AS IN_TYPE,
+        							A.SALE_FG,
+        							A.PAY_FG,
+        							DECODE(A.FOOD_FEE, 0, 0, 1) AS FOOD_FEE,
+        							NVL(A.CASH_AMT,0) AS CASH_AMT,
+        							NVL(A.CHANGE,0) AS REPAY_AMT,
+        							NVL(A.COUPON_AMT,0) AS COUPON_AMT,
+        							nvl((SELECT SUM(FACE_AMT) FROM BATRCNTB WHERE HQ = A.HQ AND SALE_YMD = A.SALE_YMD AND STORE = A.STORE AND POS_NO = A.POS_NO AND RECPT_NO = A.RECPT_NO AND (COUPON_FG = '7' OR COUPON_FG = '0')),0) AS JASA_COUPON_AMT,
+									nvl((SELECT SUM(FACE_AMT) FROM BATRCNTB WHERE HQ = A.HQ AND SALE_YMD = A.SALE_YMD AND STORE = A.STORE AND POS_NO = A.POS_NO AND RECPT_NO = A.RECPT_NO AND COUPON_FG = '5'), 0) AS TASA_COUPON_AMT,
+        							NVL(DECODE(B.CARD_FG,'4',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'822',B.CARD_AMT),0),0) SHIN_AMT,
+        							NVL(DECODE(B.CARD_FG,'8',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'042',B.CARD_AMT),0),0) KB_AMT,
+                                    NVL(DECODE(B.CARD_FG,'W',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'034',B.CARD_AMT),0),0) WB_AMT,
+        							NVL(DECODE(B.CARD_FG,'2',B.CARD_AMT,'6',B.CARD_AMT,'Q',B.CARD_AMT,0) + DECODE(B.CARD_FG,'M',DECODE(B.CARD_CORP_NO,'042',0,'822',0,'034',0,B.CARD_AMT),0),0) TASA_AMT,
+                                    (NVL(A.ENURI_AMT1,0) + NVL(A.ENURI_AMT2,0)) AS ENURI_AMT,
+        							DECODE(B.CARD_FG,'M',B.CARD_AMT,0) SAMPAY_AMT,
+        							DECODE(B.CARD_FG,'G',B.CARD_AMT,0) MC_AMT,
+        							DECODE(B.CARD_FG,'5',B.CARD_AMT,0) AKGIFT_AMT,
+        							NVL(A.POINT_AMT,0)    POINT_AMT,  
+        							NVL(A.TRADE_ALL_AMT,0) SALE_AMT,
+        							DECODE(B.CARD_FG,'M','Y','N') SAMPAY_FG
+        					   FROM BATRMSTB A, BATRCATB B, BACASHTB C
+        					  WHERE A.HQ        = B.HQ(+)
+        						AND A.STORE     = B.STORE(+)
+        						AND A.POS_NO    = B.POS_NO(+)
+        						AND A.SALE_YMD  = B.SALE_YMD(+)
+        						AND A.RECPT_NO  = B.RECPT_NO(+)
+        						AND A.HQ        = C.HQ(+)
+        						AND A.STORE     = C.STORE(+)
+        						AND A.POS_NO    = C.POS_NO(+)
+        						AND A.SALE_YMD  = C.SALE_YMD(+)
+        						AND A.RECPT_NO  = C.RECPT_NO(+)               
+                             
+        						AND A.PAY_FG    <![CDATA[<>]]> '9'
+        						AND A.HQ        = '00'
+        						AND A.STORE     = '${store}'
+        						AND A.SALE_YMD  BETWEEN '${start_ymd}' AND '${end_ymd}'
+        						<if test="!pos_no.equals('')">
+							    	AND A.POS_NO    = '${pos_no}'
+								</if>
+        					
+
+        			   ) BB
+        			 GROUP BY BB.HQ, BB.STORE, BB.POS_NO, BB.RECPT_NO, BB.SALE_YMD, BB.CUST_NO, BB.IN_TYPE, BB.SALE_FG, BB.PAY_FG, BB.FOOD_FEE, BB.SALE_AMT, BB.SAMPAY_FG,
+        					  BB.ORI_POS_NO, BB.ORI_SALE_YMD, BB.ORI_RECPT_NO
+        			 ORDER BY SALE_YMD, POS_NO, RECPT_NO
+
+
+
+</select>
+<select id="getItTypeList2" parameterType="hashmap" resultType="hashmap">
+ SELECT   RECPT_NO, IN_TYPE, CUST_NO,
+ 						(select CUS_NO from bacusttb where cust_no = BB.CUST_NO and rownum = 1) as CUS_NO, 
+ 						SECT_NM, SUBJECT_CD, SUBJECT_NM,
+                        nvl((CASE WHEN CARD_AMT = 0 THEN FOOD_AMT_SUM   
+                              WHEN CASH_AMT <![CDATA[<]]> FOOD_AMT_BEFORE THEN 0
+                              WHEN CASH_AMT > FOOD_AMT_SUM THEN FOOD_AMT
+                              WHEN CASH_AMT <![CDATA[<=]]> FOOD_AMT_SUM AND CASH_AMT <![CDATA[<>]]> 0 THEN CASH_AMT - FOOD_AMT_BEFORE 
+                              WHEN CASH_AMT = 0 THEN 0 END) * DECODE (IN_TYPE, '취소', -1, 1), '0') AS AMT1,
+                        (CASE WHEN CARD_AMT = 0 THEN 0
+                              WHEN FOOD_AMT_BEFORE > CASH_AMT THEN FOOD_AMT_SUM
+                              WHEN CASH_AMT <![CDATA[<]]> FOOD_AMT_SUM THEN FOOD_AMT_SUM - CASH_AMT
+                              ELSE 0 END) * DECODE (IN_TYPE, '취소', -1, 1) AS AMT2,
+                         SALE_YMD, POS_NO
+                  FROM   (SELECT   A.RECPT_NO,
+                                   DECODE (A.IN_TYPE, '1', '등록', '2', '취소', '미확인') AS IN_TYPE,
+                                   A.CUST_NO,
+                                   (SELECT   SECT_CD || ' ' || SECT_NM
+                                      FROM   BASECTTB
+                                     WHERE       HQ = C.HQ
+                                       AND (STORE = C.STORE OR STORE = '99')
+                                       AND MAIN_CD = C.MAIN_CD
+                                       AND SECT_CD = C.SECT_CD) SECT_NM,
+                                   C.SUBJECT_CD SUBJECT_CD,
+                                   C.SUBJECT_NM SUBJECT_NM,
+                                   SUM(B.FOOD_AMT) OVER (PARTITION BY A.RECPT_NO, A.CUST_NO ORDER BY B.SUBJECT_CD) AS FOOD_AMT_SUM,
+                                   SUM(B.FOOD_AMT) OVER (PARTITION BY A.RECPT_NO, A.CUST_NO ORDER BY B.SUBJECT_CD) - B.FOOD_AMT AS FOOD_AMT_BEFORE,
+                                   A.SALE_YMD, A.POS_NO, A.CARD_AMT, A.CASH_AMT, DECODE(A.PAY_FG,'3',B.FOOD_AMT,'8',B.FOOD_AMT,C.FOOD_AMT) AS FOOD_AMT
+                            FROM   BAPELTTB C, BATRDETB B, BATRMSTB A
+                           WHERE   A.HQ = B.HQ
+                             AND   A.STORE = B.STORE
+                             AND   A.POS_NO = B.POS_NO
+                             AND   A.SALE_YMD = B.SALE_YMD
+                             AND   A.RECPT_NO = B.RECPT_NO
+                             AND   B.HQ = C.HQ
+                             AND   B.STORE = C.STORE
+                             AND   A.PERIOD = C.PERIOD
+                             AND   B.SUBJECT_CD = C.SUBJECT_CD
+                             AND   B.FOOD_AMT <![CDATA[>]]> 0
+                             AND   A.PAY_FG <![CDATA[<>]]> 9
+                             AND   A.HQ = '00'
+                             AND   A.STORE = '${store}'
+                             <if test="!pos_no.equals('')">
+						    	AND A.POS_NO    = '${pos_no}'
+							</if>
+                             AND   A.SALE_YMD  BETWEEN '${start_ymd}' AND '${end_ymd}') BB
+</select>
+<select id="getItTypeList3" parameterType="hashmap" resultType="hashmap">
+SELECT DECODE(A.COUPON_FG, '0', '자사', '5', '타사', '7', '증정', '미확인') AS COUPON_FG,
+				       A.COUPON_CD 	AS COUPON_CD,
+				       (SELECT SHORT_NAME FROM BACODETB WHERE CODE_FG = '01' AND SUB_CODE = A.COUPON_CD) AS COUPON_NM,
+				       A.RECPT_NO	AS RECPT_NO,  
+				       A.SEQ_NO		AS SEQ_NO,
+				       A.FACE_AMT 	AS FACE_AMT,
+				       A.COUPON_NO	AS COUPON_NO,		
+				       B.CUST_NO  	AS CUST_NO,
+				       C.CUST_NO  	AS CUS_NO,
+				       C.KOR_NM    	AS KOR_NM, 
+				       A.POS_NO  	AS POS_NO,
+				       A.SALE_YMD   AS SALE_YMD
+				  FROM BACUSTTB C,	
+				       BATRMSTB B,
+				       BATRCNTB A
+				WHERE A.HQ	   		= B.HQ
+				  AND A.STORE 	    = B.STORE
+				  AND A.SALE_YMD    = B.SALE_YMD 
+				  AND A.POS_NO	    = B.POS_NO
+				  AND A.RECPT_NO    = B.RECPT_NO
+                  AND B.HQ          = C.HQ
+<!--                   AND B.STORE       = C.STORE -->
+				  AND B.CUST_NO     = C.CUST_NO
+				  AND A.HQ 	    	= '00'
+				  AND A.STORE 	    = '${store}'
+				  AND A.SALE_YMD  BETWEEN '${start_ymd}' AND '${end_ymd}'
+				  <if test="!pos_no.equals('')">
+			    	AND A.POS_NO    = '${pos_no}'
+				</if>
+		        ORDER BY A.SALE_YMD, A.COUPON_FG, A.SEQ_NO 
+</select>
+<select id="getItDetailList1" parameterType="hashmap" resultType="hashmap">
+SELECT K.CARD_CORP_NO,
+                       (SELECT YY.CARD_NM
+                          FROM BCSPCATB@akris YY
+                         WHERE YY.CARD_FG = K.CARD_CORP_NO
+                           AND YY.DELETE_FG = '0'
+                           AND ROWNUM = 1) AS CARD_NM,
+                       K.TOT_AMT,
+                       K.NSIGN_CNT,
+                       K.SIGN_CNT,
+                       K.CUST_TOT,		 
+                       K.POS_NO,
+                       K.SALE_YMD
+                  FROM (SELECT B.CARD_CORP_NO,
+                               SUM(DECODE(A.SALE_FG,'01',A.CARD_AMT,'02',A.CARD_AMT*(-1))) TOT_AMT,
+                               COUNT(A.RECPT_NO) CUST_TOT,
+                               SUM(DECODE(SUBSTR(B.E_SIGN,1,1) ,'0',1,0)) NSIGN_CNT,
+                               SUM(DECODE(SUBSTR(B.E_SIGN,1,1) ,'1',1,'$',1,0)) SIGN_CNT,
+                               A.POS_NO,
+                               A.SALE_YMD
+                          FROM BATRMSTB A, BATRCATB B
+                         WHERE A.SALE_YMD = B.SALE_YMD
+                           AND A.HQ           = B.HQ
+                           AND A.STORE        = B.STORE
+                           AND A.POS_NO       = B.POS_NO
+                           AND A.RECPT_NO     = B.RECPT_NO
+                           AND A.SALE_YMD    BETWEEN '${start_ymd}' AND '${end_ymd}'
+                           AND A.HQ            = '00'
+                           AND A.STORE         = '${store}'
+                           <if test="!pos_no.equals('')">
+						    	AND A.POS_NO    like '%'||'${pos_no}'||'%'
+							</if>
+                         GROUP BY B.CARD_CORP_NO, A.POS_NO, A.SALE_YMD) K
+                 ORDER BY K.SALE_YMD
+</select>
+<select id="getItDetailList2" parameterType="hashmap" resultType="hashmap">
+ SELECT (SELECT DISTINCT CARD_NM
+                          FROM BCSPCATB@akris
+                         WHERE CARD_FG = A.CARD_CORP_NO
+                           AND DELETE_FG = '0' and rownum = 1) CARD_NM,
+                               A.CARD_NO  CARD_NO,
+                               B.CUST_NO  CUST_NO,
+                               (select CUS_NO from bacusttb where cust_no = B.CUST_NO and rownum = 1) as CUS_NO,
+                               C.KOR_NM   KOR_NM,
+                               DECODE(A.CARD_FG
+                                       , '0', '자사'
+                                       , '1', '자사제휴'
+                                       , '2', '타사'
+                                       , '3', '삼성제휴'
+                                       , '4', 'AK 신한카드'
+                                       , '5', 'AK기프트'
+                                       , '6', '홈플러스'
+                                       , '8', 'AK KB국민카드'
+                                       , 'G', '모바일상품권'
+                                       , 'M', '삼성페이'
+                                       , ' ') CARD_GBN,
+                               DECODE(B.IN_TYPE,'1',B.CARD_AMT,'2',B.CARD_AMT * -1,0)  CARD_AMT,
+                               A.POS_NO         POS_NO ,
+                               A.SALE_YMD       SALE_YMD
+                  FROM BACUSTTB C,
+                       BATRMSTB B,
+                       BATRCATB A
+                 WHERE 
+                       A.SALE_YMD    BETWEEN '${start_ymd}' AND '${end_ymd}'
+                   AND A.HQ         = '00'
+                   AND A.STORE      = '${store}'
+                   <if test="!pos_no.equals('')">
+				    	AND A.POS_NO    = '${pos_no}'
+					</if>
+                   AND A.SALE_YMD   = B.SALE_YMD
+                   AND 
+                   A.HQ         = B.HQ
+                   AND A.STORE      = B.STORE
+                   AND A.POS_NO     = B.POS_NO
+                   AND A.RECPT_NO   = B.RECPT_NO
+                   AND A.HQ         = C.HQ
+                   AND A.STORE      = C.STORE
+                   AND B.CUST_NO    = C.CUST_NO
+                 ORDER BY A.SALE_YMD, A.RECPT_NO
+</select>
+<select id="getItDetailList3" parameterType="hashmap" resultType="hashmap">
+  SELECT A.HQ,                                                 -- 본부코드
+					       A.STORE,                                              -- 점코드
+					       A.SALE_YMD,                                           -- 영업일자
+					       A.POS_NO,                                             -- POS번호
+					       A.RECPT_NO,                                           -- 영수증번호
+					       A.CUST_NO,                                            -- 회원번호
+                           (select KOR_NM from bacusttb where cust_no = A.CUST_NO and store = '${store}') as KOR_NM,
+                           (select CUS_NO from bacusttb where cust_no = A.CUST_NO and store = '${store}') as CUS_NO,
+					       (SELECT Z.KOR_NM 
+					          FROM BACUSTTB Z 
+					         WHERE Z.HQ = A.HQ 
+					           AND Z.STORE = A.STORE 
+					           AND Z.CUST_NO = A.CUST_NO and rownum = 1) AS CUST_NM,           -- 고객명
+					       C.SUBJECT_CD,                                         -- 강좌코드
+					       C.SUBJECT_NM,                                         -- 강좌명
+					       CASE WHEN A.IN_TYPE = '1' THEN '등록'
+					            WHEN A.IN_TYPE = '2' THEN '취소'
+					            ELSE A.IN_TYPE  
+					       END  AS   IN_TYPE,                                     -- 구분 (등록/취소)
+					       A.TRADE_ALL_AMT,                                       -- 총매출액     
+					       NVL(D.CARD_AMT, E.CARD_AMT)         AS CARD_AMT,       -- 순매출액 
+					       decode(a.in_type, '2', nvl(d.akmem_recpt_point * -1, 0), nvl(d.akmem_recpt_point, 0)) AS akmem_recpt_point,
+					       decode(a.in_type, '2', nvl(e.akmem_use_point * -1, 0), nvl(e.akmem_use_point, 0)) AS akmem_use_point,
+					       NVL(D.CARD_IN_AMT, E.CARD_IN_AMT)   AS CARD_IN_AMT        -- 누적마일리지
+					  FROM BATRMSTB  A, -- 매출마스타
+					       BATRDETB  B, -- 매출상세
+					       BAPELTTB  C, -- 기수별개설강좌
+					       BAPTCATB  D,
+					       BAPTCATB  E
+					 WHERE 1 = 1
+					   AND A.HQ         = '00'
+					   AND A.STORE      = '${store}'
+					   AND A.SALE_YMD   BETWEEN '${start_ymd}' AND '${end_ymd}'
+					   <if test="!pos_no.equals('')">
+					    	AND A.POS_NO    = '${pos_no}'
+						</if>
+					   AND EXISTS      (SELECT 1
+					                      FROM BAPTCATB Z
+					                     WHERE 1 = 1 
+					                       AND Z.HQ          = A.HQ
+					                       AND Z.STORE       = A.STORE
+					                       AND Z.SALE_YMD    = A.SALE_YMD
+					                       AND Z.POS_NO      = A.POS_NO
+					                       AND Z.RECPT_NO    = A.RECPT_NO )    
+					   AND B.HQ            = A.HQ
+					   AND B.STORE         = A.STORE
+					   AND B.SALE_YMD      = A.SALE_YMD
+					   AND B.POS_NO        = A.POS_NO
+					   AND B.RECPT_NO      = A.RECPT_NO
+					   AND C.HQ            = A.HQ
+					   AND C.STORE         = A.STORE
+					   AND C.PERIOD        = A.PERIOD
+					   AND C.SUBJECT_CD    = B.SUBJECT_CD
+					   AND A.HQ            = D.HQ(+)
+					   AND A.STORE         = D.STORE(+)
+					   AND A.SALE_YMD      = D.SALE_YMD(+)
+					   AND A.POS_NO        = D.POS_NO(+)
+					   AND A.RECPT_NO      = D.RECPT_NO(+)
+					   AND D.CARD_SEQ_NO(+)= '999' 
+					   AND A.HQ            = E.HQ(+)
+					   AND A.STORE         = E.STORE(+)
+					   AND A.SALE_YMD      = E.SALE_YMD(+)
+					   AND A.POS_NO        = E.POS_NO(+)
+					   AND A.RECPT_NO      = E.RECPT_NO(+)
+					   AND E.CARD_SEQ_NO(+)= '998' 
+					 ORDER BY A.SALE_YMD,                                           -- 영업일자
+					       A.POS_NO,                                             -- POS번호
+					       A.RECPT_NO                                                       -- 영수증번호
+</select>
+
+	<select id="getSendCloseStatus" parameterType="hashmap" resultType="String">
+		select close_stat
+	             from axclostb
+	            where hq         = '00'
+	              and store      = '${store}'
+	              and close_fg   = '${close_fg}'
+	              and close_ymd = '${sale_ymd}'
+	</select>
+	<select id="checkSend" parameterType="hashmap" resultType="int">
+      SELECT count(*) as count
+           FROM BAITEMTB  
+         WHERE HQ            = '00'
+           AND STORE         = '${store}'
+           AND SALE_YMD      = '${sale_ymd}'
+           AND adjust_date is null
+	</select>
+	<select id="checkSendIt" parameterType="hashmap" resultType="int">
+      SELECT count(*) as count
+           from baperitb
+         WHERE HQ            = '00'
+           AND STORE         = '${store}'
+          and '${sale_ymd}' between web_open_ymd and end_ymd
+	</select>
+	<select id="processBASale1601" parameterType="hashmap" resultType="hashmap">
+      SELECT (CASE WHEN '${sale_ymd}' BETWEEN WEB_OPEN_YMD AND END_YMD THEN 'Y' ELSE 'N' END) AS CHECK_YN,
+                       TO_CHAR(SYSDATE, 'YYYYMMDD') AS TODAY_DATE
+                  FROM BAPERITB
+                 WHERE HQ     = '00'
+                   AND STORE  = '${store}'
+                   AND PERIOD = '${period}'
+	</select>
+	<select id="processBASale1602" parameterType="hashmap" resultType="int">
+      SELECT COUNT(*) AS COUNT
+                  FROM BAPOSMTB
+                 WHERE HQ       = '00'
+                   AND STORE    = '${store}'
+                   AND POS_NO  not in('070013', '070014')
+                   AND SALE_YMD = '${sale_ymd}'
+                   AND OPEN_YN     = 'Y'
+                   AND SALE_END_YN = 'N'
+	</select>
+	<select id="processBASale1603" parameterType="hashmap" resultType="string">
+      SELECT AD_END_YN
+                  FROM BAPOSMTB
+                 WHERE HQ          = '00'
+                   AND STORE       = '${store}'
+                   AND POS_NO      = '${pos}'
+                   AND SALE_YMD    = '${sale_ymd}'
+	</select>
+	<select id="processBASale1604" parameterType="hashmap" resultType="int">
+      SELECT COUNT(*) AS COUNT
+                  FROM BATRMSTB
+                 WHERE HQ         = '00'
+                   AND STORE      = '${store}'
+                   AND SALE_YMD   = '${sale_ymd}'                   
+                   AND POS_NO     = '${pos}'
+	</select>
+	<update id="processBASale1605" parameterType="hashmap">
+      UPDATE BAPOSMTB
+                   SET SALE_YMD         = '${sale_ymd}',
+                       OPEN_YN          = 'Y',
+                       SALE_END_YN      = 'Y',
+                       AD_END_YN        = 'N',
+                       CREATE_RESI_NO   = '${login_seq}',
+                       CREATE_DATE      = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 WHERE HQ     = '00'
+                   AND STORE  = '${store}'
+                   AND POS_NO = '${pos}' 
+	</update>
+	<select id="processBASale1606" parameterType="hashmap" resultType="int">
+      SELECT COUNT(*) AS COUNT
+                  FROM BAITEMTB
+                 WHERE HQ        = '00'
+                   AND STORE     = '${store}'
+                   AND SALE_YMD  = '${sale_ymd}'
+                   AND POS_NO    = '${pos}'
+	</select>
+	<insert id="processBASale1607" parameterType="hashmap">
+      INSERT INTO BAITEMTB
+                            (HQ, STORE, SALE_YMD, POS_NO,
+                             SOD_DATE, ADJUST_DATE,
+                             RECPT_NO, CHARGE_RESI_NO, SEND_YN)
+                     VALUES ('00', '${store}', '${sale_ymd}', '${pos}',
+                             TO_CHAR(SYSDATE, 'YYYYMMDD')||'000001', NULL,
+                             '0000', '${login_seq}', 'N')
+	</insert>
+	<insert id="processBASale1608" parameterType="hashmap">
+      INSERT INTO BAITDETB
+                            (HQ, STORE, SALE_YMD, POS_NO, ADJUST_ITEM, TOT_AMT, TOT_CNT)
+                     VALUES ('00', '${store}', '${sale_ymd}', '${pos}', '${adjust_item}', 0, 0)
+	</insert>
+	<select id="checkBASale0601" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM BAITDETB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND POS_NO        = '${pos}'
+                   AND SALE_YMD      = TO_CHAR(SYSDATE, 'YYYYMMDD')                          
+                   AND ADJUST_ITEM   = '108'
+	</select>
+	<select id="checkBASale0101" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM BAITDETB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND POS_NO        not in ('070013', '070014')
+                   AND POS_NO        = '${pos}'
+                   AND SALE_YMD      = TO_CHAR(SYSDATE, 'YYYYMMDD')                   
+                   AND ADJUST_ITEM   = '074'
+	</select>
+	<select id="getBASale0101" parameterType="hashmap" resultType="hashmap">
+      SELECT A.SALE_YMD,
+                       A.HQ,
+                       A.STORE,
+                       A.POS_NO,
+                       A.SOD_DATE,
+                       A.ADJUST_DATE,
+                       A.RECPT_NO,
+                       A.CHARGE_RESI_NO,
+                       A.CVT_SALE_YMD,
+                       B.TOT_AMT,
+                       (select SALE_END_YN from BAPOSMTB where 
+                        hq = '00' and store = '${store}' and pos_no = '${pos}' and sale_ymd = TO_CHAR(SYSDATE, 'YYYYMMDD')) end_yn
+                  FROM BAITEMTB A ,
+                       BAITDETB B
+                 WHERE A.HQ            = '00'
+                   AND A.STORE         = '${store}'
+                   AND A.POS_NO        = '${pos}'
+                   AND A.SALE_YMD      = TO_CHAR(SYSDATE, 'YYYYMMDD')                   
+                   AND A.SALE_YMD      = B.SALE_YMD
+                   AND A.HQ            = B.HQ
+                   AND A.STORE         = B.STORE
+                   AND A.POS_NO        = B.POS_NO
+                   AND B.ADJUST_ITEM   = '${adjust_item}'
+	</select>
+	<select id="checkBASale0104" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM BATRMSTB
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND SALE_YMD      = '${sale_ymd}'                     
+                   AND POS_NO        != '070013'
+                   AND POS_NO        = '${pos}'
+	</select>
+	<select id="checkBASale0105" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM BAITDETB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND SALE_YMD      = '${sale_ymd}'                            
+                   AND POS_NO        not in('070013', '070014')
+                   AND POS_NO        = '${pos}'
+                   AND ADJUST_ITEM   = '108' 
+	</select>
+	<select id="checkBASale0107" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM BAPOSMTB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND SALE_YMD      = '${sale_ymd}'                   
+                   AND POS_NO        != '070013'
+                   AND POS_NO        = '${pos}'
+	</select>
+	<update id="updateBASale0107" parameterType="hashmap">
+     UPDATE BAPOSMTB 
+                SET open_yn     = 'N'          ,
+                    sale_end_yn = 'N'          ,
+                    ad_end_yn   = 'N'          ,
+                    send_yn     = 'N'          ,
+                    create_resi_no = '${login_seq}'    ,
+                    create_date  = to_char(sysdate,'yyyymmddhh24miss')
+              WHERE hq         = '00'
+                 AND store     = '${store}'
+                 AND sale_ymd  = '${sale_ymd}'                 
+                 AND POS_NO  != '070013'
+                 AND pos_no    = '${pos}'
+                 AND open_yn   = 'Y'
+	</update>
+	<select id="checkBASale0108" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM BAITEMTB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND SALE_YMD      = '${sale_ymd}'                     
+                   AND POS_NO        not in('070013', '070014')
+                   AND POS_NO        = '${pos}'
+                   AND ADJUST_DATE is null    -- 미정산'
+	</select>
+	<delete id="deleteBASale0108" parameterType="hashmap">
+     DELETE FROM BAITEMTB  
+                 WHERE HQ            = '00'
+                   AND STORE         = '${store}'
+                   AND SALE_YMD      = '${sale_ymd}'
+                   AND POS_NO        not in('070013', '070014')
+                   AND POS_NO        = '${pos}'
+                   AND ADJUST_DATE is null  
+	</delete>
+	<select id="checkBASale0109" parameterType="hashmap" resultType="string">
+      SELECT count(*) as count
+                  FROM AXCLOSTB
+                 WHERE HQ     =  '00'
+                   AND STORE  =  '${store}'
+                   AND CLOSE_YMD = '${sale_ymd}'                      
+                   AND CREATE_END_TIME = '${pos}'
+                   AND CLOSE_FG IN ('BA1','BA2')
+                   AND CLOSE_STAT != 'Y'
+	</select>
+	<delete id="deleteBASale0109" parameterType="hashmap">
+     DELETE FROM AXCLOSTB
+                 WHERE HQ     =  '00'
+                   AND STORE  =  '${store}'
+                   AND CLOSE_YMD = '${sale_ymd}'                      
+                   AND CREATE_END_TIME = '${pos}'
+                   AND CLOSE_FG IN ('BA1','BA2')
+	</delete>
+	<select id="checkBASale0110" parameterType="hashmap" resultType="string">
+       SELECT count(*) as count
+                  FROM AXPROCTB
+                  WHERE PGM_ID='bab0010b'
+                    AND REQ_START_TM LIKE '${sale_ymd}'||'%'
+                    AND PGM_ARGUMENT IN ('${pmg_arg}'||'BA1','${pmg_arg}'||'BA2')
+                    AND STATUS_FG != 'Y'
+	</select>
+	<delete id="deleteBASale0110" parameterType="hashmap">
+     DELETE FROM AXPROCTB
+                  WHERE PGM_ID='bab0010b'
+                    AND REQ_START_TM LIKE '${sale_ymd}'||'%'
+                    AND PGM_ARGUMENT IN ('${pmg_arg}'||'BA1','${pmg_arg}'||'BA2')
+                    AND STATUS_FG != 'Y'
+	</delete>
+	<delete id="deleteBASale0601" parameterType="hashmap">
+      DELETE BAITDETB 
+              WHERE hq        = '00'
+                 AND store     = '${store}'
+                 AND pos_no    = '${pos}'
+                 AND sale_ymd = '${sale_ymd}'
+                 AND ADJUST_ITEM   = '108'
+	</delete>
+	<delete id="deleteBASale0106" parameterType="hashmap">
+     DELETE FROM BAITDETB 
+                WHERE hq        ='00'
+                  AND store     = '${store}'
+                  AND sale_ymd  = '${sale_ymd}'                  
+                  AND pos_no    not in('070013', '070014')
+                  AND pos_no    = '${pos}'  
+                  AND ADJUST_ITEM   = '074'
+	</delete>
+	<update id="updateBASale0603" parameterType="hashmap">
+     UPDATE BAPOSMTB 
+                SET sale_end_yn = 'N'   
+              WHERE hq        = '00'
+                 AND store     = '${store}'
+                 AND pos_no    = '${pos}'
+                 AND sale_ymd = '${sale_ymd}'
+	</update>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="/authMapper">
+	<select id="getMgrAuth" parameterType="hashmap" resultType="hashmap">
+		select * from BAMGRAUTHTB where SEQ_NO = #{seq_no} and AUTH_URI = #{uri}
+	</select>
+	<select id="chk_new" parameterType="hashmap" resultType="int">
+		select count(*) from BAMGRAUTHTB where SEQ_NO = #{seq_no} and AUTH_URI = #{auth_uri}
+	</select>
+	<insert id="insAuth" parameterType="hashmap">
+		insert into BAMGRAUTHTB
+		(SEQ_NO, AUTH_URI, AUTH_KEY)
+		values
+		(#{seq_no}, #{auth_uri}, #{auth_key})
+	</insert>
+	<update id="upAuth" parameterType="hashmap">
+		update BAMGRAUTHTB
+		set
+		SEQ_NO = #{seq_no},
+		AUTH_URI = #{auth_uri},
+		AUTH_KEY = #{auth_key}
+		where SEQ_NO = #{seq_no} and AUTH_URI = #{auth_uri}
+	</update>
+	<select id="getAuth" parameterType="hashmap" resultType="hashmap">
+		select * from BAMGRAUTHTB where SEQ_NO = #{seq_no} 
+	</select>
+</mapper>
